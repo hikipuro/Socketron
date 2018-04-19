@@ -1,0 +1,85 @@
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Socketron {
+	public enum DataType {
+		Null = 0,
+		Log,
+		Run,
+		Import,
+		Command
+	}
+
+	public class Socketron: EventEmitter {
+		public event Action<string> Callback;
+
+		SocketronClient _client;
+		DataCreator _dataCreator;
+
+		public Socketron() {
+			_client = new SocketronClient();
+			_client.On("debug", (args) => {
+				Emit("debug", args[0]);
+			});
+			_client.On("connect", (args) => {
+				Emit("connect");
+			});
+			_client.Callback += (str) => {
+				Callback?.Invoke(str);
+			};
+
+			_dataCreator = new DataCreator();
+		}
+
+		public bool IsConnected {
+			get { return _client.IsConnected; }
+		}
+
+		public Encoding Encoding {
+			get { return _client.Encoding; }
+			set {
+				_client.Encoding = value;
+				_dataCreator.Encoding = value;
+			}
+		}
+
+		public int Timeout {
+			get { return _client.Timeout; }
+			set { _client.Timeout = value; }
+		}
+
+		public void Write(byte[] bytes) {
+			_client.Write(bytes);
+		}
+
+		//public void Write(string str) {
+		//	byte[] bytes = Encoding.GetBytes(str);
+		//	Write(bytes);
+		//}
+
+		public void SendLog(string message) {
+			Write(_dataCreator.Create(DataType.Log, message));
+		}
+
+		public void Run(string script) {
+			Write(_dataCreator.Create(DataType.Run, script));
+		}
+
+		public void ImportScript(string url) {
+			Write(_dataCreator.Create(DataType.Import, url));
+		}
+
+		public void Command(string command) {
+			Write(_dataCreator.Create(DataType.Command, command));
+		}
+
+		public void Connect(string hostname, int port = 3000) {
+			Task task = _client.Connect(hostname, port);
+		}
+
+		public void Close() {
+			_client.Close();
+		}
+	}
+}
