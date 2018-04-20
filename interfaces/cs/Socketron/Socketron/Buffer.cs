@@ -31,6 +31,30 @@ namespace Socketron {
 			_data.Write(bytes, 0, bytes.Length);
 		}
 
+		public void Write(string str, Encoding encoding = null) {
+			if (encoding == null) {
+				encoding = Encoding.UTF8;
+			}
+			byte[] bytes = encoding.GetBytes(str);
+			Write(bytes, 0, bytes.Length);
+		}
+
+		public void WriteUInt8(byte value) {
+			_data.WriteByte(value);
+		}
+
+		public void WriteUInt16LE(ushort value) {
+			_data.WriteByte((byte)(value & 0xFF));
+			_data.WriteByte((byte)(value >> 8 & 0xFF));
+		}
+
+		public void WriteUInt32LE(uint value) {
+			_data.WriteByte((byte)(value & 0xFF));
+			_data.WriteByte((byte)(value >> 8 & 0xFF));
+			_data.WriteByte((byte)(value >> 16 & 0xFF));
+			_data.WriteByte((byte)(value >> 24 & 0xFF));
+		}
+
 		public byte ReadUInt8(uint offset) {
 			return _data.GetBuffer()[offset];
 		}
@@ -62,6 +86,15 @@ namespace Socketron {
 			Buffer buffer = new Buffer();
 			buffer.Write(data);
 			return buffer;
+		}
+
+		public byte[] ToByteArray() {
+			byte[] bytes = new byte[Length];
+			long position = _data.Position;
+			_data.Position = 0;
+			_data.Read(bytes, 0, Length);
+			_data.Position = position;
+			return bytes;
 		}
 
 		public string ToString(Encoding encoding, int start, int end) {

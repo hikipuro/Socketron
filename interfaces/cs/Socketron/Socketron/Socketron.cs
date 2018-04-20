@@ -8,14 +8,15 @@ namespace Socketron {
 		Null = 0,
 		Log,
 		Run,
-		Import,
-		Command
+		ImportScript,
+		Command,
+		AppendStyle,
 	}
 
 	public class Socketron: EventEmitter {
 		SocketronClient _client;
-		DataCreator _dataCreator;
 		Dictionary<ushort, Action> _callbacks;
+		ushort _sequenceId = 0;
 
 		public Socketron() {
 			_client = new SocketronClient();
@@ -36,7 +37,6 @@ namespace Socketron {
 				}
 			});
 
-			_dataCreator = new DataCreator();
 			_callbacks = new Dictionary<ushort, Action>();
 		}
 
@@ -46,10 +46,7 @@ namespace Socketron {
 
 		public Encoding Encoding {
 			get { return _client.Encoding; }
-			set {
-				_client.Encoding = value;
-				_dataCreator.Encoding = value;
-			}
+			set { _client.Encoding = value; }
 		}
 
 		public int Timeout {
@@ -61,28 +58,54 @@ namespace Socketron {
 			_client.Write(bytes);
 		}
 
+		public void Write(Buffer buffer) {
+			byte[] bytes = buffer.ToByteArray();
+			Write(bytes);
+		}
+
 		//public void Write(string str) {
 		//	byte[] bytes = Encoding.GetBytes(str);
 		//	Write(bytes);
 		//}
 
-		public void SendLog(string message, Action callback = null) {
-			Write(_dataCreator.Create(DataType.Log, message));
-			_callbacks[_dataCreator.SequenceId] = callback;
+		public void Log(string message, Action callback = null) {
+			Buffer buffer = Packet.CreateData(
+				DataType.Log, _sequenceId, message, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
 		}
 
 		public void Run(string script, Action callback = null) {
-			Write(_dataCreator.Create(DataType.Run, script));
-			_callbacks[_dataCreator.SequenceId] = callback;
+			Buffer buffer = Packet.CreateData(
+				DataType.Run, _sequenceId, script, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
 		}
 
 		public void ImportScript(string url, Action callback = null) {
-			Write(_dataCreator.Create(DataType.Import, url));
-			_callbacks[_dataCreator.SequenceId] = callback;
+			Buffer buffer = Packet.CreateData(
+				DataType.ImportScript, _sequenceId, url, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
 		}
 
-		public void Command(string command) {
-			Write(_dataCreator.Create(DataType.Command, command));
+		public void Command(string command, Action callback = null) {
+			Buffer buffer = Packet.CreateData(
+				DataType.Command, _sequenceId, command, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
+		}
+
+		public void AppendStyle(string css, Action callback = null) {
+			Buffer buffer = Packet.CreateData(
+				DataType.AppendStyle, _sequenceId, css, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
 		}
 
 		public void Connect(string hostname, int port = 3000) {

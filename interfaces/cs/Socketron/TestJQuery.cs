@@ -15,19 +15,25 @@ namespace Socketron {
 			});
 			socketron.On("data", (args) => {
 				Packet packet = (Packet)args[0];
-				Console.WriteLine("Test 2: {0}, {1}", packet.SequenceId, packet.GetStringData());
+				Console.WriteLine("Test: {0}, {1}", packet.SequenceId, packet.GetStringData());
 			});
 			socketron.Connect("127.0.0.1");
-		}
-
-		~TestJQuery() {
-			socketron.Close();
 		}
 
 		public void Run() {
 			if (!socketron.IsConnected) {
 				return;
 			}
+
+			socketron.Log("TestJQuery");
+
+			string[] css = {
+				"* {",
+				"	font-family: sans-serif;",
+				"	font-size: 20px;",
+				"}",
+			};
+			socketron.AppendStyle(string.Join("\n", css));
 
 			socketron.ImportScript("https://code.jquery.com/jquery-3.3.1.min.js", () => {
 				socketron.Run("console.log($)", () => {

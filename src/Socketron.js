@@ -23,8 +23,9 @@ const DataType = {
 	Null: 0,
 	Log: 1,
 	Run: 2,
-	Import: 3,
+	ImportScript: 3,
 	Command: 4,
+	AppendStyle: 5
 }
 
 const ReadState = {
@@ -302,11 +303,14 @@ class SocketronNode {
 				data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
 				client.write(data);
 				break;
-			case DataType.Import:
+			case DataType.ImportScript:
 				this._ipcSend("import", packet, client.id);
 				break;
 			case DataType.Command:
 				this._ipcSend("command", message);
+				break;
+			case DataType.AppendStyle:
+				this._ipcSend("appendStyle", packet, client.id);
 				break;
 		}
 	}
@@ -444,6 +448,18 @@ class SocketronRenderer {
 					location.reload();
 					break;
 			}
+		});
+		this._addIpcEvent("appendStyle", (e, packet, clientId) => {
+			packet = Packet.fromJson(packet);
+			const style = packet.getStringData();
+			console.log(style);
+			const element = document.createElement("style");
+			document.head.appendChild(element);
+			element.addEventListener("load", () => {
+				const data = Packet.createData(DataType.Log, packet.sequenceId, style);
+				this.send(clientId, data);
+			});
+			element.innerHTML = style;
 		});
 	}
 

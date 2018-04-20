@@ -13,39 +13,6 @@ namespace Socketron {
 		Data
 	}
 
-	public class Packet {
-		public Buffer Data = null;
-		public DataType DataType = DataType.Null;
-		public ushort SequenceId = 0;
-		public uint DataLength = 0;
-		public uint DataOffset = 0;
-		public ReadState State = ReadState.Type;
-		public Encoding Encoding = Encoding.UTF8;
-
-		public Packet() {
-			Data = new Buffer();
-		}
-
-		public Packet Clone() {
-			Packet packet = new Packet();
-			packet.Data = Data;
-			packet.DataType = DataType;
-			packet.SequenceId = SequenceId;
-			packet.DataLength = DataLength;
-			packet.DataOffset = DataOffset;
-			packet.State = State;
-			return packet;
-		}
-
-		public string GetStringData() {
-			return Data.ToString(
-				Encoding,
-				(int)DataOffset,
-				(int)DataOffset + (int)DataLength
-			);
-		}
-	}
-
 	internal class SocketronClient: EventEmitter {
 		public const int ReadBufferSize = 1024;
 
