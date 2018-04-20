@@ -59,10 +59,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Socketron\Buffer.cs" />
     <Compile Include="Socketron\DataCreator.cs" />
     <Compile Include="Socketron\EventEmitter.cs" />
     <Compile Include="Socketron\Socketron.cs" />
     <Compile Include="Socketron\SocketronClient.cs" />
+    <Compile Include="TestJQuery.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

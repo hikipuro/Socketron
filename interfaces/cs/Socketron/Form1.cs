@@ -11,6 +11,9 @@ namespace Socketron {
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
+			TestJQuery test = new TestJQuery();
+			//test.Run();
+			/*
 			if (socketron != null && socketron.IsConnected) {
 				Run();
 				return;
@@ -28,6 +31,7 @@ namespace Socketron {
 				Console.WriteLine("Test: {0}, {1}", packet.SequenceId, packet.GetStringData());
 			});
 			socketron.Connect("127.0.0.1");
+			//*/
 		}
 
 		private void Run() {

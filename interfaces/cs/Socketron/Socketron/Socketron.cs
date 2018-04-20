@@ -15,7 +15,7 @@ namespace Socketron {
 	public class Socketron: EventEmitter {
 		SocketronClient _client;
 		DataCreator _dataCreator;
-		Dictionary<int, Action> _callbacks;
+		Dictionary<ushort, Action> _callbacks;
 
 		public Socketron() {
 			_client = new SocketronClient();
@@ -28,13 +28,16 @@ namespace Socketron {
 			_client.On("data", (args) => {
 				Emit("data", args);
 				Packet packet = (Packet)args[0];
-				Action callback = _callbacks[packet.SequenceId];
-				callback?.Invoke();
-				_callbacks.Remove(packet.SequenceId);
+				ushort sequenceId = packet.SequenceId;
+				if (_callbacks.ContainsKey(sequenceId)) {
+					Action callback = _callbacks[sequenceId];
+					callback?.Invoke();
+					_callbacks.Remove(sequenceId);
+				}
 			});
 
 			_dataCreator = new DataCreator();
-			_callbacks = new Dictionary<int, Action>();
+			_callbacks = new Dictionary<ushort, Action>();
 		}
 
 		public bool IsConnected {
@@ -68,12 +71,14 @@ namespace Socketron {
 			_callbacks[_dataCreator.SequenceId] = callback;
 		}
 
-		public void Run(string script) {
+		public void Run(string script, Action callback = null) {
 			Write(_dataCreator.Create(DataType.Run, script));
+			_callbacks[_dataCreator.SequenceId] = callback;
 		}
 
-		public void ImportScript(string url) {
+		public void ImportScript(string url, Action callback = null) {
 			Write(_dataCreator.Create(DataType.Import, url));
+			_callbacks[_dataCreator.SequenceId] = callback;
 		}
 
 		public void Command(string command) {

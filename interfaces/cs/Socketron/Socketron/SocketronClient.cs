@@ -14,15 +14,16 @@ namespace Socketron {
 	}
 
 	public class Packet {
-		public MemoryStream Data = null;
+		public Buffer Data = null;
 		public DataType DataType = DataType.Null;
 		public ushort SequenceId = 0;
 		public uint DataLength = 0;
 		public uint DataOffset = 0;
 		public ReadState State = ReadState.Type;
+		public Encoding Encoding = Encoding.UTF8;
 
 		public Packet() {
-			Data = new MemoryStream();
+			Data = new Buffer();
 		}
 
 		public Packet Clone() {
@@ -36,54 +37,22 @@ namespace Socketron {
 			return packet;
 		}
 
-		public byte ReadUint8(uint offset) {
-			return Data.GetBuffer()[offset];
-		}
-
-		public ushort ReadUint16LE(uint offset) {
-			byte[] buffer = Data.GetBuffer();
-			ushort result = buffer[offset];
-			result |= (ushort)(buffer[offset + 1] << 8);
-			return result;
-		}
-
-		public uint ReadUint32LE(uint offset) {
-			byte[] buffer = Data.GetBuffer();
-			uint result = buffer[offset];
-			result |= (uint)(buffer[offset + 1] << 8);
-			result |= (uint)(buffer[offset + 2] << 16);
-			result |= (uint)(buffer[offset + 3] << 24);
-			return result;
-		}
-
-		public void SliceData(uint offset) {
-			uint length = (uint)Data.Length - offset;
-			byte[] data = new byte[length];
-			Data.Position = offset;
-			Data.Read(data, 0, (int)length);
-			Data = new MemoryStream();
-			Data.Write(data, 0, data.Length);
-		}
-
-		public string GetStringData(Encoding encoding = null) {
-			if (encoding == null) {
-				encoding = Encoding.UTF8;
-			}
-			return encoding.GetString(
-				Data.GetBuffer(),
+		public string GetStringData() {
+			return Data.ToString(
+				Encoding,
 				(int)DataOffset,
-				(int)Data.Length - (int)DataOffset
+				(int)DataOffset + (int)DataLength
 			);
 		}
 	}
 
 	internal class SocketronClient: EventEmitter {
 		public const int ReadBufferSize = 1024;
-		public Encoding Encoding = Encoding.UTF8;
 
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
 		protected int _timeout = 10000;
+		protected Encoding _encoding = Encoding.UTF8;
 		protected Packet _packet = new Packet();
 
 		public SocketronClient() {
@@ -106,6 +75,14 @@ namespace Socketron {
 					_stream.ReadTimeout = value;
 					_stream.WriteTimeout = value;
 				}
+			}
+		}
+
+		public Encoding Encoding {
+			get { return _encoding; }
+			set {
+				_encoding = value;
+				_packet.Encoding = value;
 			}
 		}
 
@@ -165,6 +142,7 @@ namespace Socketron {
 		}
 
 		protected void OnData(byte[] data, int bytesReaded) {
+			//Console.WriteLine("OnData: {0}, {1}", bytesReaded, data);
 			if (data != null) {
 				_packet.Data.Write(data, 0, bytesReaded);
 			}
@@ -175,6 +153,7 @@ namespace Socketron {
 			//Console.WriteLine("*** DEBUG 1: " + _packet.State);
 			//Console.WriteLine("*** DEBUG 2: " + _packet.Data.Length);
 			//Console.WriteLine("*** DEBUG 3: " + offset);
+			//Console.WriteLine("*** DEBUG 4: " + remain);
 			switch (_packet.State) {
 				case ReadState.Type:
 					if (remain < 1) {
@@ -200,25 +179,27 @@ namespace Socketron {
 
 			switch (_packet.State) {
 				case ReadState.Type:
-					_packet.DataType = (DataType)_packet.ReadUint8(offset);
+					_packet.DataType = (DataType)_packet.Data[offset];
 					_packet.DataOffset += 1;
 					_packet.State = ReadState.Sequence;
 					break;
 				case ReadState.Sequence:
-					_packet.SequenceId = _packet.ReadUint16LE(offset);
+					_packet.SequenceId = _packet.Data.ReadUInt16LE(offset);
 					_packet.DataOffset += 2;
 					_packet.State = ReadState.Length;
 					break;
 				case ReadState.Length:
-					_packet.DataLength = _packet.ReadUint32LE(offset);
+					_packet.DataLength = _packet.Data.ReadUInt32LE(offset);
 					_packet.DataOffset += 4;
 					_packet.State = ReadState.Data;
 					break;
 				case ReadState.Data:
+					//Buffer buffer = _packet.Data.Slice(offset + _packet.DataLength);
 					Emit("data", _packet.Clone());
 					//string text = _packet.GetStringData(Encoding);
-					//Console.WriteLine("*** DEBUG Data: {0}, {1}, {2}", _packet.SequenceId, text.Length, text);
-					_packet.SliceData(offset + _packet.DataLength);
+					//Console.WriteLine("*** DEBUG Data: {0}", _packet.SequenceId);
+					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
+					//Console.WriteLine("*** DEBUG Data: {0}", _packet.Data.Length);
 					_packet.DataOffset = 0;
 					_packet.State = ReadState.Type;
 					break;

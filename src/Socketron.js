@@ -53,6 +53,17 @@ class Packet {
 		return buffer;
 	}
 
+	static fromJson(json) {
+		let packet = new Packet();
+		packet.data = json.data;
+		packet.dataType = json.dataType;
+		packet.sequenceId = json.sequenceId;
+		packet.dataLength = json.dataLength;
+		packet.dataOffset = json.dataOffset;
+		packet.state = json.state;
+		return packet;
+	}
+
 	clear() {
 		this.data.clear();
 		this.dataType = DataType.Null;
@@ -279,17 +290,20 @@ class SocketronNode {
 	_onData(client, packet) {
 		//this._ipcLog("sequence: " + packet.sequenceId);
 		const message = packet.getStringData();
+		let data = null;
 		switch (packet.dataType) {
 			case DataType.Log:
 				this._ipcLog(message);
-				const data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
+				data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
 				client.write(data);
 				break;
 			case DataType.Run:
 				this._ipcSend("run", message);
+				data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
+				client.write(data);
 				break;
 			case DataType.Import:
-				this._ipcSend("import", client.id, message);
+				this._ipcSend("import", packet, client.id);
 				break;
 			case DataType.Command:
 				this._ipcSend("command", message);
@@ -313,7 +327,7 @@ class SocketronNode {
 		this._addIpcEvent("send", (e, clientId, buffer) => {
 			const client = this._server.findClientById(clientId);
 			if (client != null) {
-				this.send(client, buffer);
+				client.write(buffer);
 			}
 		});
 		this._addIpcEvent("quit", (e) => {
@@ -356,7 +370,7 @@ class SocketronRenderer {
 		}
 		this._addIpcEvents();
 	}
-	
+
 	static broadcast(message) {
 		const socketron = SocketronRenderer._instance;
 		if (socketron == null) {
@@ -366,7 +380,8 @@ class SocketronRenderer {
 	}
 
 	broadcast(message, sender = null) {
-		this._ipcSend("broadcast", message, sender);
+		const data = Packet.createData(DataType.Log, 0, message);
+		this._ipcSend("broadcast", data, sender);
 	}
 
 	send(client, buffer) {
@@ -408,15 +423,15 @@ class SocketronRenderer {
 			//eval(script);
 			Function(script)();
 		});
-		this._addIpcEvent("import", (e, clientId, url) => {
+		this._addIpcEvent("import", (e, packet, clientId) => {
+			packet = Packet.fromJson(packet);
+			const url = packet.getStringData();
 			console.log(url);
 			const script = document.createElement("script");
 			document.head.appendChild(script);
 			script.addEventListener("load", () => {
-				let buffer = Buffer.alloc(1 + url.length + 1);
-				buffer.writeUInt8(DataType.Import, 0);
-				buffer.write(url + "\n", 1);
-				this.send(clientId, buffer);
+				const data = Packet.createData(DataType.Log, packet.sequenceId, url);
+				this.send(clientId, data);
 			});
 			script.setAttribute("src", url);
 		});
