@@ -4,8 +4,6 @@ const MainWindow = require("./MainWindow");
 const Socketron = require("./Socketron");
 
 class NodeMain {
-	//_socketron: Socketron = null;
-	
 	constructor(app) {
 		this._app = app;
 		this._addAppEvents();

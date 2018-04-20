@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,10 +13,9 @@ namespace Socketron {
 	}
 
 	public class Socketron: EventEmitter {
-		public event Action<string> Callback;
-
 		SocketronClient _client;
 		DataCreator _dataCreator;
+		Dictionary<int, Action> _callbacks;
 
 		public Socketron() {
 			_client = new SocketronClient();
@@ -25,11 +25,16 @@ namespace Socketron {
 			_client.On("connect", (args) => {
 				Emit("connect");
 			});
-			_client.Callback += (str) => {
-				Callback?.Invoke(str);
-			};
+			_client.On("data", (args) => {
+				Emit("data", args);
+				Packet packet = (Packet)args[0];
+				Action callback = _callbacks[packet.SequenceId];
+				callback?.Invoke();
+				_callbacks.Remove(packet.SequenceId);
+			});
 
 			_dataCreator = new DataCreator();
+			_callbacks = new Dictionary<int, Action>();
 		}
 
 		public bool IsConnected {
@@ -58,8 +63,9 @@ namespace Socketron {
 		//	Write(bytes);
 		//}
 
-		public void SendLog(string message) {
+		public void SendLog(string message, Action callback = null) {
 			Write(_dataCreator.Create(DataType.Log, message));
+			_callbacks[_dataCreator.SequenceId] = callback;
 		}
 
 		public void Run(string script) {

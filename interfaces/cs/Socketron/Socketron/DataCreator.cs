@@ -4,13 +4,24 @@ using System.Text;
 namespace Socketron {
 	internal class DataCreator {
 		public Encoding Encoding = Encoding.UTF8;
+		public ushort _sequenceId = 0;
+
+		public ushort SequenceId {
+			get { return _sequenceId; }
+		}
 
 		public byte[] Create(DataType type, byte[] bytes) {
+			_sequenceId++;
+			if (_sequenceId >= ushort.MaxValue) {
+				_sequenceId = 0;
+			}
+
 			uint length = (uint)bytes.Length;
-			byte[] data = new byte[length + 5];
+			byte[] data = new byte[length + 7];
 			WriteUint8(data, 0, (byte)type);
-			WriteUint32LE(data, 1, length);
-			Array.Copy(bytes, 0, data, 5, length);
+			WriteUint16LE(data, 1, _sequenceId);
+			WriteUint32LE(data, 3, length);
+			Array.Copy(bytes, 0, data, 7, length);
 			return data;
 		}
 

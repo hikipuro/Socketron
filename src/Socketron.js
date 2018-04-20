@@ -27,20 +27,65 @@ const DataType = {
 	Command: 4,
 }
 
-const ClientState = {
+const ReadState = {
 	Type: 0,
-	Length: 1,
-	Data: 2,
+	Sequence: 1,
+	Length: 2,
+	Data: 3,
+}
+
+class Packet {
+	constructor() {
+		this.data = Buffer.alloc(0);
+		this.dataType = DataType.Null;
+		this.sequenceId = 0;
+		this.dataLength = 0;
+		this.dataOffset = 0;
+		this.state = ReadState.Type;
+	}
+
+	static createData(dataType, sequenceId, data) {
+		const buffer = new Buffer(7 + data.length);
+		buffer.writeUInt8(dataType, 0);
+		buffer.writeUInt16LE(sequenceId, 1);
+		buffer.writeUInt32LE(data.length, 3);
+		buffer.write(data, 7);
+		return buffer;
+	}
+
+	clear() {
+		this.data.clear();
+		this.dataType = DataType.Null;
+		this.sequenceId = 0;
+		this.dataLength = 0;
+		this.dataOffset = 0;
+		this.state = ReadState.Type;
+	}
+
+	clone() {
+		let packet = new Packet();
+		packet.data = this.data;
+		packet.dataType = this.dataType;
+		packet.sequenceId = this.sequenceId;
+		packet.dataLength = this.dataLength;
+		packet.dataOffset = this.dataOffset;
+		packet.state = this.state;
+		return packet;
+	}
+	
+	getStringData() {
+		return this.data.toString(
+			Config.Encoding,
+			this.dataOffset,
+			this.dataOffset + this.dataLength
+		);
+	}
 }
 
 class Client {
 	constructor(socket) {
 		this.socket = socket;
-		this.data = Buffer.alloc(0);
-		this.dataType = DataType.Null;
-		this.dataLength = 0;
-		this.dataOffset = 0;
-		this.state = ClientState.Type;
+		this.packet = new Packet();
 	}
 
 	get id() {
@@ -48,12 +93,8 @@ class Client {
 			":" + this.socket.remotePort;
 	}
 
-	getStringData() {
-		return this.data.toString(
-			Config.Encoding,
-			this.dataOffset,
-			this.dataOffset + this.dataLength
-		);
+	write(buffer) {
+		this.socket.write(buffer);
 	}
 }
 
@@ -138,52 +179,63 @@ class SocketronServer extends EventEmitter {
 	}
 
 	_onData(client, data) {
+		const packet = client.packet;
 		if (data != null) {
-			client.data = Buffer.concat([client.data, data]);
+			packet.data = Buffer.concat([packet.data, data]);
 		}
-		const offset = client.dataOffset;
-		const remain = client.data.length - offset;
+		const offset = packet.dataOffset;
+		const remain = packet.data.length - offset;
 
-		switch (client.state) {
-			case ClientState.Type:
+		switch (packet.state) {
+			case ReadState.Type:
 				if (remain < 1) {
 					return;
 				}
 				break;
-			case ClientState.Length:
+			case ReadState.Sequence:
+				if (remain < 2) {
+					return;
+				}
+				break;
+			case ReadState.Length:
 				if (remain < 4) {
 					return;
 				}
 				break;
-			case ClientState.Data:
-				if (remain < client.dataLength) {
+			case ReadState.Data:
+				if (remain < packet.dataLength) {
 					return;
 				}
 				break;
 		}
 
-		switch (client.state) {
-			case ClientState.Type:
-				client.dataType = client.data[offset];
-				client.dataOffset += 1;
-				client.state = ClientState.Length;
+		switch (packet.state) {
+			case ReadState.Type:
+				packet.dataType = packet.data[offset];
+				packet.dataOffset += 1;
+				packet.state = ReadState.Sequence;
 				break;
-			case ClientState.Length:
-				client.dataLength = client.data.readUInt32LE(offset);
-				if (client.dataLength > Config.MaxDataSize) {
+			case ReadState.Sequence:
+				packet.sequenceId = packet.data.readUInt16LE(offset);
+				packet.dataOffset += 2;
+				packet.state = ReadState.Length;
+				break;
+			case ReadState.Length:
+				packet.dataLength = packet.data.readUInt32LE(offset);
+				if (packet.dataLength > Config.MaxDataSize) {
 					this.emit("error", "incorrect data size (size > max data size)", client.id);
 					//client.socket.destroy();
 					client.socket.end();
 					return;
 				}
-				client.dataOffset += 4;
-				client.state = ClientState.Data;
+				packet.dataOffset += 4;
+				packet.state = ReadState.Data;
 				break;
-			case ClientState.Data:
-				this.emit("data", client);
-				client.data = client.data.slice(offset + client.dataLength);
-				client.dataOffset = 0;
-				client.state = ClientState.Type;
+			case ReadState.Data:
+				this.emit("data", client, packet.clone());
+				packet.data = packet.data.slice(offset + packet.dataLength);
+				packet.dataOffset = 0;
+				packet.state = ReadState.Type;
 				break;
 		}
 
@@ -224,11 +276,14 @@ class SocketronNode {
 		Electron.app.quit();
 	}
 
-	_onData(client) {
-		const message = client.getStringData();
-		switch (client.dataType) {
+	_onData(client, packet) {
+		//this._ipcLog("sequence: " + packet.sequenceId);
+		const message = packet.getStringData();
+		switch (packet.dataType) {
 			case DataType.Log:
 				this._ipcLog(message);
+				const data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
+				client.write(data);
 				break;
 			case DataType.Run:
 				this._ipcSend("run", message);
