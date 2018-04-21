@@ -25,7 +25,10 @@ const DataType = {
 	Run: 2,
 	ImportScript: 3,
 	Command: 4,
-	AppendStyle: 5
+	AppendStyle: 5,
+	Callback: 6,
+	ID: 7,
+	Return: 8
 }
 
 const ReadState = {
@@ -188,6 +191,9 @@ class SocketronServer extends EventEmitter {
 		socket.on("end", () => {
 			this._clients.remove(client);
 		});
+
+		let data = Packet.createData(DataType.ID, 0, client.id);
+		client.write(data);
 	}
 
 	_onData(client, data) {
@@ -295,12 +301,12 @@ class SocketronNode {
 		switch (packet.dataType) {
 			case DataType.Log:
 				this._ipcLog(message);
-				data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
+				data = Packet.createData(DataType.Callback, packet.sequenceId, "ok");
 				client.write(data);
 				break;
 			case DataType.Run:
 				this._ipcSend("run", message);
-				data = Packet.createData(DataType.Log, packet.sequenceId, "ok");
+				data = Packet.createData(DataType.Callback, packet.sequenceId, "ok");
 				client.write(data);
 				break;
 			case DataType.ImportScript:
@@ -332,6 +338,13 @@ class SocketronNode {
 			const client = this._server.findClientById(clientId);
 			if (client != null) {
 				client.write(buffer);
+			}
+		});
+		this._addIpcEvent("return", (e, clientId, message) => {
+			const client = this._server.findClientById(clientId);
+			if (client != null) {
+				const data = Packet.createData(DataType.Return, 0, message);
+				client.write(data);
 			}
 		});
 		this._addIpcEvent("quit", (e) => {
@@ -381,6 +394,14 @@ class SocketronRenderer {
 			return;
 		}
 		socketron.broadcast(message);
+	}
+
+	static return(cliendId, message) {
+		const socketron = SocketronRenderer._instance;
+		if (socketron == null) {
+			return;
+		}
+		socketron._ipcSend("return", cliendId, message);
 	}
 
 	broadcast(message, sender = null) {
@@ -434,7 +455,7 @@ class SocketronRenderer {
 			const script = document.createElement("script");
 			document.head.appendChild(script);
 			script.addEventListener("load", () => {
-				const data = Packet.createData(DataType.Log, packet.sequenceId, url);
+				const data = Packet.createData(DataType.Callback, packet.sequenceId, url);
 				this.send(clientId, data);
 			});
 			script.setAttribute("src", url);
@@ -456,7 +477,7 @@ class SocketronRenderer {
 			const element = document.createElement("style");
 			document.head.appendChild(element);
 			element.addEventListener("load", () => {
-				const data = Packet.createData(DataType.Log, packet.sequenceId, style);
+				const data = Packet.createData(DataType.Callback, packet.sequenceId, style);
 				this.send(clientId, data);
 			});
 			element.innerHTML = style;
@@ -471,5 +492,10 @@ class SocketronRenderer {
 let Socketron = SocketronNode;
 if (process.type === "renderer") {
 	Socketron = SocketronRenderer;
+	window._socketron = new Socketron();
+	if (typeof module == "object") {
+		window.Socketron = Socketron;
+	}
 }
+
 module.exports = Socketron;

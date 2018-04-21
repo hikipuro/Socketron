@@ -1,5 +1,6 @@
 const path = require("path");
 const url = require("url");
+const fs = require("fs");
 const Electron = require("electron");
 const ipcMain = Electron.ipcMain;
 
@@ -33,6 +34,7 @@ class MainWindow {
 	}
 
 	_initWindow() {
+		let preload = path.join(__dirname, "Socketron.js");
 		this.browserWindow = new Electron.BrowserWindow({
 			title: Config.Title,
 			useContentSize: true,
@@ -43,15 +45,32 @@ class MainWindow {
 			acceptFirstMouse: true,
 			show: false,
 			webPreferences: {
-				//nodeIntegration: false
+				nodeIntegration: false,
+				preload: preload
 			}
 		});
+
+		//console.log(preload);
 
 		this.browserWindow.loadURL(url.format({
 			pathname: path.join(__dirname, Config.Content),
 			protocol: "file:",
 			slashes: true,
 		}));
+
+		const webContents = this.browserWindow.webContents;
+		/*
+		webContents.on("did-finish-load", () => {
+			//webContents.executeJavaScript("console.log('did-finish-load: " + webContents.getURL() + "')");
+			fs.readFile("./src/Socketron.js", "utf8", function (err, text) {
+				if (err) {
+					console.error(err);
+					return;
+				}
+				webContents.executeJavaScript(text);
+			});
+		});
+		//*/
 	}
 }
 

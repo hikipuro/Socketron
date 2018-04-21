@@ -25,6 +25,9 @@ namespace Socketron {
 				return;
 			}
 
+			//socketron.Run("location.href='http://google.co.jp/'");
+
+			//*
 			socketron.Log("TestJQuery");
 
 			string[] css = {
@@ -41,14 +44,26 @@ namespace Socketron {
 				});
 				socketron.Run("$(document.body).empty()");
 				socketron.Run("$(document.body).append('<div>Test</div>')");
-				socketron.Run("$(document.body).append('<button>button</button>')");
-				string[] script = {
-					"var _navigator = { };",
-					"for (var i in navigator) _navigator[i] = navigator[i]",
-					"Socketron.broadcast(JSON.stringify(_navigator) + '\\n');"
+				socketron.Run("$(document.body).append('<button id=button1>button</button>')");
+				socketron.Run("$('#button1').click(() => { console.log('click button !'); })");
+
+				string[] scriptList = {
+					"$('#button1').click(() => {",
+					"	Socketron.return('" + socketron.ID + "', 'aaabbb');",
+					"})"
 				};
+				string script = string.Join("\n", scriptList);
+				Console.WriteLine(script);
+				socketron.Run(script);
+
+				//string[] script = {
+				//	"var _navigator = { };",
+				//	"for (var i in navigator) _navigator[i] = navigator[i]",
+				//	"Socketron.broadcast(JSON.stringify(_navigator) + '\\n');"
+				//};
 				//socketron.Run(string.Join("\n", script));
 			});
+			//*/
 
 		}
 	}

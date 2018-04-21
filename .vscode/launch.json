@@ -7,9 +7,10 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "プログラムの起動",
+			"name": "Launch Program",
 			"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-			"program": "${workspaceFolder}/src/NodeMain.js"
+			"program": "${workspaceFolder}/src/NodeMain.js",
+			"console": "integratedTerminal"
 		}
 	]
 }

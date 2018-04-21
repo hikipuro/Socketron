@@ -11,9 +11,13 @@ namespace Socketron {
 		ImportScript,
 		Command,
 		AppendStyle,
+		Callback,
+		ID,
+		Return,
 	}
 
 	public class Socketron: EventEmitter {
+		public string ID = string.Empty;
 		SocketronClient _client;
 		Dictionary<ushort, Action> _callbacks;
 		ushort _sequenceId = 0;
@@ -26,16 +30,7 @@ namespace Socketron {
 			_client.On("connect", (args) => {
 				Emit("connect");
 			});
-			_client.On("data", (args) => {
-				Emit("data", args);
-				Packet packet = (Packet)args[0];
-				ushort sequenceId = packet.SequenceId;
-				if (_callbacks.ContainsKey(sequenceId)) {
-					Action callback = _callbacks[sequenceId];
-					callback?.Invoke();
-					_callbacks.Remove(sequenceId);
-				}
-			});
+			_client.On("data", _OnData);
 
 			_callbacks = new Dictionary<ushort, Action>();
 		}
@@ -113,7 +108,30 @@ namespace Socketron {
 		}
 
 		public void Close() {
+			ID = string.Empty;
 			_client.Close();
+		}
+
+		protected void _OnData(object[] args) {
+			Emit("data", args);
+			Packet packet = (Packet)args[0];
+			switch (packet.DataType) {
+				case DataType.ID:
+					ID = packet.GetStringData();
+					Console.WriteLine("ID: {0}", ID);
+					break;
+				case DataType.Callback:
+					ushort sequenceId = packet.SequenceId;
+					if (_callbacks.ContainsKey(sequenceId)) {
+						Action callback = _callbacks[sequenceId];
+						callback?.Invoke();
+						_callbacks.Remove(sequenceId);
+					}
+					break;
+				case DataType.Return:
+					Console.WriteLine("Return: {0}", packet.GetStringData());
+					break;
+			}
 		}
 	}
 }

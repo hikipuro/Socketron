@@ -34,6 +34,7 @@ namespace Socketron {
 
 		public Packet Clone() {
 			Packet packet = new Packet();
+			;
 			packet.Data = Data;
 			packet.DataType = DataType;
 			packet.SequenceId = SequenceId;
