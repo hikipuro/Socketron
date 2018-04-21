@@ -1,7 +1,7 @@
 const { EventEmitter } = require("events");
 const net = require("net");
 const Electron = require("electron");
-const { ipcMain, ipcRenderer } = Electron;
+const { ipcMain, ipcRenderer, dialog } = Electron;
 
 class Config {
 	static get Name() {
@@ -28,7 +28,8 @@ const DataType = {
 	AppendStyle: 5,
 	Callback: 6,
 	ID: 7,
-	Return: 8
+	Return: 8,
+	ShowOpenDialog: 9
 }
 
 const ReadState = {
@@ -49,20 +50,29 @@ class Packet {
 	}
 
 	static createData(dataType, sequenceId, data) {
-		const buffer = new Buffer(7 + data.length);
+		if (data == null) {
+			const buffer = new Buffer(7);
+			buffer.writeUInt8(dataType, 0);
+			buffer.writeUInt16LE(sequenceId, 1);
+			buffer.writeUInt32LE(0, 3);
+			return buffer;
+		}
+		const length = Buffer.from(data).length;
+		const buffer = new Buffer(7 + length);
 		buffer.writeUInt8(dataType, 0);
 		buffer.writeUInt16LE(sequenceId, 1);
-		buffer.writeUInt32LE(data.length, 3);
+		buffer.writeUInt32LE(length, 3);
 		buffer.write(data, 7);
 		return buffer;
 	}
 
 	static createKeyValueData(dataType, sequenceId, key, value) {
 		const data = key + "," + value;
-		const buffer = new Buffer(7 + data.length);
+		const length = Buffer.from(data).length;
+		const buffer = new Buffer(7 + length);
 		buffer.writeUInt8(dataType, 0);
 		buffer.writeUInt16LE(sequenceId, 1);
-		buffer.writeUInt32LE(data.length, 3);
+		buffer.writeUInt32LE(length, 3);
 		buffer.write(data, 7);
 		return buffer;
 	}
@@ -327,6 +337,16 @@ class SocketronNode {
 				break;
 			case DataType.AppendStyle:
 				this._ipcSend("appendStyle", packet, client.id);
+				break;
+			case DataType.ShowOpenDialog:
+				const options = JSON.parse(message);
+				const path = dialog.showOpenDialog(options);
+				this._ipcLog(path);
+				
+				data = Packet.createData(
+					DataType.Callback, packet.sequenceId, JSON.stringify(path)
+				);
+				client.write(data);
 				break;
 		}
 	}

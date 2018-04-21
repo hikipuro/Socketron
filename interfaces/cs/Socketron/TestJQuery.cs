@@ -34,6 +34,7 @@ namespace Socketron {
 
 			//*
 			socketron.Log("TestJQuery");
+			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}");
 
 			string[] css = {
 				"* {",

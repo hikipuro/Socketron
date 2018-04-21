@@ -14,6 +14,7 @@ namespace Socketron {
 		Callback,
 		ID,
 		Return,
+		ShowOpenDialog
 	}
 
 	public class Socketron: EventEmitter {
@@ -48,6 +49,15 @@ namespace Socketron {
 		public int Timeout {
 			get { return _client.Timeout; }
 			set { _client.Timeout = value; }
+		}
+
+		public void Connect(string hostname, int port = 3000) {
+			Task task = _client.Connect(hostname, port);
+		}
+
+		public void Close() {
+			ID = string.Empty;
+			_client.Close();
 		}
 
 		public void Write(byte[] bytes) {
@@ -92,13 +102,8 @@ namespace Socketron {
 			_WriteText(DataType.Command, command, callback);
 		}
 
-		public void Connect(string hostname, int port = 3000) {
-			Task task = _client.Connect(hostname, port);
-		}
-
-		public void Close() {
-			ID = string.Empty;
-			_client.Close();
+		public void ShowOpenDialog(string options, Action callback = null) {
+			_WriteText(DataType.ShowOpenDialog, options, callback);
 		}
 
 		protected void _WriteText(DataType dataType, string text, Action callback) {
@@ -124,7 +129,7 @@ namespace Socketron {
 						callback?.Invoke();
 						_callbacks.Remove(sequenceId);
 					}
-					//DebugLog("Callback: {0}", sequenceId);
+					//DebugLog("Callback: {0}, {1}", sequenceId, packet.GetStringData());
 					break;
 				case DataType.Return:
 					string returnText = packet.GetStringData();
