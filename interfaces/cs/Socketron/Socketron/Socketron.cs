@@ -5,23 +5,16 @@ using System.Threading.Tasks;
 
 namespace Socketron {
 	public enum DataType {
-		Null = 0,
-		Log,
-		Run,
-		ImportScript,
-		Command,
-		AppendStyle,
-		Callback,
-		ID,
-		Return,
-		ShowOpenDialog
+		Text = 0,
 	}
+
+	public delegate void Callback(Command command);
 
 	public class Socketron: EventEmitter {
 		public string ID = string.Empty;
 		public bool IsDebug = true;
 		SocketronClient _client;
-		Dictionary<ushort, Action> _callbacks;
+		Dictionary<ushort, Callback> _callbacks;
 		ushort _sequenceId = 0;
 
 		public Socketron() {
@@ -34,7 +27,7 @@ namespace Socketron {
 			});
 			_client.On("data", _OnData);
 
-			_callbacks = new Dictionary<ushort, Action>();
+			_callbacks = new Dictionary<ushort, Callback>();
 		}
 
 		public bool IsConnected {
@@ -72,68 +65,80 @@ namespace Socketron {
 			Write(bytes);
 		}
 
-		//public void Write(string str) {
-		//	byte[] bytes = Encoding.GetBytes(str);
-		//	Write(bytes);
+		public void Log(string text, Callback callback = null) {
+			_WriteText("browser", "console.log", text, callback);
+		}
+
+		public void ExecuteJavaScript(string script, Callback callback = null) {
+			_WriteText("browser", "executeJavaScript", script, callback);
+		}
+
+		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
+			string script = string.Join("\n", scriptList);
+			ExecuteJavaScript(script, callback);
+		}
+
+		public void InsertJavaScript(string url, Callback callback = null) {
+			_WriteText("browser", "insertJavaScript", url, callback);
+		}
+
+		public void InsertCSS(string css, Callback callback = null) {
+			_WriteText("browser", "insertCSS", css, callback);
+		}
+
+		//public void Command(string command, Callback callback = null) {
+		//	_WriteText("browser", "command", command, callback);
 		//}
 
-		public void Log(string message, Action callback = null) {
-			_WriteText(DataType.Log, message, callback);
+		public void ShowOpenDialog(string options, Callback callback = null) {
+			_WriteText("node", "showOpenDialog", options, callback);
 		}
 
-		public void ExecuteJavaScript(string script, Action callback = null) {
-			_WriteText(DataType.Run, script, callback);
-		}
+		protected void _WriteText(string type, string function, string text, Callback callback) {
+			Command command = new Command();
+			;
+			command.Type = type;
+			command.Function = function;
+			command.Data = text;
 
-		public void ExecuteJavaScript(string[] scriptList, Action callback = null) {
-			string script = string.Join("\n", scriptList);
-			_WriteText(DataType.Run, script, callback);
-		}
+			if (callback != null) {
+				command.SequenceId = _sequenceId;
+				_callbacks[_sequenceId++] = callback;
+			}
 
-		public void InsertJavaScript(string url, Action callback = null) {
-			_WriteText(DataType.ImportScript, url, callback);
-		}
-
-		public void InsertCSS(string css, Action callback = null) {
-			_WriteText(DataType.AppendStyle, css, callback);
-		}
-
-		public void Command(string command, Action callback = null) {
-			_WriteText(DataType.Command, command, callback);
-		}
-
-		public void ShowOpenDialog(string options, Action callback = null) {
-			_WriteText(DataType.ShowOpenDialog, options, callback);
-		}
-
-		protected void _WriteText(DataType dataType, string text, Action callback) {
-			Buffer buffer = Packet.CreateData(
-				dataType, _sequenceId, text, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
+			Buffer buffer = Packet.CreateTextData(command, Encoding);
 			Write(buffer);
 		}
 
 		protected void _OnData(object[] args) {
 			//Emit("data", args);
 			Packet packet = (Packet)args[0];
-			switch (packet.DataType) {
-				case DataType.ID:
-					ID = packet.GetStringData();
+			if (packet == null) {
+				return;
+			}
+			string json = packet.GetStringData();
+			//Console.WriteLine(json);
+
+			Command command = Command.FromJson(json);
+			//Console.WriteLine("command.Function: " + command.Function);
+			switch (command.Function) {
+				case "id":
+					ID = command.Data;
 					DebugLog("ID: {0}", ID);
 					break;
-				case DataType.Callback:
-					ushort sequenceId = packet.SequenceId;
+				case "callback":
+					if (command.SequenceId == null) {
+						break;
+					}
+					ushort sequenceId = (ushort)command.SequenceId;
 					if (_callbacks.ContainsKey(sequenceId)) {
-						Action callback = _callbacks[sequenceId];
-						callback?.Invoke();
+						Callback callback = _callbacks[sequenceId];
+						callback?.Invoke(command);
 						_callbacks.Remove(sequenceId);
 					}
-					//DebugLog("Callback: {0}, {1}", sequenceId, packet.GetStringData());
 					break;
-				case DataType.Return:
-					string returnText = packet.GetStringData();
-					string[] keyValue = returnText.Split(',');
+				case "return":
+					string[] keyValue = command.Data.Split(',');
 					if (keyValue.Length >= 2) {
 						Emit("return", keyValue[0], keyValue[1]);
 					}

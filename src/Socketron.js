@@ -20,88 +20,59 @@ class Config {
 }
 
 const DataType = {
-	Null: 0,
-	Log: 1,
-	Run: 2,
-	ImportScript: 3,
-	Command: 4,
-	AppendStyle: 5,
-	Callback: 6,
-	ID: 7,
-	Return: 8,
-	ShowOpenDialog: 9
+	Text: 0
 }
 
 const ReadState = {
 	Type: 0,
-	Sequence: 1,
-	Length: 2,
-	Data: 3,
+	TextLength: 1,
+	Command: 2
+}
+
+class Command {
+	constructor() {
+		this.sequenceId = null;
+		this.type = "";
+		this.function = "";
+		this.data = "";
+	}
+
+	static fromJson(json) {
+		data = JSON.parse(json);
+		let command = new Command();
+		command.sequenceId = data.sequenceId;
+		command.type = data.type;
+		command.function = data.function;
+		command.data = data.data;
+	}
+
+	toJson() {
+		return JSON.stringify(this);
+	}
 }
 
 class Packet {
 	constructor() {
 		this.data = Buffer.alloc(0);
-		this.dataType = DataType.Null;
-		this.sequenceId = 0;
+		this.dataType = DataType.Text;
 		this.dataLength = 0;
 		this.dataOffset = 0;
 		this.state = ReadState.Type;
 	}
-
-	static createData(dataType, sequenceId, data) {
-		if (data == null) {
-			const buffer = new Buffer(7);
-			buffer.writeUInt8(dataType, 0);
-			buffer.writeUInt16LE(sequenceId, 1);
-			buffer.writeUInt32LE(0, 3);
-			return buffer;
-		}
-		const length = Buffer.from(data).length;
-		const buffer = new Buffer(7 + length);
-		buffer.writeUInt8(dataType, 0);
-		buffer.writeUInt16LE(sequenceId, 1);
-		buffer.writeUInt32LE(length, 3);
-		buffer.write(data, 7);
+	
+	static createTextData(command) {
+		const data = Buffer.from(command.toJson(), "utf8");
+		let buffer = new Buffer(3);
+		buffer.writeUInt8(0, 0);
+		buffer.writeUInt16LE(data.length, 1);
+		buffer = Buffer.concat([buffer, data]);
 		return buffer;
-	}
-
-	static createKeyValueData(dataType, sequenceId, key, value) {
-		const data = key + "," + value;
-		const length = Buffer.from(data).length;
-		const buffer = new Buffer(7 + length);
-		buffer.writeUInt8(dataType, 0);
-		buffer.writeUInt16LE(sequenceId, 1);
-		buffer.writeUInt32LE(length, 3);
-		buffer.write(data, 7);
-		return buffer;
-	}
-
-	static fromJson(json) {
-		let packet = new Packet();
-		packet.data = json.data;
-		packet.dataType = json.dataType;
-		packet.sequenceId = json.sequenceId;
-		packet.dataLength = json.dataLength;
-		packet.dataOffset = json.dataOffset;
-		packet.state = json.state;
-		return packet;
-	}
-
-	clear() {
-		this.data.clear();
-		this.dataType = DataType.Null;
-		this.sequenceId = 0;
-		this.dataLength = 0;
-		this.dataOffset = 0;
-		this.state = ReadState.Type;
 	}
 
 	clone() {
 		let packet = new Packet();
 		packet.data = this.data;
 		packet.dataType = this.dataType;
-		packet.sequenceId = this.sequenceId;
 		packet.dataLength = this.dataLength;
 		packet.dataOffset = this.dataOffset;
 		packet.state = this.state;
@@ -212,7 +183,12 @@ class SocketronServer extends EventEmitter {
 			this._clients.remove(client);
 		});
 
-		let data = Packet.createData(DataType.ID, 0, client.id);
+		let command = new Command();
+		command.sequenceId = null;
+		command.type = "";
+		command.function = "id";
+		command.data = client.id;
+		let data = Packet.createTextData(command);
 		client.write(data);
 	}
 
@@ -230,17 +206,12 @@ class SocketronServer extends EventEmitter {
 					return;
 				}
 				break;
-			case ReadState.Sequence:
+			case ReadState.TextLength:
 				if (remain < 2) {
 					return;
 				}
 				break;
-			case ReadState.Length:
-				if (remain < 4) {
-					return;
-				}
-				break;
-			case ReadState.Data:
+			case ReadState.Command:
 				if (remain < packet.dataLength) {
 					return;
 				}
@@ -251,25 +222,14 @@ class SocketronServer extends EventEmitter {
 			case ReadState.Type:
 				packet.dataType = packet.data[offset];
 				packet.dataOffset += 1;
-				packet.state = ReadState.Sequence;
+				packet.state = ReadState.TextLength;
 				break;
-			case ReadState.Sequence:
-				packet.sequenceId = packet.data.readUInt16LE(offset);
+			case ReadState.TextLength:
+				packet.dataLength = packet.data.readUInt16LE(offset);
 				packet.dataOffset += 2;
-				packet.state = ReadState.Length;
+				packet.state = ReadState.Command;
 				break;
-			case ReadState.Length:
-				packet.dataLength = packet.data.readUInt32LE(offset);
-				if (packet.dataLength > Config.MaxDataSize) {
-					this.emit("error", "incorrect data size (size > max data size)", client.id);
-					//client.socket.destroy();
-					client.socket.end();
-					return;
-				}
-				packet.dataOffset += 4;
-				packet.state = ReadState.Data;
-				break;
-			case ReadState.Data:
+			case ReadState.Command:
 				this.emit("data", client, packet.clone());
 				packet.data = packet.data.slice(offset + packet.dataLength);
 				packet.dataOffset = 0;
@@ -286,9 +246,11 @@ class SocketronNode {
 		this.browserWindow = null;
 		this._server = new SocketronServer();
 		this._server.on("log", (...args) => {
+			console.log.apply(this, args);
 			this._ipcLog.apply(this, args);
 		});
 		this._server.on("error", (err) => {
+			console.error.apply(this, ["socket error", err]);
 			this._ipcError("socket error");
 		});
 		this._server.on("timeout", () => {
@@ -315,38 +277,38 @@ class SocketronNode {
 	}
 
 	_onData(client, packet) {
-		//this._ipcLog("sequence: " + packet.sequenceId);
-		const message = packet.getStringData();
-		let data = null;
-		switch (packet.dataType) {
-			case DataType.Log:
-				this._ipcLog(message);
-				data = Packet.createData(DataType.Callback, packet.sequenceId, "ok");
-				client.write(data);
-				break;
-			case DataType.Run:
-				this._ipcSend("run", message);
-				data = Packet.createData(DataType.Callback, packet.sequenceId, "ok");
-				client.write(data);
-				break;
-			case DataType.ImportScript:
-				this._ipcSend("import", packet, client.id);
-				break;
-			case DataType.Command:
-				this._ipcSend("command", message);
-				break;
-			case DataType.AppendStyle:
-				this._ipcSend("appendStyle", packet, client.id);
-				break;
-			case DataType.ShowOpenDialog:
-				const options = JSON.parse(message);
+		// text data
+		if (packet.dataType == 0) {
+			const commandText = packet.getStringData();
+			const command = JSON.parse(commandText);
+
+			switch (command.type) {
+				case "browser":
+					this._ipcSend(command.function, client.id, command);
+					break;
+				case "node":
+					this._onCallNode(client, command);
+					break;
+			}
+		}
+	}
+
+	_onCallNode(client, command) {
+		switch (command.function) {
+			case "showOpenDialog":
+				const options = JSON.parse(command.data);
 				const path = dialog.showOpenDialog(options);
 				this._ipcLog(path);
 				
-				data = Packet.createData(
-					DataType.Callback, packet.sequenceId, JSON.stringify(path)
-				);
-				client.write(data);
+				if (command.sequenceId != null) {
+					let newCommand = new Command();
+					newCommand.sequenceId = command.sequenceId;
+					newCommand.type = "";
+					newCommand.function = "callback";
+					newCommand.data = JSON.stringify(path);
+					const data = Packet.createTextData(newCommand);
+					client.write(data);
+				}
 				break;
 		}
 	}
@@ -373,7 +335,12 @@ class SocketronNode {
 		this._addIpcEvent("return", (e, clientId, key, value) => {
 			const client = this._server.findClientById(clientId);
 			if (client != null) {
-				const data = Packet.createKeyValueData(DataType.Return, 0, key, value);
+				let command = new Command();
+				command.sequenceId = null;
+				command.type = "";
+				command.function = "return";
+				command.data = key + "," + value;
+				const data = Packet.createTextData(command);
 				client.write(data);
 			}
 		});
@@ -473,25 +440,39 @@ class SocketronRenderer {
 			const header = Config.Name + ":";
 			console.error.apply(this, [header].concat(args));
 		});
-		this._addIpcEvent("run", (e, script) => {
+		this._addIpcEvent("console.log", (e, clientId, command) => {
+			console.log("[" + clientId + "] " + command.data);
+			this._sendCallback(clientId, command);
+		});
+		this._addIpcEvent("executeJavaScript", (e, clientId, command) => {
+			const script = command.data;
 			console.log(script);
 			//eval(script);
 			Function(script)();
+			this._sendCallback(clientId, command);
 		});
-		this._addIpcEvent("import", (e, packet, clientId) => {
-			packet = Packet.fromJson(packet);
-			const url = packet.getStringData();
+		this._addIpcEvent("insertJavaScript", (e, clientId, command) => {
+			const url = command.data;
 			console.log(url);
 			const script = document.createElement("script");
 			document.head.appendChild(script);
 			script.addEventListener("load", () => {
-				const data = Packet.createData(DataType.Callback, packet.sequenceId, url);
-				this.send(clientId, data);
+				this._sendCallback(clientId, command);
 			});
 			script.setAttribute("src", url);
 		});
-		this._addIpcEvent("command", (e, command, ...args) => {
-			switch (command) {
+		this._addIpcEvent("insertCSS", (e, clientId, command) => {
+			const style = command.data;
+			console.log(style);
+			const element = document.createElement("style");
+			document.head.appendChild(element);
+			element.addEventListener("load", () => {
+				this._sendCallback(clientId, command);
+			});
+			element.innerHTML = style;
+		});
+		this._addIpcEvent("command", (e, clientId, command) => {
+			switch (command.data) {
 				case "quit":
 					this.quit();
 					break;
@@ -499,23 +480,25 @@ class SocketronRenderer {
 					location.reload();
 					break;
 			}
-		});
-		this._addIpcEvent("appendStyle", (e, packet, clientId) => {
-			packet = Packet.fromJson(packet);
-			const style = packet.getStringData();
-			console.log(style);
-			const element = document.createElement("style");
-			document.head.appendChild(element);
-			element.addEventListener("load", () => {
-				const data = Packet.createData(DataType.Callback, packet.sequenceId, style);
-				this.send(clientId, data);
-			});
-			element.innerHTML = style;
+			this._sendCallback(clientId, command);
 		});
 	}
 
 	_ipcSend(channel, ...args) {
 		ipcRenderer.send(this._ipcEventId(channel), ...args);
+	}
+
+	_sendCallback(clientId, command) {
+		if (command.sequenceId == null) {
+			return;
+		}
+		let newCommand = new Command();
+		newCommand.sequenceId = command.sequenceId;
+		newCommand.type = "";
+		newCommand.function = "callback";
+		newCommand.data = "ok";
+		const data = Packet.createTextData(newCommand);
+		this.send(clientId, data);
 	}
 }
 

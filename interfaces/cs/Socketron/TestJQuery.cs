@@ -33,8 +33,12 @@ namespace Socketron {
 			//socketron.executeJavaScript("location.href='http://google.co.jp/'");
 
 			//*
-			socketron.Log("TestJQuery");
-			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}");
+			socketron.Log("TestJQuery", (command) => {
+				Console.WriteLine("TestJQuery Callback");
+			});
+			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}", (command) => {
+			//	Console.WriteLine("ShowOpenDialog: {0}", command.Data);
+			//});
 
 			string[] css = {
 				"* {",
@@ -44,8 +48,8 @@ namespace Socketron {
 			};
 			socketron.InsertCSS(string.Join("\n", css));
 
-			socketron.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", () => {
-				socketron.ExecuteJavaScript("console.log($)", () => {
+			socketron.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (command) => {
+				socketron.ExecuteJavaScript("console.log($)", (command2) => {
 					Console.WriteLine("Test: console.log($)");
 				});
 				socketron.ExecuteJavaScript("$(document.body).empty()");

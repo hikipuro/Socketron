@@ -3,14 +3,14 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Socketron {
 	public enum ReadState {
 		Type = 0,
-		Sequence,
-		Length,
-		Data
+		TextLength,
+		Command
 	}
 
 	internal class SocketronClient: EventEmitter {
@@ -106,6 +106,7 @@ namespace Socketron {
 					}
 					OnData(bytes, bytesReaded);
 				} while (_stream.DataAvailable);
+				Thread.Sleep(1);
 			}
 		}
 
@@ -128,17 +129,12 @@ namespace Socketron {
 						return;
 					}
 					break;
-				case ReadState.Sequence:
+				case ReadState.TextLength:
 					if (remain < 2) {
 						return;
 					}
 					break;
-				case ReadState.Length:
-					if (remain < 4) {
-						return;
-					}
-					break;
-				case ReadState.Data:
+				case ReadState.Command:
 					if (remain < _packet.DataLength) {
 						return;
 					}
@@ -149,19 +145,14 @@ namespace Socketron {
 				case ReadState.Type:
 					_packet.DataType = (DataType)_packet.Data[offset];
 					_packet.DataOffset += 1;
-					_packet.State = ReadState.Sequence;
+					_packet.State = ReadState.TextLength;
 					break;
-				case ReadState.Sequence:
-					_packet.SequenceId = _packet.Data.ReadUInt16LE(offset);
+				case ReadState.TextLength:
+					_packet.DataLength = _packet.Data.ReadUInt16LE(offset);
 					_packet.DataOffset += 2;
-					_packet.State = ReadState.Length;
+					_packet.State = ReadState.Command;
 					break;
-				case ReadState.Length:
-					_packet.DataLength = _packet.Data.ReadUInt32LE(offset);
-					_packet.DataOffset += 4;
-					_packet.State = ReadState.Data;
-					break;
-				case ReadState.Data:
+				case ReadState.Command:
 					//Buffer buffer = _packet.Data.Slice(offset + _packet.DataLength);
 					Emit("data", _packet.Clone());
 					//string text = _packet.GetStringData(Encoding);
