@@ -57,6 +57,16 @@ class Packet {
 		return buffer;
 	}
 
+	static createKeyValueData(dataType, sequenceId, key, value) {
+		const data = key + "," + value;
+		const buffer = new Buffer(7 + data.length);
+		buffer.writeUInt8(dataType, 0);
+		buffer.writeUInt16LE(sequenceId, 1);
+		buffer.writeUInt32LE(data.length, 3);
+		buffer.write(data, 7);
+		return buffer;
+	}
+
 	static fromJson(json) {
 		let packet = new Packet();
 		packet.data = json.data;
@@ -340,10 +350,10 @@ class SocketronNode {
 				client.write(buffer);
 			}
 		});
-		this._addIpcEvent("return", (e, clientId, message) => {
+		this._addIpcEvent("return", (e, clientId, key, value) => {
 			const client = this._server.findClientById(clientId);
 			if (client != null) {
-				const data = Packet.createData(DataType.Return, 0, message);
+				const data = Packet.createKeyValueData(DataType.Return, 0, key, value);
 				client.write(data);
 			}
 		});
@@ -396,12 +406,12 @@ class SocketronRenderer {
 		socketron.broadcast(message);
 	}
 
-	static return(cliendId, message) {
+	static return(cliendId, key, value) {
 		const socketron = SocketronRenderer._instance;
 		if (socketron == null) {
 			return;
 		}
-		socketron._ipcSend("return", cliendId, message);
+		socketron._ipcSend("return", cliendId, key, value);
 	}
 
 	broadcast(message, sender = null) {

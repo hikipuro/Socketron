@@ -18,6 +18,7 @@ namespace Socketron {
 
 	public class Socketron: EventEmitter {
 		public string ID = string.Empty;
+		public bool IsDebug = true;
 		SocketronClient _client;
 		Dictionary<ushort, Action> _callbacks;
 		ushort _sequenceId = 0;
@@ -50,6 +51,9 @@ namespace Socketron {
 		}
 
 		public void Write(byte[] bytes) {
+			if (!_client.IsConnected) {
+				return;
+			}
 			_client.Write(bytes);
 		}
 
@@ -64,43 +68,28 @@ namespace Socketron {
 		//}
 
 		public void Log(string message, Action callback = null) {
-			Buffer buffer = Packet.CreateData(
-				DataType.Log, _sequenceId, message, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
-			Write(buffer);
+			_WriteText(DataType.Log, message, callback);
 		}
 
-		public void Run(string script, Action callback = null) {
-			Buffer buffer = Packet.CreateData(
-				DataType.Run, _sequenceId, script, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
-			Write(buffer);
+		public void ExecuteJavaScript(string script, Action callback = null) {
+			_WriteText(DataType.Run, script, callback);
 		}
 
-		public void ImportScript(string url, Action callback = null) {
-			Buffer buffer = Packet.CreateData(
-				DataType.ImportScript, _sequenceId, url, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
-			Write(buffer);
+		public void ExecuteJavaScript(string[] scriptList, Action callback = null) {
+			string script = string.Join("\n", scriptList);
+			_WriteText(DataType.Run, script, callback);
+		}
+
+		public void InsertJavaScript(string url, Action callback = null) {
+			_WriteText(DataType.ImportScript, url, callback);
+		}
+
+		public void InsertCSS(string css, Action callback = null) {
+			_WriteText(DataType.AppendStyle, css, callback);
 		}
 
 		public void Command(string command, Action callback = null) {
-			Buffer buffer = Packet.CreateData(
-				DataType.Command, _sequenceId, command, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
-			Write(buffer);
-		}
-
-		public void AppendStyle(string css, Action callback = null) {
-			Buffer buffer = Packet.CreateData(
-				DataType.AppendStyle, _sequenceId, css, Encoding
-			);
-			_callbacks[_sequenceId++] = callback;
-			Write(buffer);
+			_WriteText(DataType.Command, command, callback);
 		}
 
 		public void Connect(string hostname, int port = 3000) {
@@ -112,13 +101,21 @@ namespace Socketron {
 			_client.Close();
 		}
 
+		protected void _WriteText(DataType dataType, string text, Action callback) {
+			Buffer buffer = Packet.CreateData(
+				dataType, _sequenceId, text, Encoding
+			);
+			_callbacks[_sequenceId++] = callback;
+			Write(buffer);
+		}
+
 		protected void _OnData(object[] args) {
-			Emit("data", args);
+			//Emit("data", args);
 			Packet packet = (Packet)args[0];
 			switch (packet.DataType) {
 				case DataType.ID:
 					ID = packet.GetStringData();
-					Console.WriteLine("ID: {0}", ID);
+					DebugLog("ID: {0}", ID);
 					break;
 				case DataType.Callback:
 					ushort sequenceId = packet.SequenceId;
@@ -127,11 +124,25 @@ namespace Socketron {
 						callback?.Invoke();
 						_callbacks.Remove(sequenceId);
 					}
+					//DebugLog("Callback: {0}", sequenceId);
 					break;
 				case DataType.Return:
-					Console.WriteLine("Return: {0}", packet.GetStringData());
+					string returnText = packet.GetStringData();
+					string[] keyValue = returnText.Split(',');
+					if (keyValue.Length >= 2) {
+						Emit("return", keyValue[0], keyValue[1]);
+					}
+					//DebugLog("Return: {0}", returnText);
 					break;
 			}
+		}
+
+		protected void DebugLog(string format, params object[] args) {
+			if (!IsDebug) {
+				return;
+			}
+			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
+			Emit("debug", string.Format(format, args));
 		}
 	}
 }

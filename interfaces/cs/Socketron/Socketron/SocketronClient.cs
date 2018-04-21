@@ -15,6 +15,7 @@ namespace Socketron {
 
 	internal class SocketronClient: EventEmitter {
 		public const int ReadBufferSize = 1024;
+		public bool IsDebug = true;
 
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
@@ -58,11 +59,11 @@ namespace Socketron {
 			_tcpClient = new TcpClient();
 			await _tcpClient.ConnectAsync(hostname, port);
 
-			Emit("debug", string.Format("[Connected] Remote: ({0}:{1}) Local: ({2}:{3})",
+			DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
 				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
 				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Port,
 				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address,
-				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Port)
+				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Port
 			);
 
 			_stream = _tcpClient.GetStream();
@@ -173,6 +174,14 @@ namespace Socketron {
 			}
 
 			OnData(null, 0);
+		}
+
+		protected void DebugLog(string format, params object[] args) {
+			if (!IsDebug) {
+				return;
+			}
+			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
+			Emit("debug", string.Format(format, args));
 		}
 	}
 }
