@@ -178,6 +178,7 @@ class SocketronServer extends EventEmitter {
 		});
 		socket.on("close", () => {
 			this.emit("log", "client closed", client.id);
+			this._clients.remove(client);
 		});
 		socket.on("end", () => {
 			this._clients.remove(client);
@@ -241,6 +242,29 @@ class SocketronServer extends EventEmitter {
 	}
 }
 
+class CommandProcessorNode extends EventEmitter {
+	constructor() {
+		super();
+	}
+
+	run(command, client) {
+		const func = this[command.function];
+		if (func != null) {
+			func.apply(this, [command, client]);
+		}
+	}
+
+	showOpenDialog(command, client) {
+		const options = JSON.parse(command.data);
+		const path = dialog.showOpenDialog(options);
+		this._sendCallback(command, client, JSON.stringify(path));
+	}
+	
+	_sendCallback(command, client, data) {
+		this.emit("callback", command, client, data);
+	}
+}
+
 class SocketronNode {
 	constructor() {
 		this.browserWindow = null;
@@ -258,6 +282,9 @@ class SocketronNode {
 		});
 		this._server.on("data", this._onData.bind(this));
 		this._addIpcEvents();
+		
+		this._processor = new CommandProcessorNode();
+		this._processor.on("callback", this._sendCallback.bind(this));
 	}
 
 	listen(port = 3000) {
@@ -284,35 +311,15 @@ class SocketronNode {
 
 			switch (command.type) {
 				case "browser":
-					this._ipcSend(command.function, client.id, command);
+					this._ipcSend("command", command, client.id);
 					break;
 				case "node":
-					this._onCallNode(client, command);
+					this._processor.run(command, client);
 					break;
 			}
 		}
 	}
 
-	_onCallNode(client, command) {
-		switch (command.function) {
-			case "showOpenDialog":
-				const options = JSON.parse(command.data);
-				const path = dialog.showOpenDialog(options);
-				this._ipcLog(path);
-				
-				if (command.sequenceId != null) {
-					let newCommand = new Command();
-					newCommand.sequenceId = command.sequenceId;
-					newCommand.type = "";
-					newCommand.function = "callback";
-					newCommand.data = JSON.stringify(path);
-					const data = Packet.createTextData(newCommand);
-					client.write(data);
-				}
-				break;
-		}
-	}
-	
 	_ipcEventId(id) {
 		return Config.IpcEventPrefix + id;
 	}
@@ -375,6 +382,79 @@ class SocketronNode {
 	_ipcError(message, ...args) {
 		this._ipcSend("error", message, ...args);
 	}
+
+	_sendCallback(command, client, data) {
+		if (command.sequenceId == null) {
+			return;
+		}
+		this._ipcLog(data);
+		let newCommand = new Command();
+		newCommand.sequenceId = command.sequenceId;
+		newCommand.type = "";
+		newCommand.function = "callback";
+		newCommand.data = data;
+		const newData = Packet.createTextData(newCommand);
+		client.write(newData);
+	}
+}
+
+class CommandProcessorRenderer extends EventEmitter {
+	constructor() {
+		super();
+	}
+
+	run(command, clientId) {
+		const func = this[command.function];
+		if (func != null) {
+			func.apply(this, [command, clientId]);
+		}
+	}
+
+	executeJavaScript(command, clientId) {
+		const script = command.data;
+		console.log(script);
+		//eval(script);
+		Function(script)();
+		this._sendCallback(command, clientId);
+	}
+
+	insertJavaScript(command, clientId) {
+		const url = command.data;
+		console.log(url);
+		const script = document.createElement("script");
+		document.head.appendChild(script);
+		script.addEventListener("load", () => {
+			this._sendCallback(command, clientId);
+		});
+		script.setAttribute("src", url);
+	}
+
+	insertCSS(command, clientId) {
+		const style = command.data;
+		console.log(style);
+		const element = document.createElement("style");
+		document.head.appendChild(element);
+		element.addEventListener("load", () => {
+			this._sendCallback(command, clientId);
+		});
+		element.innerHTML = style;
+	}
+
+	command(command, clientId) {
+		switch (command.data) {
+			case "quit":
+				this.quit();
+				break;
+			case "reload":
+				location.reload();
+				break;
+		}
+		this._sendCallback(command, clientId);
+	}
+	
+	_sendCallback(command, clientId) {
+		this.emit("callback", command, clientId);
+	}
 }
 
 class SocketronRenderer {
@@ -383,6 +463,9 @@ class SocketronRenderer {
 			SocketronRenderer._instance = this;
 		}
 		this._addIpcEvents();
+		
+		this._processor = new CommandProcessorRenderer();
+		this._processor.on("callback", this._sendCallback.bind(this));
 	}
 
 	static broadcast(message) {
@@ -440,55 +523,28 @@ class SocketronRenderer {
 			const header = Config.Name + ":";
 			console.error.apply(this, [header].concat(args));
 		});
-		this._addIpcEvent("console.log", (e, clientId, command) => {
-			console.log("[" + clientId + "] " + command.data);
-			this._sendCallback(clientId, command);
+		this._addIpcEvent("command", (e, command, clientId) => {
+			this._onCommand(command, clientId);
 		});
-		this._addIpcEvent("executeJavaScript", (e, clientId, command) => {
-			const script = command.data;
-			console.log(script);
-			//eval(script);
-			Function(script)();
-			this._sendCallback(clientId, command);
-		});
-		this._addIpcEvent("insertJavaScript", (e, clientId, command) => {
-			const url = command.data;
-			console.log(url);
-			const script = document.createElement("script");
-			document.head.appendChild(script);
-			script.addEventListener("load", () => {
-				this._sendCallback(clientId, command);
-			});
-			script.setAttribute("src", url);
-		});
-		this._addIpcEvent("insertCSS", (e, clientId, command) => {
-			const style = command.data;
-			console.log(style);
-			const element = document.createElement("style");
-			document.head.appendChild(element);
-			element.addEventListener("load", () => {
-				this._sendCallback(clientId, command);
-			});
-			element.innerHTML = style;
-		});
-		this._addIpcEvent("command", (e, clientId, command) => {
-			switch (command.data) {
-				case "quit":
-					this.quit();
-					break;
-				case "reload":
-					location.reload();
-					break;
-			}
-			this._sendCallback(clientId, command);
-		});
+	}
+
+	_onCommand(command, clientId) {
+		switch (command.function) {
+			case "console.log":
+				console.log("[" + clientId + "] " + command.data);
+				this._sendCallback(command, clientId);
+				break;
+			default:
+				this._processor.run(command, clientId);
+				break;
+		}
 	}
 
 	_ipcSend(channel, ...args) {
 		ipcRenderer.send(this._ipcEventId(channel), ...args);
 	}
 
-	_sendCallback(clientId, command) {
+	_sendCallback(command, clientId) {
 		if (command.sequenceId == null) {
 			return;
 		}
