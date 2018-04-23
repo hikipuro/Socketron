@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Socketron {
 	public enum ReadState {
 		Type = 0,
-		TextLength,
+		CommandLength,
 		Command
 	}
 
@@ -111,7 +111,6 @@ namespace Socketron {
 		}
 
 		protected void OnData(byte[] data, int bytesReaded) {
-			//Console.WriteLine("OnData: {0}, {1}", bytesReaded, data);
 			if (data != null) {
 				_packet.Data.Write(data, 0, bytesReaded);
 			}
@@ -119,17 +118,13 @@ namespace Socketron {
 			uint offset = _packet.DataOffset;
 			uint remain = (uint)_packet.Data.Length - offset;
 
-			//Console.WriteLine("*** DEBUG 1: " + _packet.State);
-			//Console.WriteLine("*** DEBUG 2: " + _packet.Data.Length);
-			//Console.WriteLine("*** DEBUG 3: " + offset);
-			//Console.WriteLine("*** DEBUG 4: " + remain);
 			switch (_packet.State) {
 				case ReadState.Type:
 					if (remain < 1) {
 						return;
 					}
 					break;
-				case ReadState.TextLength:
+				case ReadState.CommandLength:
 					if (remain < 2) {
 						return;
 					}
@@ -145,20 +140,19 @@ namespace Socketron {
 				case ReadState.Type:
 					_packet.DataType = (DataType)_packet.Data[offset];
 					_packet.DataOffset += 1;
-					_packet.State = ReadState.TextLength;
+					_packet.State = ReadState.CommandLength;
 					break;
-				case ReadState.TextLength:
+				case ReadState.CommandLength:
 					_packet.DataLength = _packet.Data.ReadUInt16LE(offset);
 					_packet.DataOffset += 2;
 					_packet.State = ReadState.Command;
 					break;
 				case ReadState.Command:
-					//Buffer buffer = _packet.Data.Slice(offset + _packet.DataLength);
-					Emit("data", _packet.Clone());
-					//string text = _packet.GetStringData(Encoding);
-					//Console.WriteLine("*** DEBUG Data: {0}", _packet.SequenceId);
+					if (_packet.DataType == DataType.Text) {
+						string text = _packet.GetStringData();
+						Emit("data", SocketronData.FromJson(text));
+					}
 					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
-					//Console.WriteLine("*** DEBUG Data: {0}", _packet.Data.Length);
 					_packet.DataOffset = 0;
 					_packet.State = ReadState.Type;
 					break;

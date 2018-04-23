@@ -8,7 +8,12 @@ namespace Socketron {
 		Text = 0,
 	}
 
-	public delegate void Callback(Command command);
+	public class ProcessType {
+		public const string Browser = "browser";
+		public const string Renderer = "renderer";
+	}
+
+	public delegate void Callback(SocketronData data);
 
 	public class Socketron: EventEmitter {
 		public string ID = string.Empty;
@@ -66,11 +71,11 @@ namespace Socketron {
 		}
 
 		public void Log(string text, Callback callback = null) {
-			_WriteText("browser", "console.log", text, callback);
+			_WriteText(ProcessType.Renderer, "console.log", text, callback);
 		}
 
 		public void ExecuteJavaScript(string script, Callback callback = null) {
-			_WriteText("browser", "executeJavaScript", script, callback);
+			_WriteText(ProcessType.Renderer, "executeJavaScript", script, callback);
 		}
 
 		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
@@ -79,66 +84,64 @@ namespace Socketron {
 		}
 
 		public void InsertJavaScript(string url, Callback callback = null) {
-			_WriteText("browser", "insertJavaScript", url, callback);
+			_WriteText(ProcessType.Renderer, "insertJavaScript", url, callback);
 		}
 
 		public void InsertCSS(string css, Callback callback = null) {
-			_WriteText("browser", "insertCSS", css, callback);
+			_WriteText(ProcessType.Renderer, "insertCSS", css, callback);
 		}
 
 		//public void Command(string command, Callback callback = null) {
 		//	_WriteText("browser", "command", command, callback);
 		//}
 
+		public void ExecuteJavaScriptNode(string script, Callback callback = null) {
+			_WriteText(ProcessType.Browser, "executeJavaScript", script, callback);
+		}
+
 		public void ShowOpenDialog(string options, Callback callback = null) {
-			_WriteText("node", "showOpenDialog", options, callback);
+			_WriteText(ProcessType.Browser, "showOpenDialog", options, callback);
 		}
 
 		protected void _WriteText(string type, string function, string text, Callback callback) {
-			Command command = new Command();
+			SocketronData data = new SocketronData();
 			;
-			command.Type = type;
-			command.Function = function;
-			command.Data = text;
+			data.Type = type;
+			data.Function = function;
+			data.Command = text;
 
 			if (callback != null) {
-				command.SequenceId = _sequenceId;
+				data.SequenceId = _sequenceId;
 				_callbacks[_sequenceId++] = callback;
 			}
-
-			Buffer buffer = Packet.CreateTextData(command, Encoding);
-			Write(buffer);
+			Write(data.ToBuffer(DataType.Text, Encoding));
 		}
 
 		protected void _OnData(object[] args) {
-			//Emit("data", args);
-			Packet packet = (Packet)args[0];
-			if (packet == null) {
+			SocketronData data = args[0] as SocketronData;
+			if (data == null) {
 				return;
 			}
-			string json = packet.GetStringData();
-			//Console.WriteLine(json);
 
-			Command command = Command.FromJson(json);
-			//Console.WriteLine("command.Function: " + command.Function);
-			switch (command.Function) {
+			//Console.WriteLine("data.Function: " + data.Function);
+			switch (data.Function) {
 				case "id":
-					ID = command.Data;
+					ID = data.Command;
 					DebugLog("ID: {0}", ID);
 					break;
 				case "callback":
-					if (command.SequenceId == null) {
+					if (data.SequenceId == null) {
 						break;
 					}
-					ushort sequenceId = (ushort)command.SequenceId;
+					ushort sequenceId = (ushort)data.SequenceId;
 					if (_callbacks.ContainsKey(sequenceId)) {
 						Callback callback = _callbacks[sequenceId];
-						callback?.Invoke(command);
+						callback?.Invoke(data);
 						_callbacks.Remove(sequenceId);
 					}
 					break;
 				case "return":
-					string[] keyValue = command.Data.Split(',');
+					string[] keyValue = data.Command.Split(',');
 					if (keyValue.Length >= 2) {
 						Emit("return", keyValue[0], keyValue[1]);
 					}

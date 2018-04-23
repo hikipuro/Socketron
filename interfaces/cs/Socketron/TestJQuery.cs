@@ -25,6 +25,20 @@ namespace Socketron {
 			socketron.Connect("127.0.0.1");
 		}
 
+		void Test() {
+			/*
+			SocketronData data = new SocketronData();
+			data.Type = ProcessType.Browser;
+			data.Function = "dialog.showOpenDialog";
+			data.Data = "";
+			Buffer buffer = Packet.CreateTextData(data);
+			socketron.Write(buffer);
+			*/
+
+			string script = "console.log('Test: ' + process.type);";
+			socketron.ExecuteJavaScriptNode(script);
+		}
+
 		public void Run() {
 			if (!socketron.IsConnected) {
 				return;
@@ -33,12 +47,14 @@ namespace Socketron {
 			//socketron.executeJavaScript("location.href='http://google.co.jp/'");
 
 			//*
-			socketron.Log("TestJQuery", (command) => {
+			socketron.Log("TestJQuery", (data) => {
 				Console.WriteLine("TestJQuery Callback");
 			});
-			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}", (command) => {
-			//	Console.WriteLine("ShowOpenDialog: {0}", command.Data);
+			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}", (data) => {
+			//	Console.WriteLine("ShowOpenDialog: {0}", data.Command);
 			//});
+
+			Test();
 
 			string[] css = {
 				"* {",
@@ -48,8 +64,8 @@ namespace Socketron {
 			};
 			socketron.InsertCSS(string.Join("\n", css));
 
-			socketron.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (command) => {
-				socketron.ExecuteJavaScript("console.log($)", (command2) => {
+			socketron.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (data) => {
+				socketron.ExecuteJavaScript("console.log($)", (data2) => {
 					Console.WriteLine("Test: console.log($)");
 				});
 				socketron.ExecuteJavaScript("$(document.body).empty()");

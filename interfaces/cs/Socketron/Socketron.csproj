@@ -65,6 +65,7 @@
     <Compile Include="Socketron\Packet.cs" />
     <Compile Include="Socketron\Socketron.cs" />
     <Compile Include="Socketron\SocketronClient.cs" />
+    <Compile Include="Socketron\SocketronData.cs" />
     <Compile Include="TestJQuery.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
