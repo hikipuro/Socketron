@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,11 +72,21 @@ namespace Socketron {
 		}
 
 		public void Log(string text, Callback callback = null) {
-			_WriteText(ProcessType.Renderer, "console.log", text, callback);
+			_WriteText(
+				ProcessType.Renderer,
+				"console.log",
+				JsonObject.Array(text),
+				callback
+			);
 		}
 
 		public void ExecuteJavaScript(string script, Callback callback = null) {
-			_WriteText(ProcessType.Renderer, "executeJavaScript", script, callback);
+			_WriteText(
+				ProcessType.Renderer,
+				"executeJavaScript",
+				JsonObject.Array(script),
+				callback
+			);
 		}
 
 		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
@@ -84,11 +95,21 @@ namespace Socketron {
 		}
 
 		public void InsertJavaScript(string url, Callback callback = null) {
-			_WriteText(ProcessType.Renderer, "insertJavaScript", url, callback);
+			_WriteText(
+				ProcessType.Renderer,
+				"insertJavaScript",
+				JsonObject.Array(url),
+				callback
+			);
 		}
 
 		public void InsertCSS(string css, Callback callback = null) {
-			_WriteText(ProcessType.Renderer, "insertCSS", css, callback);
+			_WriteText(
+				ProcessType.Renderer,
+				"insertCSS",
+				JsonObject.Array(css),
+				callback
+			);
 		}
 
 		//public void Command(string command, Callback callback = null) {
@@ -96,24 +117,52 @@ namespace Socketron {
 		//}
 
 		public void ExecuteJavaScriptNode(string script, Callback callback = null) {
-			_WriteText(ProcessType.Browser, "executeJavaScript", script, callback);
+			_WriteText(
+				ProcessType.Browser,
+				"executeJavaScript",
+				JsonObject.Array(script),
+				callback
+			);
 		}
 
-		public void ShowOpenDialog(string options, Callback callback = null) {
-			_WriteText(ProcessType.Browser, "showOpenDialog", options, callback);
+		public void ShowOpenDialog(object options, Callback callback = null) {
+			_WriteText(
+				ProcessType.Browser,
+				"dialog.showOpenDialog",
+				JsonObject.Array(options),
+				callback
+			);
 		}
 
-		protected void _WriteText(string type, string function, string text, Callback callback) {
-			SocketronData data = new SocketronData();
-			;
-			data.Type = type;
-			data.Function = function;
-			data.Command = text;
+		public void GetUserAgent(Callback callback = null) {
+			_WriteText(
+				ProcessType.Renderer,
+				"window.navigator.userAgent",
+				JsonObject.Array(),
+				callback
+			);
+		}
 
+		public void GetProcessType(Callback callback = null) {
+			_WriteText(
+				ProcessType.Browser,
+				"process.type",
+				JsonObject.Array(),
+				callback
+			);
+		}
+
+		protected void _WriteText(string type, string function, object[] args, Callback callback) {
+			SocketronData data = new SocketronData() {
+				Type = type,
+				Function = function,
+				Arguments = args
+			};
 			if (callback != null) {
 				data.SequenceId = _sequenceId;
 				_callbacks[_sequenceId++] = callback;
 			}
+			//Console.WriteLine("data: " + data.Stringify());
 			Write(data.ToBuffer(DataType.Text, Encoding));
 		}
 
@@ -122,11 +171,15 @@ namespace Socketron {
 			if (data == null) {
 				return;
 			}
-
+			//Console.WriteLine("data.Command: " + data.Command + " " + data.Command.Text);
 			//Console.WriteLine("data.Function: " + data.Function);
+			//Console.WriteLine("data.Arguments: " + data.Arguments);
+			//Console.WriteLine("data.SequenceId: " + data.SequenceId);
+			//Console.WriteLine("sequenceId: " + data.SequenceId);
+
 			switch (data.Function) {
 				case "id":
-					ID = data.Command;
+					ID = data.Arguments[0] as string;
 					DebugLog("ID: {0}", ID);
 					break;
 				case "callback":
@@ -141,11 +194,9 @@ namespace Socketron {
 					}
 					break;
 				case "return":
-					string[] keyValue = data.Command.Split(',');
-					if (keyValue.Length >= 2) {
-						Emit("return", keyValue[0], keyValue[1]);
-					}
-					//DebugLog("Return: {0}", returnText);
+					JsonObject json = new JsonObject(data.Arguments[0] as Dictionary<string, object>);
+					//DebugLog("Return: {0}", data.Arguments[0].GetType());
+					DebugLog("Return: {0}: {1}", json["key"], json["value"]);
 					break;
 			}
 		}

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Web.Script.Serialization;
 
 namespace Socketron {
 	class TestJQuery {
@@ -50,11 +52,20 @@ namespace Socketron {
 			socketron.Log("TestJQuery", (data) => {
 				Console.WriteLine("TestJQuery Callback");
 			});
-			//socketron.ShowOpenDialog("{\"properties\": [\"openFile\", \"openDirectory\", \"multiSelections\"]}", (data) => {
-			//	Console.WriteLine("ShowOpenDialog: {0}", data.Command);
+
+			//JsonObject args = new JsonObject();
+			//args["properties"] = JsonObject.Array("openFile", "openDirectory", "multiSelections");
+			//socketron.ShowOpenDialog(args,(data) => {
+			//	Console.WriteLine("ShowOpenDialog: {0}", data.Arguments);
 			//});
 
-			Test();
+			//Test();
+			socketron.GetUserAgent((data) => {
+				Console.WriteLine("UserAgent: {0}", data.Arguments[0]);
+			});
+			socketron.GetProcessType((data) => {
+				Console.WriteLine("ProcessType: {0}", data.Arguments[0]);
+			});
 
 			string[] css = {
 				"* {",

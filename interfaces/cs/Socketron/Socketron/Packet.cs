@@ -16,17 +16,6 @@ namespace Socketron {
 			Data = new Buffer();
 		}
 
-		public Packet Clone() {
-			Packet packet = new Packet();
-			;
-			packet.Data = Data;
-			packet.DataType = DataType;
-			packet.DataLength = DataLength;
-			packet.DataOffset = DataOffset;
-			packet.State = State;
-			return packet;
-		}
-
 		public string GetStringData() {
 			return Data.ToString(
 				Encoding,

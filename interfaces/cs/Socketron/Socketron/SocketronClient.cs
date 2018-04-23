@@ -150,7 +150,8 @@ namespace Socketron {
 				case ReadState.Command:
 					if (_packet.DataType == DataType.Text) {
 						string text = _packet.GetStringData();
-						Emit("data", SocketronData.FromJson(text));
+						Console.WriteLine("Packet: {0}", text);
+						Emit("data", SocketronData.Parse(text));
 					}
 					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
 					_packet.DataOffset = 0;
