@@ -250,19 +250,29 @@ class SocketronServer extends EventEmitter {
 class CommandProcessorNode extends EventEmitter {
 	constructor() {
 		super();
+		this.exports = {};
+		this.electron = Electron;
 		this.process = process;
 		this.dialog = dialog;
 	}
 
 	run(data, client) {
 		const func = this._getFunction(data.func);
-		if (func != null) {
-			if (typeof func !== "function") {
-				this._sendCallback(data, client, [func]);
+		if (func == null) {
+			this._sendCallback(data, client, ["function not found: " + data.func]);
+		}
+		if (typeof func !== "function") {
+			if (typeof func === "object") {
+				const obj = Object.assign({}, func)
+				this._sendCallback(data, client, [obj]);
 				return;
 			}
-			const result = func.apply(this, data.args);
-			this._sendCallback(data, client, result);
+			this._sendCallback(data, client, [func]);
+			return;
+		}
+		const result = func.apply(this, data.args);
+		if (result != null) {
+			this._sendCallback(data, client, [result]);
 		}
 	}
 
@@ -272,12 +282,6 @@ class CommandProcessorNode extends EventEmitter {
 			//eval(script);
 			Function(script)();
 		}
-	}
-
-	showOpenDialog(data, client) {
-		const options = JSON.parse(data.args.text);
-		const path = dialog.showOpenDialog(options);
-		this._sendCallback(data, client, JSON.stringify(path));
 	}
 
 	_getFunction(name) {
@@ -328,6 +332,10 @@ class SocketronNode {
 		
 		this._processor = new CommandProcessorNode();
 		this._processor.on("callback", this._sendCallback.bind(this));
+	}
+
+	get exports() {
+		return this._processor.exports;
 	}
 
 	listen(port = 3000) {
@@ -382,21 +390,22 @@ class SocketronNode {
 		});
 		this._addIpcEvent("return", (e, clientId, key, value) => {
 			const client = this._server.findClientById(clientId);
-			if (client != null) {
-				let data = new SocketronData({
-					sequenceId: null,
-					status: "ok",
-					type: "",
-					func: "return",
-					args: [
-						{
-							key: key,
-							value: value
-						}
-					]
-				});
-				client.writeTextData(data);
+			if (client == null) {
+				return;
 			}
+			let data = new SocketronData({
+				sequenceId: null,
+				status: "ok",
+				type: "",
+				func: "return",
+				args: [
+					{
+						key: key,
+						value: value
+					}
+				]
+			});
+			client.writeTextData(data);
 		});
 		this._addIpcEvent("quit", (e) => {
 			this.quit();
@@ -469,29 +478,40 @@ class SocketronNode {
 class CommandProcessorRenderer extends EventEmitter {
 	constructor() {
 		super();
+		this.exports = {};
 		this.window = window;
 		this.console = console;
 	}
 
 	run(data, clientId) {
 		const func = this._getFunction(data.func);
-		if (func != null) {
-			if (typeof func !== "function") {
-				this._sendCallback(data.sequenceId, clientId, [func]);
+		if (func == null) {
+			this._sendCallback(data, client, ["function not found: " + data.func]);
+		}
+		const funcType = typeof func;
+		if (funcType !== "function") {
+			if (funcType === "object") {
+				const obj = {};
+				for (var i in func) {
+					obj[i] = func[i];
+				}
+				this._sendCallback(data.sequenceId, clientId, [obj]);
 				return;
 			}
-			const self = this;
-			(function () {
-				const context = {};
-				context.sendCallback = function (args) {
-					self._sendCallback(data.sequenceId, clientId, args);
-				}
-				const result = func.apply(context, data.args);
-				if (result != null) {
-					context.sendCallback(result);
-				}
-			})();
+			this._sendCallback(data.sequenceId, clientId, [func]);
+			return;
 		}
+		const self = this;
+		(function () {
+			const context = {};
+			context.sendCallback = function (args) {
+				self._sendCallback(data.sequenceId, clientId, args);
+			}
+			const result = func.apply(context, data.args);
+			if (result != null) {
+				context.sendCallback([result]);
+			}
+		})();
 	}
 
 	executeJavaScript(...args) {
@@ -572,6 +592,10 @@ class SocketronRenderer {
 		
 		this._processor = new CommandProcessorRenderer();
 		this._processor.on("callback", this._sendCallback.bind(this));
+	}
+
+	get exports() {
+		return this._processor.exports;
 	}
 
 	static broadcast(message) {

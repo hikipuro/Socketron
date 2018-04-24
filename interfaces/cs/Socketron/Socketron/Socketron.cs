@@ -71,8 +71,22 @@ namespace Socketron {
 			Write(bytes);
 		}
 
+		public void WriteTextData(string type, string function, object[] args = null, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = type,
+				Function = function,
+				Arguments = args
+			};
+			if (callback != null) {
+				data.SequenceId = _sequenceId;
+				_callbacks[_sequenceId++] = callback;
+			}
+			//Console.WriteLine("data: " + data.Stringify());
+			Write(data.ToBuffer(DataType.Text, Encoding));
+		}
+
 		public void Log(string text, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Renderer,
 				"console.log",
 				JsonObject.Array(text),
@@ -81,7 +95,7 @@ namespace Socketron {
 		}
 
 		public void ExecuteJavaScript(string script, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Renderer,
 				"executeJavaScript",
 				JsonObject.Array(script),
@@ -95,7 +109,7 @@ namespace Socketron {
 		}
 
 		public void InsertJavaScript(string url, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Renderer,
 				"insertJavaScript",
 				JsonObject.Array(url),
@@ -104,7 +118,7 @@ namespace Socketron {
 		}
 
 		public void InsertCSS(string css, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Renderer,
 				"insertCSS",
 				JsonObject.Array(css),
@@ -117,7 +131,7 @@ namespace Socketron {
 		//}
 
 		public void ExecuteJavaScriptNode(string script, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Browser,
 				"executeJavaScript",
 				JsonObject.Array(script),
@@ -126,7 +140,7 @@ namespace Socketron {
 		}
 
 		public void ShowOpenDialog(object options, Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Browser,
 				"dialog.showOpenDialog",
 				JsonObject.Array(options),
@@ -135,7 +149,7 @@ namespace Socketron {
 		}
 
 		public void GetUserAgent(Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Renderer,
 				"window.navigator.userAgent",
 				JsonObject.Array(),
@@ -144,7 +158,7 @@ namespace Socketron {
 		}
 
 		public void GetProcessType(Callback callback = null) {
-			_WriteText(
+			WriteTextData(
 				ProcessType.Browser,
 				"process.type",
 				JsonObject.Array(),
@@ -152,18 +166,22 @@ namespace Socketron {
 			);
 		}
 
-		protected void _WriteText(string type, string function, object[] args, Callback callback) {
-			SocketronData data = new SocketronData() {
-				Type = type,
-				Function = function,
-				Arguments = args
-			};
-			if (callback != null) {
-				data.SequenceId = _sequenceId;
-				_callbacks[_sequenceId++] = callback;
-			}
-			//Console.WriteLine("data: " + data.Stringify());
-			Write(data.ToBuffer(DataType.Text, Encoding));
+		public void GetProcessMemoryInfo(Callback callback = null) {
+			WriteTextData(
+				ProcessType.Browser,
+				"process.getProcessMemoryInfo",
+				JsonObject.Array(),
+				callback
+			);
+		}
+
+		public void GetNavigator(Callback callback = null) {
+			WriteTextData(
+				ProcessType.Renderer,
+				"window.navigator",
+				JsonObject.Array(),
+				callback
+			);
 		}
 
 		protected void _OnData(object[] args) {

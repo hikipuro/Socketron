@@ -53,19 +53,29 @@ namespace Socketron {
 				Console.WriteLine("TestJQuery Callback");
 			});
 
-			//JsonObject args = new JsonObject();
-			//args["properties"] = JsonObject.Array("openFile", "openDirectory", "multiSelections");
-			//socketron.ShowOpenDialog(args,(data) => {
-			//	Console.WriteLine("ShowOpenDialog: {0}", data.Arguments);
-			//});
+			/*
+			JsonObject args = new JsonObject();
+			args["properties"] = JsonObject.Array("openFile", "openDirectory", "multiSelections");
+			socketron.ShowOpenDialog(args,(data) => {
+				Console.WriteLine("ShowOpenDialog: {0}", data.Arguments[0]);
+			});
+			*/
 
 			//Test();
 			socketron.GetUserAgent((data) => {
 				Console.WriteLine("UserAgent: {0}", data.Arguments[0]);
 			});
-			socketron.GetProcessType((data) => {
+			/*socketron.GetProcessType((data) => {
 				Console.WriteLine("ProcessType: {0}", data.Arguments[0]);
 			});
+			socketron.GetProcessMemoryInfo((data) => {
+				Console.WriteLine("ProcessMemoryInfo: {0}", data.Arguments[0]);
+			});
+			socketron.GetNavigator((data) => {
+				Console.WriteLine("Navigator: {0}", data.Arguments[0]);
+			});*/
+			socketron.WriteTextData(ProcessType.Browser, "exports.test.testFunc", JsonObject.Array(123, "abc"));
+			//return;
 
 			string[] css = {
 				"* {",

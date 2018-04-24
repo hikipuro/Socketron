@@ -34,6 +34,11 @@ class NodeMain {
 		this._socketron = new Socketron();
 		this._socketron.browserWindow = this._mainWindow.browserWindow;
 		this._socketron.listen();
+		this._socketron.exports.test = {
+			testFunc: (a, b) => {
+				console.log("testFunc", a, b);
+			}
+		}
 	}
 
 	get _onWindowAllClosed() {
