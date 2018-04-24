@@ -106,7 +106,7 @@ namespace Socketron {
 					}
 					OnData(bytes, bytesReaded);
 				} while (_stream.DataAvailable);
-				Thread.Sleep(1);
+				await Task.Delay(1);
 			}
 		}
 

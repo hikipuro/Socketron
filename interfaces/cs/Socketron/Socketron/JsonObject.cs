@@ -7,9 +7,20 @@ namespace Socketron {
 		public JsonObject() {
 		}
 
-		public JsonObject(Dictionary<string, object> dictionary) {
-			foreach (KeyValuePair<string, object> item in dictionary) {
+		public JsonObject(Dictionary<string, object> obj) {
+			if (obj == null) {
+				return;
+			}
+			foreach (var item in obj) {
 				Add(item.Key, item.Value);
+			}
+		}
+
+		public JsonObject(object obj) {
+			if (obj is Dictionary<string, object>) {
+				foreach (var item in obj as Dictionary<string, object>) {
+					Add(item.Key, item.Value);
+				}
 			}
 		}
 
@@ -19,6 +30,14 @@ namespace Socketron {
 			//JsonObject json = new JsonObject();
 			//json._objects = data;
 			return data;
+		}
+
+		public static JsonObject FromObject(object obj) {
+			if (obj is Dictionary<string, object>) {
+				var json = new JsonObject(obj as Dictionary<string, object>);
+				return json;
+			}
+			return null;
 		}
 
 		public static object[] Array(params object[] args) {

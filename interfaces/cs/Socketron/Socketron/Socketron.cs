@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Socketron {
@@ -14,11 +15,156 @@ namespace Socketron {
 		public const string Renderer = "renderer";
 	}
 
-	public delegate void Callback(SocketronData data);
+	public delegate void Callback(object result);
+	public delegate void Callback<T>(T result);
+
+	public class MainProcess : EventEmitter {
+		const string Type = ProcessType.Browser;
+		public App App;
+
+		public MainProcess() {
+			App = new App();
+			App.On("text", (args) => {
+				Emit("text", args[0], args[1]);
+			});
+		}
+
+		public void ExecuteJavaScript(string script, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "executeJavaScript",
+				Args = JsonObject.Array(script)
+			};
+			Emit("text", data, callback);
+		}
+
+		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
+			string script = string.Join("\n", scriptList);
+			ExecuteJavaScript(script, callback);
+		}
+
+		public void ShowOpenDialog(JsonObject options, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "dialog.showOpenDialog",
+				Args = JsonObject.Array(options)
+			};
+			Emit("text", data, callback);
+		}
+
+		public async Task<string> GetProcessType() {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "process.type",
+				Args = JsonObject.Array()
+			};
+			return await CallAsync<string>(data);
+		}
+
+		protected async Task<T> CallAsync<T>(SocketronData socketronData, int timeout = 1000) where T: class {
+			T result = null;
+			bool done = false;
+			var tokenSource = new CancellationTokenSource();
+			tokenSource.CancelAfter(timeout);
+			Task<T> task = Task.Run(async () => {
+				while (!done) {
+					await Task.Delay(1);
+					if (tokenSource.IsCancellationRequested) {
+						break;
+					}
+				}
+				return result;
+			}, tokenSource.Token);
+
+			Callback callback = (data) => {
+				result = data as T;
+				done = true;
+			};
+			Emit("text", socketronData, callback);
+			return await task;
+		}
+
+		public void GetProcessMemoryInfo(Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "process.getProcessMemoryInfo",
+				Args = JsonObject.Array()
+			};
+			Emit("text", data, callback);
+		}
+	}
+
+	public class RendererProcess : EventEmitter {
+		const string Type = ProcessType.Renderer;
+
+		public RendererProcess() {
+		}
+
+		public void Log(string text, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "console.log",
+				Args = JsonObject.Array(text)
+			};
+			Emit("text", data, callback);
+		}
+
+		public void ExecuteJavaScript(string script, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "executeJavaScript",
+				Args = JsonObject.Array(script)
+			};
+			Emit("text", data, callback);
+		}
+
+		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
+			string script = string.Join("\n", scriptList);
+			ExecuteJavaScript(script, callback);
+		}
+
+		public void InsertJavaScript(string url, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "insertJavaScript",
+				Args = JsonObject.Array(url)
+			};
+			Emit("text", data, callback);
+		}
+
+		public void InsertCSS(string css, Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "insertCSS",
+				Args = JsonObject.Array(css)
+			};
+			Emit("text", data, callback);
+		}
+
+		public void GetUserAgent(Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "window.navigator.userAgent",
+				Args = JsonObject.Array()
+			};
+			Emit("text", data, callback);
+		}
+
+		public void GetNavigator(Callback callback = null) {
+			SocketronData data = new SocketronData() {
+				Type = Type,
+				Func = "window.navigator",
+				Args = JsonObject.Array()
+			};
+			Emit("text", data, callback);
+		}
+	}
 
 	public class Socketron: EventEmitter {
 		public string ID = string.Empty;
 		public bool IsDebug = true;
+		public MainProcess Main;
+		public RendererProcess Renderer;
 		SocketronClient _client;
 		Dictionary<ushort, Callback> _callbacks;
 		ushort _sequenceId = 0;
@@ -34,6 +180,29 @@ namespace Socketron {
 			_client.On("data", _OnData);
 
 			_callbacks = new Dictionary<ushort, Callback>();
+
+			Main = new MainProcess();
+			Main.On("text", (args) => {
+				SocketronData data = args[0] as SocketronData;
+				Callback callback = args[1] as Callback;
+				if (callback != null) {
+					data.SequenceId = _sequenceId;
+					_callbacks[_sequenceId++] = callback;
+				}
+				Console.WriteLine("data: " + data.Stringify());
+				Write(data.ToBuffer(DataType.Text, Encoding));
+			});
+
+			Renderer = new RendererProcess();
+			Renderer.On("text", (args) => {
+				SocketronData data = args[0] as SocketronData;
+				Callback callback = args[1] as Callback;
+				if (callback != null) {
+					data.SequenceId = _sequenceId;
+					_callbacks[_sequenceId++] = callback;
+				}
+				Write(data.ToBuffer(DataType.Text, Encoding));
+			});
 		}
 
 		public bool IsConnected {
@@ -74,8 +243,8 @@ namespace Socketron {
 		public void WriteTextData(string type, string function, object[] args = null, Callback callback = null) {
 			SocketronData data = new SocketronData() {
 				Type = type,
-				Function = function,
-				Arguments = args
+				Func = function,
+				Args = args
 			};
 			if (callback != null) {
 				data.SequenceId = _sequenceId;
@@ -83,105 +252,6 @@ namespace Socketron {
 			}
 			//Console.WriteLine("data: " + data.Stringify());
 			Write(data.ToBuffer(DataType.Text, Encoding));
-		}
-
-		public void Log(string text, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"console.log",
-				JsonObject.Array(text),
-				callback
-			);
-		}
-
-		public void ExecuteJavaScript(string script, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"executeJavaScript",
-				JsonObject.Array(script),
-				callback
-			);
-		}
-
-		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
-			string script = string.Join("\n", scriptList);
-			ExecuteJavaScript(script, callback);
-		}
-
-		public void InsertJavaScript(string url, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"insertJavaScript",
-				JsonObject.Array(url),
-				callback
-			);
-		}
-
-		public void InsertCSS(string css, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"insertCSS",
-				JsonObject.Array(css),
-				callback
-			);
-		}
-
-		//public void Command(string command, Callback callback = null) {
-		//	_WriteText("browser", "command", command, callback);
-		//}
-
-		public void ExecuteJavaScriptNode(string script, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Browser,
-				"executeJavaScript",
-				JsonObject.Array(script),
-				callback
-			);
-		}
-
-		public void ShowOpenDialog(object options, Callback callback = null) {
-			WriteTextData(
-				ProcessType.Browser,
-				"dialog.showOpenDialog",
-				JsonObject.Array(options),
-				callback
-			);
-		}
-
-		public void GetUserAgent(Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"window.navigator.userAgent",
-				JsonObject.Array(),
-				callback
-			);
-		}
-
-		public void GetProcessType(Callback callback = null) {
-			WriteTextData(
-				ProcessType.Browser,
-				"process.type",
-				JsonObject.Array(),
-				callback
-			);
-		}
-
-		public void GetProcessMemoryInfo(Callback callback = null) {
-			WriteTextData(
-				ProcessType.Browser,
-				"process.getProcessMemoryInfo",
-				JsonObject.Array(),
-				callback
-			);
-		}
-
-		public void GetNavigator(Callback callback = null) {
-			WriteTextData(
-				ProcessType.Renderer,
-				"window.navigator",
-				JsonObject.Array(),
-				callback
-			);
 		}
 
 		protected void _OnData(object[] args) {
@@ -195,28 +265,50 @@ namespace Socketron {
 			//Console.WriteLine("data.SequenceId: " + data.SequenceId);
 			//Console.WriteLine("sequenceId: " + data.SequenceId);
 
-			switch (data.Function) {
+			switch (data.Func) {
 				case "id":
-					ID = data.Arguments[0] as string;
+					ID = data.Args as string;
 					DebugLog("ID: {0}", ID);
 					break;
 				case "callback":
-					if (data.SequenceId == null) {
-						break;
-					}
-					ushort sequenceId = (ushort)data.SequenceId;
-					if (_callbacks.ContainsKey(sequenceId)) {
-						Callback callback = _callbacks[sequenceId];
-						callback?.Invoke(data);
-						_callbacks.Remove(sequenceId);
-					}
+					_OnCallback(data);
 					break;
-				case "return":
-					JsonObject json = new JsonObject(data.Arguments[0] as Dictionary<string, object>);
-					//DebugLog("Return: {0}", data.Arguments[0].GetType());
-					DebugLog("Return: {0}: {1}", json["key"], json["value"]);
+				case "event":
+					_OnEvent(data);
 					break;
 			}
+		}
+
+		protected void _OnCallback(SocketronData data) {
+			if (data.SequenceId == null) {
+				return;
+			}
+			ushort sequenceId = (ushort)data.SequenceId;
+			if (!_callbacks.ContainsKey(sequenceId)) {
+				return;
+			}
+			Callback callback = _callbacks[sequenceId];
+			callback?.Invoke(data.Args);
+			_callbacks.Remove(sequenceId);
+		}
+
+		protected void _OnEvent(SocketronData data) {
+			JsonObject json = new JsonObject(data.Args);
+			//DebugLog("Return: {0}", data.Arguments[0].GetType());
+
+			string eventName = null;
+			object args = null;
+			foreach (string key in json.Keys) {
+				eventName = key;
+				args = json[key];
+				break;
+			}
+			//DebugLog("Return: {0}: {1}", eventName, args);
+			if (args is object[]) {
+				Emit(eventName, args as object[]);
+				return;
+			}
+			Emit(eventName, args);
 		}
 
 		protected void DebugLog(string format, params object[] args) {

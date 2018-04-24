@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 
 namespace Socketron {
+	public delegate void EventListener(params object[] args);
 	class EventListeners {
-		public List<Action<object[]>> _listeners;
-		public Dictionary<Action<object[]>, bool> _isOnce;
+		public List<EventListener> _listeners;
+		public Dictionary<EventListener, bool> _isOnce;
 
 		public EventListeners() {
-			_listeners = new List<Action<object[]>>();
-			_isOnce = new Dictionary<Action<object[]>, bool>();
+			_listeners = new List<EventListener>();
+			_isOnce = new Dictionary<EventListener, bool>();
 		}
 
-		public Action<object[]> this[int i] {
+		public EventListener this[int i] {
 			get { return _listeners[i]; }
 		}
 
@@ -19,30 +20,30 @@ namespace Socketron {
 			get { return _listeners.Count; }
 		}
 
-		public void On(Action<object[]> listener) {
+		public void On(EventListener listener) {
 			_listeners.Add(listener);
 			_isOnce.Add(listener, false);
 		}
 
-		public void Once(Action<object[]> listener) {
+		public void Once(EventListener listener) {
 			_listeners.Add(listener);
 			_isOnce.Add(listener, true);
 		}
 
-		public void Remove(Action<object[]> listener) {
+		public void Remove(EventListener listener) {
 			_listeners.Remove(listener);
 			_isOnce.Remove(listener);
 		}
 
 		public void RemoveList(List<int> indices) {
 			foreach (int i in indices) {
-				Action<object[]> listener = _listeners[i];
+				EventListener listener = _listeners[i];
 				_listeners.RemoveAt(i);
 				_isOnce.Remove(listener);
 			}
 		}
 
-		public bool IsOnce(Action<object[]> listener) {
+		public bool IsOnce(EventListener listener) {
 			if (!_isOnce.ContainsKey(listener)) {
 				return true;
 			}
@@ -66,7 +67,7 @@ namespace Socketron {
 			List<int> removeList = new List<int>();
 			EventListeners listeners = _listeners[channel];
 			for (int i = 0; i < listeners.Count; i++) {
-				Action<object[]> listener = listeners[i];
+				EventListener listener = listeners[i];
 				listener?.Invoke(args);
 				if (listeners.IsOnce(listener)) {
 					removeList.Add(i);
@@ -79,7 +80,7 @@ namespace Socketron {
 			}
 		}
 
-		public EventEmitter On(string channel, Action<object[]> listener) {
+		public EventEmitter On(string channel, EventListener listener) {
 			channel = channel.ToLower();
 			if (!_listeners.ContainsKey(channel)) {
 				_listeners.Add(channel, new EventListeners());
@@ -88,7 +89,7 @@ namespace Socketron {
 			return this;
 		}
 
-		public EventEmitter Once(string channel, Action<object[]> listener) {
+		public EventEmitter Once(string channel, EventListener listener) {
 			channel = channel.ToLower();
 			if (!_listeners.ContainsKey(channel)) {
 				_listeners.Add(channel, new EventListeners());
@@ -108,7 +109,7 @@ namespace Socketron {
 			}
 		}
 
-		public void RemoveListener(string channel, Action<object[]> listener) {
+		public void RemoveListener(string channel, EventListener listener) {
 			channel = channel.ToLower();
 			if (_listeners.ContainsKey(channel)) {
 				_listeners[channel].Remove(listener);

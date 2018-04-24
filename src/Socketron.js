@@ -106,15 +106,18 @@ class Client {
 class Clients {
 	constructor() {
 		this._clients = [];
+		this._clientIds = {};
 	}
 
 	add(client) {
 		this._clients.push(client);
+		this._clientIds[client.id] = client;
 	}
 
 	remove(client) {
 		const index = this._clients.indexOf(client);
 		this._clients.splice(index, 1);
+		this._clientIds[client.id] = null;
 	}
 
 	broadcast(message, sender = null) {
@@ -127,14 +130,7 @@ class Clients {
 	}
 
 	findClientById(id) {
-		const length = this._clients.length;
-		for (let i = 0; i < length; i++) {
-			const client = this._clients[i];
-			if (client.id == id) {
-				return client;
-			}
-		}
-		return null;
+		return this._clientIds[id];
 	}
 }
 
@@ -147,7 +143,7 @@ class SocketronServer extends EventEmitter {
 
 	listen(port) {
 		this._server = net.createServer(
-			this._connectionListener.bind(this)
+			this._onConnect.bind(this)
 		);
 		this._server.listen(port);
 	}
@@ -160,7 +156,7 @@ class SocketronServer extends EventEmitter {
 		return this._clients.findClientById(id);
 	}
 
-	_connectionListener(socket) {
+	_onConnect(socket) {
 		const client = new Client(socket);
 		this._clients.add(client);
 		this.emit("log", client, "client connected");
@@ -188,9 +184,7 @@ class SocketronServer extends EventEmitter {
 			status: "ok",
 			type: "",
 			func: "id",
-			args: [
-				client.id
-			]
+			args: client.id
 		});
 		client.writeTextData(data);
 	}
@@ -254,6 +248,7 @@ class CommandProcessorNode extends EventEmitter {
 		this.electron = Electron;
 		this.process = process;
 		this.dialog = dialog;
+		this._client = null;
 	}
 
 	run(data, client) {
@@ -261,27 +256,52 @@ class CommandProcessorNode extends EventEmitter {
 		if (func == null) {
 			this._sendCallback(data, client, ["function not found: " + data.func]);
 		}
-		if (typeof func !== "function") {
-			if (typeof func === "object") {
-				const obj = Object.assign({}, func)
-				this._sendCallback(data, client, [obj]);
+		const funcType = typeof func[1];
+		if (funcType !== "function") {
+			if (funcType === "object") {
+				/*
+				const obj = {};
+				for (var i in func[1]) {
+					obj[i] = func[1][i];
+				}
+				*/
+				try {
+					this._sendCallback(data, client, func[1]);
+				} catch (e) {
+					this.emit("error", e);
+				}
 				return;
 			}
-			this._sendCallback(data, client, [func]);
+			this._sendCallback(data, client, func[1]);
 			return;
 		}
-		const result = func.apply(this, data.args);
+		this._client = client;
+		let result = func[1].apply(func[0], data.args);
 		if (result != null) {
-			this._sendCallback(data, client, [result]);
+			this._sendCallback(data, client, result);
 		}
+		this._client = null;
 	}
 
-	executeJavaScript(...args) {
-		for (let script of args) {
-			console.log(script);
-			//eval(script);
-			Function(script)();
+	executeJavaScript(script) {
+		if (script == null) {
+			return;
 		}
+		console.log(script);
+		
+		const clientId = this._client.id;
+		const funcs = [
+			"var electron = this.electron;",
+			"var emit = function (eventName, ...args) {",
+				"Socketron.emitToClient(",
+					"'" + clientId + "',",
+					"eventName, args",
+				");",
+			"};"
+		];
+		script = funcs.join("") + script;
+		//eval(script);
+		return Function(script).apply(this);
 	}
 
 	_getFunction(name) {
@@ -292,15 +312,17 @@ class CommandProcessorNode extends EventEmitter {
 		if (names.length <= 0) {
 			return null;
 		}
+		let parent = null;
 		let reference = this;
 		const length = names.length;
 		for (let i = 0; i < length; i++) {
+			parent = reference;
 			reference = reference[names[i]];
 			if (reference == null) {
 				return null;
 			}
 		}
-		return reference;
+		return [parent, reference];
 	}
 	
 	_sendCallback(data, client, command) {
@@ -310,7 +332,12 @@ class CommandProcessorNode extends EventEmitter {
 
 class SocketronNode {
 	constructor() {
+		this.electron = Electron;
 		this.browserWindow = null;
+		if (SocketronNode._instance == null) {
+			SocketronNode._instance = this;
+		}
+
 		this._server = new SocketronServer();
 		this._server.on("log", (client, message) => {
 			const args = [client.id, message];
@@ -331,11 +358,33 @@ class SocketronNode {
 		this._addIpcEvents();
 		
 		this._processor = new CommandProcessorNode();
+		this._processor.on("error", (err) => {
+			console.error(err)
+			this._ipcError(err.toString(), err.stack);
+		});
 		this._processor.on("callback", this._sendCallback.bind(this));
 	}
 
 	get exports() {
 		return this._processor.exports;
+	}
+	
+	static emitToClient(clientId, eventName, args) {
+		const socketron = SocketronNode._instance;
+		if (socketron == null) {
+			return;
+		}
+		const client = socketron._server.findClientById(clientId);
+		if (client == null) {
+			return;
+		}
+		let data = new SocketronData({
+			status: "ok",
+			func: "event",
+			args: {}
+		});
+		data.args[eventName] = args;
+		client.writeTextData(data);
 	}
 
 	listen(port = 3000) {
@@ -388,7 +437,7 @@ class SocketronNode {
 				client.write(buffer);
 			}
 		});
-		this._addIpcEvent("return", (e, clientId, key, value) => {
+		this._addIpcEvent("event", (e, clientId, eventName, ...args) => {
 			const client = this._server.findClientById(clientId);
 			if (client == null) {
 				return;
@@ -397,14 +446,10 @@ class SocketronNode {
 				sequenceId: null,
 				status: "ok",
 				type: "",
-				func: "return",
-				args: [
-					{
-						key: key,
-						value: value
-					}
-				]
+				func: "event",
+				args: {}
 			});
+			data.args[eventName] = args;
 			client.writeTextData(data);
 		});
 		this._addIpcEvent("quit", (e) => {
@@ -463,7 +508,7 @@ class SocketronNode {
 		if (data.sequenceId == null) {
 			return;
 		}
-		this._ipcLog(data);
+		//this._ipcLog(data);
 		let newData = new SocketronData({
 			sequenceId: data.sequenceId,
 			status: "ok",
@@ -481,6 +526,8 @@ class CommandProcessorRenderer extends EventEmitter {
 		this.exports = {};
 		this.window = window;
 		this.console = console;
+		this._data = null;
+		this._clientId = null;
 	}
 
 	run(data, clientId) {
@@ -488,75 +535,79 @@ class CommandProcessorRenderer extends EventEmitter {
 		if (func == null) {
 			this._sendCallback(data, client, ["function not found: " + data.func]);
 		}
-		const funcType = typeof func;
+		const funcType = typeof func[1];
 		if (funcType !== "function") {
 			if (funcType === "object") {
 				const obj = {};
-				for (var i in func) {
-					obj[i] = func[i];
+				for (var i in func[1]) {
+					obj[i] = func[1][i];
 				}
 				this._sendCallback(data.sequenceId, clientId, [obj]);
 				return;
 			}
-			this._sendCallback(data.sequenceId, clientId, [func]);
+			this._sendCallback(data.sequenceId, clientId, [func[1]]);
 			return;
 		}
-		const self = this;
-		(function () {
-			const context = {};
-			context.sendCallback = function (args) {
-				self._sendCallback(data.sequenceId, clientId, args);
-			}
-			const result = func.apply(context, data.args);
-			if (result != null) {
-				context.sendCallback([result]);
-			}
-		})();
+		
+		this._data = data;
+		this._clientId = clientId;
+		let result = func[1].apply(func[0], data.args);
+		if (result != null) {
+			this._sendCallback(data.sequenceId, clientId, result);
+		}
+		this._data = null;
+		this._clientId = null;
 	}
 
-	executeJavaScript(...args) {
-		for (let script of args) {
-			console.log(script);
-			//eval(script);
-			Function(script)();
+	executeJavaScript(script) {
+		if (script == null) {
+			return;
 		}
-		this.sendCallback();
+		console.log(script);
+
+		const clientId = this._clientId;
+		const funcs = [
+			"var electron = this.electron;",
+			"var emit = function (eventName, ...args) {",
+				"Socketron.emitToClient(",
+					"'" + clientId + "',",
+					"eventName, args",
+				");",
+			"};"
+		];
+		script = funcs.join("") + script;
+		//eval(script);
+		return Function(script).apply(this);
 	}
 
-	insertJavaScript(...args) {
-		for (let url of args) {
-			console.log(url);
-			const script = document.createElement("script");
-			document.head.appendChild(script);
-			script.addEventListener("load", () => {
-				this.sendCallback();
-			});
-			script.setAttribute("src", url);
+	insertJavaScript(url) {
+		if (url == null) {
+			return;
 		}
+		const data = this._data;
+		const clientId = this._clientId;
+		console.log(url);
+		const script = document.createElement("script");
+		document.head.appendChild(script);
+		script.addEventListener("load", () => {
+			this._sendCallback(data.sequenceId, clientId);
+		});
+		script.setAttribute("src", url);
 	}
 
-	insertCSS(...args) {
-		for (let style of args) {
-			console.log(style);
-			const element = document.createElement("style");
-			document.head.appendChild(element);
-			element.addEventListener("load", () => {
-				this.sendCallback();
-			});
-			element.innerHTML = style;
+	insertCSS(style) {
+		if (style == null) {
+			return;
 		}
-	}
-
-	command(data, clientId) {
-		switch (data.args.text) {
-			case "quit":
-				this.quit();
-				break;
-			case "reload":
-				location.reload();
-				break;
-		}
-		this._sendCallback(data, clientId);
+		const data = this._data;
+		const clientId = this._clientId;
+		console.log(style);
+		const element = document.createElement("style");
+		document.head.appendChild(element);
+		element.addEventListener("load", () => {
+			this._sendCallback(data.sequenceId, clientId);
+		});
+		element.innerHTML = style;
 	}
 
 	_getFunction(name) {
@@ -567,15 +618,17 @@ class CommandProcessorRenderer extends EventEmitter {
 		if (names.length <= 0) {
 			return null;
 		}
+		let parent = null;
 		let reference = this;
 		const length = names.length;
 		for (let i = 0; i < length; i++) {
+			parent = reference;
 			reference = reference[names[i]];
 			if (reference == null) {
 				return null;
 			}
 		}
-		return reference;
+		return [parent, reference];
 	}
 	
 	_sendCallback(sequenceId, clientId, args) {
@@ -591,6 +644,9 @@ class SocketronRenderer {
 		this._addIpcEvents();
 		
 		this._processor = new CommandProcessorRenderer();
+		this._processor.on("error", (err) => {
+			console.error(err)
+		});
 		this._processor.on("callback", this._sendCallback.bind(this));
 	}
 
@@ -606,12 +662,15 @@ class SocketronRenderer {
 		socketron.broadcast(message);
 	}
 
-	static return(cliendId, key, value) {
+	static emitToClient(clientId, eventName, ...args) {
 		const socketron = SocketronRenderer._instance;
 		if (socketron == null) {
 			return;
 		}
-		socketron._ipcSend("return", cliendId, key, value);
+		socketron._ipcSend.apply(
+			socketron,
+			["event", clientId, eventName].concat(...args)
+		);
 	}
 
 	broadcast(message, sender = null) {
@@ -621,10 +680,6 @@ class SocketronRenderer {
 
 	send(client, buffer) {
 		this._ipcSend("send", client, buffer);
-	}
-
-	quit() {
-		this._ipcSend("quit");
 	}
 	
 	_ipcEventId(id) {
@@ -669,6 +724,10 @@ if (process.type === "renderer") {
 	window._socketron = new Socketron();
 	if (typeof module == "object") {
 		window.Socketron = Socketron;
+	}
+} else {
+	if (typeof module == "object") {
+		global.Socketron = Socketron;
 	}
 }
 

@@ -102,6 +102,7 @@
     <Compile Include="Socketron\Buffer.cs" />
     <Compile Include="Socketron\EventEmitter.cs" />
     <Compile Include="Socketron\JsonObject.cs" />
+    <Compile Include="Socketron\Main\App.cs" />
     <Compile Include="Socketron\Packet.cs" />
     <Compile Include="Socketron\Socketron.cs" />
     <Compile Include="Socketron\SocketronClient.cs" />

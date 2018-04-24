@@ -35,7 +35,7 @@ namespace Socketron {
 		}
 
 		private void Run() {
-			socketron.Log("Test Client", (data) => {
+			socketron.Renderer.Log("Test Client", (data) => {
 				Console.WriteLine("Callback Test");
 			});
 			//socketron.Run("alert('test22');");
