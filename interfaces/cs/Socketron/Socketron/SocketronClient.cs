@@ -59,7 +59,7 @@ namespace Socketron {
 			_tcpClient = new TcpClient();
 			await _tcpClient.ConnectAsync(hostname, port);
 
-			DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
+			_DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
 				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
 				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Port,
 				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address,
@@ -70,8 +70,8 @@ namespace Socketron {
 			_stream.ReadTimeout = _timeout;
 			_stream.WriteTimeout = _timeout;
 
-			Emit("connect");
-			Task task = Read();
+			EmitTask("connect");
+			Task task = _Read();
 		}
 
 		public void Close() {
@@ -95,7 +95,7 @@ namespace Socketron {
 			}
 		}
 
-		protected async Task Read() {
+		protected async Task _Read() {
 			byte[] bytes = new byte[ReadBufferSize];
 			while (_tcpClient.Connected && _stream.CanRead) {
 				do {
@@ -104,13 +104,13 @@ namespace Socketron {
 						Close();
 						return;
 					}
-					OnData(bytes, bytesReaded);
+					_OnData(bytes, bytesReaded);
 				} while (_stream.DataAvailable);
 				await Task.Delay(1);
 			}
 		}
 
-		protected void OnData(byte[] data, int bytesReaded) {
+		protected void _OnData(byte[] data, int bytesReaded) {
 			if (data != null) {
 				_packet.Data.Write(data, 0, bytesReaded);
 			}
@@ -150,8 +150,8 @@ namespace Socketron {
 				case ReadState.Command:
 					if (_packet.DataType == DataType.Text) {
 						string text = _packet.GetStringData();
-						Console.WriteLine("Packet: {0}", text);
-						Emit("data", SocketronData.Parse(text));
+						_DebugLog("receive: {0}", text);
+						EmitTask("data", SocketronData.Parse(text));
 					}
 					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
 					_packet.DataOffset = 0;
@@ -159,15 +159,15 @@ namespace Socketron {
 					break;
 			}
 
-			OnData(null, 0);
+			_OnData(null, 0);
 		}
 
-		protected void DebugLog(string format, params object[] args) {
+		protected void _DebugLog(string format, params object[] args) {
 			if (!IsDebug) {
 				return;
 			}
-			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
-			Emit("debug", string.Format(format, args));
+			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
+			EmitTask("debug", string.Format(format, args));
 		}
 	}
 }

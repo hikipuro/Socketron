@@ -218,7 +218,7 @@ namespace Socketron {
 			return new SocketronData() {
 				Type = Type,
 				Func = Prefix + name,
-				Args = args
+				Params = args
 			};
 		}
 	}
@@ -247,7 +247,7 @@ namespace Socketron {
 			return new SocketronData() {
 				Type = Type,
 				Func = Prefix + name,
-				Args = args
+				Params = args
 			};
 		}
 	}
@@ -308,7 +308,7 @@ namespace Socketron {
 			return new SocketronData() {
 				Type = Type,
 				Func = Prefix + name,
-				Args = args
+				Params = args
 			};
 		}
 	}

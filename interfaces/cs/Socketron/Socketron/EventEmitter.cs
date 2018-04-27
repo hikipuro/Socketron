@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Socketron {
 	public delegate void EventListener(params object[] args);
@@ -78,6 +79,13 @@ namespace Socketron {
 			if (_listeners[channel].Count <= 0) {
 				_listeners.Remove(channel);
 			}
+		}
+
+		public async void EmitTask(string channel, params object[] args) {
+			Task task = Task.Run(() => {
+				Emit(channel, args);
+			});
+			await task;
 		}
 
 		public EventEmitter On(string channel, EventListener listener) {

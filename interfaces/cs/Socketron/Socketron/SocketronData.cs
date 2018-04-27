@@ -18,7 +18,7 @@ namespace Socketron {
 			get { return this["func"] as string; }
 			set { this["func"] = value; }
 		}
-		public object Args {
+		public object Params {
 			get { return this["args"] as object; }
 			set { this["args"] = value; }
 		}
@@ -32,7 +32,7 @@ namespace Socketron {
 				Status = jsonObject["status"] as string,
 				Type = jsonObject["type"] as string,
 				Func = jsonObject["func"] as string,
-				Args = jsonObject["args"] as object
+				Params = jsonObject["args"] as object
 			};
 			if (jsonObject["sequenceId"] != null) {
 				int sequenceId = (int)jsonObject["sequenceId"];

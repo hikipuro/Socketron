@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -29,39 +28,35 @@ namespace Socketron {
 			});
 		}
 
-		public void ExecuteJavaScript(string script, Callback callback = null) {
+		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {
 			SocketronData data = new SocketronData() {
 				Type = Type,
 				Func = "executeJavaScript",
-				Args = JsonObject.Array(script)
+				Params = new object[] { script }
 			};
-			Emit("text", data, callback);
+			Emit("text", data, success, error);
 		}
 
-		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
+		public void ExecuteJavaScript(string[] scriptList, Callback success = null, Callback error = null) {
 			string script = string.Join("\n", scriptList);
-			ExecuteJavaScript(script, callback);
+			ExecuteJavaScript(script, success, error);
 		}
 
-		public void ShowOpenDialog(JsonObject options, Callback callback = null) {
+		public async Task<object> ExecuteJavaScriptAsync(string script) {
 			SocketronData data = new SocketronData() {
 				Type = Type,
-				Func = "dialog.showOpenDialog",
-				Args = JsonObject.Array(options)
+				Func = "executeJavaScript",
+				Params = new object[] { script }
 			};
-			Emit("text", data, callback);
+			return await _CallAsync<object>(data);
 		}
 
-		public async Task<string> GetProcessType() {
-			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "process.type",
-				Args = JsonObject.Array()
-			};
-			return await CallAsync<string>(data);
+		public async Task<object> ExecuteJavaScriptAsync(string[] scriptList) {
+			string script = string.Join("\n", scriptList);
+			return await ExecuteJavaScriptAsync(script);
 		}
 
-		protected async Task<T> CallAsync<T>(SocketronData socketronData, int timeout = 1000) where T: class {
+		protected async Task<T> _CallAsync<T>(SocketronData socketronData, int timeout = 10000) where T: class {
 			T result = null;
 			bool done = false;
 			var tokenSource = new CancellationTokenSource();
@@ -76,21 +71,15 @@ namespace Socketron {
 				return result;
 			}, tokenSource.Token);
 
-			Callback callback = (data) => {
+			Callback success = (data) => {
 				result = data as T;
 				done = true;
 			};
-			Emit("text", socketronData, callback);
-			return await task;
-		}
-
-		public void GetProcessMemoryInfo(Callback callback = null) {
-			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "process.getProcessMemoryInfo",
-				Args = JsonObject.Array()
+			Callback error = (data) => {
+				done = true;
 			};
-			Emit("text", data, callback);
+			Emit("text", socketronData, success, error);
+			return await task;
 		}
 	}
 
@@ -100,63 +89,88 @@ namespace Socketron {
 		public RendererProcess() {
 		}
 
-		public void Log(string text, Callback callback = null) {
+		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {
 			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "console.log",
-				Args = JsonObject.Array(text)
-			};
-			Emit("text", data, callback);
-		}
-
-		public void ExecuteJavaScript(string script, Callback callback = null) {
-			SocketronData data = new SocketronData() {
-				Type = Type,
 				Func = "executeJavaScript",
-				Args = JsonObject.Array(script)
+				Params = new object[] { script }
 			};
-			Emit("text", data, callback);
+			Emit("text", data, success, error);
 		}
 
-		public void ExecuteJavaScript(string[] scriptList, Callback callback = null) {
+		public void ExecuteJavaScript(string[] scriptList, Callback success = null, Callback error = null) {
 			string script = string.Join("\n", scriptList);
-			ExecuteJavaScript(script, callback);
+			ExecuteJavaScript(script, success, error);
 		}
 
-		public void InsertJavaScript(string url, Callback callback = null) {
+		public void InsertJavaScript(string url, Callback success = null) {
 			SocketronData data = new SocketronData() {
-				Type = Type,
 				Func = "insertJavaScript",
-				Args = JsonObject.Array(url)
+				Params = new object[] { url }
 			};
-			Emit("text", data, callback);
+			Emit("text", data, success, null);
 		}
 
-		public void InsertCSS(string css, Callback callback = null) {
+		public void InsertCSS(string css, Callback success = null) {
 			SocketronData data = new SocketronData() {
-				Type = Type,
 				Func = "insertCSS",
-				Args = JsonObject.Array(css)
+				Params = new object[] { css }
 			};
-			Emit("text", data, callback);
+			Emit("text", data, success, null);
 		}
 
-		public void GetUserAgent(Callback callback = null) {
+		public async Task<object> ExecuteJavaScriptAsync(string script) {
 			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "window.navigator.userAgent",
-				Args = JsonObject.Array()
+				Func = "executeJavaScript",
+				Params = new object[] { script }
 			};
-			Emit("text", data, callback);
+			return await _CallAsync<object>(data);
 		}
 
-		public void GetNavigator(Callback callback = null) {
+		public async Task<object> ExecuteJavaScriptAsync(string[] scriptList) {
+			string script = string.Join("\n", scriptList);
+			return await ExecuteJavaScriptAsync(script);
+		}
+
+		public async Task<object> InsertJavaScriptAsync(string url) {
 			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "window.navigator",
-				Args = JsonObject.Array()
+				Func = "insertJavaScript",
+				Params = new object[] { url }
 			};
-			Emit("text", data, callback);
+			return await _CallAsync<object>(data);
+		}
+
+		public async Task<object> InsertCSSAsync(string css) {
+			SocketronData data = new SocketronData() {
+				Func = "insertCSS",
+				Params = new object[] { css }
+			};
+			return await _CallAsync<object>(data);
+		}
+
+		protected async Task<T> _CallAsync<T>(SocketronData socketronData, int timeout = 10000) where T : class {
+			T result = null;
+			bool done = false;
+			var tokenSource = new CancellationTokenSource();
+			tokenSource.CancelAfter(timeout);
+			Task<T> task = Task.Run(async () => {
+				while (!done) {
+					await Task.Delay(1);
+					if (tokenSource.IsCancellationRequested) {
+						break;
+					}
+				}
+				return result;
+			}, tokenSource.Token);
+
+			Callback success = (data) => {
+				result = data as T;
+				done = true;
+			};
+			Callback error = (data) => {
+				done = true;
+			};
+			Emit("text", socketronData, success, error);
+			return await task;
 		}
 	}
 
@@ -166,12 +180,16 @@ namespace Socketron {
 		public MainProcess Main;
 		public RendererProcess Renderer;
 		SocketronClient _client;
-		Dictionary<ushort, Callback> _callbacks;
+		Dictionary<ushort, Callback> _successList;
+		Dictionary<ushort, Callback> _errorList;
 		ushort _sequenceId = 0;
 
 		public Socketron() {
 			_client = new SocketronClient();
 			_client.On("debug", (args) => {
+				if (!IsDebug) {
+					return;
+				}
 				Emit("debug", args[0]);
 			});
 			_client.On("connect", (args) => {
@@ -179,30 +197,14 @@ namespace Socketron {
 			});
 			_client.On("data", _OnData);
 
-			_callbacks = new Dictionary<ushort, Callback>();
+			_successList = new Dictionary<ushort, Callback>();
+			_errorList = new Dictionary<ushort, Callback>();
 
 			Main = new MainProcess();
-			Main.On("text", (args) => {
-				SocketronData data = args[0] as SocketronData;
-				Callback callback = args[1] as Callback;
-				if (callback != null) {
-					data.SequenceId = _sequenceId;
-					_callbacks[_sequenceId++] = callback;
-				}
-				Console.WriteLine("data: " + data.Stringify());
-				Write(data.ToBuffer(DataType.Text, Encoding));
-			});
+			Main.On("text", _OnText);
 
 			Renderer = new RendererProcess();
-			Renderer.On("text", (args) => {
-				SocketronData data = args[0] as SocketronData;
-				Callback callback = args[1] as Callback;
-				if (callback != null) {
-					data.SequenceId = _sequenceId;
-					_callbacks[_sequenceId++] = callback;
-				}
-				Write(data.ToBuffer(DataType.Text, Encoding));
-			});
+			Renderer.On("text", _OnText);
 		}
 
 		public bool IsConnected {
@@ -220,7 +222,10 @@ namespace Socketron {
 		}
 
 		public void Connect(string hostname, int port = 3000) {
-			Task task = _client.Connect(hostname, port);
+			Task task = Task.Run(async () => {
+				await _client.Connect(hostname, port);
+			});
+			task.Wait();
 		}
 
 		public void Close() {
@@ -244,13 +249,31 @@ namespace Socketron {
 			SocketronData data = new SocketronData() {
 				Type = type,
 				Func = function,
-				Args = args
+				Params = args
 			};
 			if (callback != null) {
 				data.SequenceId = _sequenceId;
-				_callbacks[_sequenceId++] = callback;
+				_successList[_sequenceId++] = callback;
 			}
 			//Console.WriteLine("data: " + data.Stringify());
+			Write(data.ToBuffer(DataType.Text, Encoding));
+		}
+
+		protected void _OnText(object[] args) {
+			SocketronData data = args[0] as SocketronData;
+			Callback success = args[1] as Callback;
+			Callback error = args[2] as Callback;
+			if (success != null) {
+				data.SequenceId = _sequenceId;
+				_successList[_sequenceId] = success;
+				if (error != null) {
+					_errorList[_sequenceId] = error;
+				}
+				_sequenceId++;
+			}
+			if (IsDebug) {
+				_DebugLog("send: {0}", data.Stringify());
+			}
 			Write(data.ToBuffer(DataType.Text, Encoding));
 		}
 
@@ -267,8 +290,8 @@ namespace Socketron {
 
 			switch (data.Func) {
 				case "id":
-					ID = data.Args as string;
-					DebugLog("ID: {0}", ID);
+					ID = data.Params as string;
+					//DebugLog("ID: {0}", ID);
 					break;
 				case "callback":
 					_OnCallback(data);
@@ -284,39 +307,44 @@ namespace Socketron {
 				return;
 			}
 			ushort sequenceId = (ushort)data.SequenceId;
-			if (!_callbacks.ContainsKey(sequenceId)) {
+
+			if (data.Status == "error") {
+				if (_errorList.ContainsKey(sequenceId)) {
+					Callback error = _errorList[sequenceId];
+					error?.Invoke(data.Params);
+					_successList.Remove(sequenceId);
+					_errorList.Remove(sequenceId);
+				}
 				return;
 			}
-			Callback callback = _callbacks[sequenceId];
-			callback?.Invoke(data.Args);
-			_callbacks.Remove(sequenceId);
+			if (_successList.ContainsKey(sequenceId)) {
+				Callback success = _successList[sequenceId];
+				success?.Invoke(data.Params);
+				_successList.Remove(sequenceId);
+				_errorList.Remove(sequenceId);
+			}
 		}
 
 		protected void _OnEvent(SocketronData data) {
-			JsonObject json = new JsonObject(data.Args);
+			JsonObject json = new JsonObject(data.Params);
 			//DebugLog("Return: {0}", data.Arguments[0].GetType());
 
-			string eventName = null;
-			object args = null;
-			foreach (string key in json.Keys) {
-				eventName = key;
-				args = json[key];
-				break;
-			}
+			string eventName = json["name"] as string;
+			object args = json["args"];
 			//DebugLog("Return: {0}: {1}", eventName, args);
 			if (args is object[]) {
-				Emit(eventName, args as object[]);
+				EmitTask(eventName, args as object[]);
 				return;
 			}
-			Emit(eventName, args);
+			EmitTask(eventName, args);
 		}
 
-		protected void DebugLog(string format, params object[] args) {
+		protected void _DebugLog(string format, params object[] args) {
 			if (!IsDebug) {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
-			Emit("debug", string.Format(format, args));
+			EmitTask("debug", string.Format(format, args));
 		}
 	}
 }

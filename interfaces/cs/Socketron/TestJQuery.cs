@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Socketron {
 	class TestJQuery {
@@ -24,7 +25,14 @@ namespace Socketron {
 			socketron.On("aaabbbccc", (args) => {
 				Console.WriteLine("event aaabbbccc: {0}, {1}, {2}", args[0], args[1], args[2]);
 			});
-			socketron.Connect("127.0.0.1");
+			socketron.On("window-close", (args) => {
+				Console.WriteLine("event window-close: {0}", args[0]);
+			});
+			//try {
+				socketron.Connect("127.0.0.1");
+			//} catch (Exception e) {
+			//	Console.WriteLine("Errror !!");
+			//}
 		}
 
 		void Test() {
@@ -37,22 +45,90 @@ namespace Socketron {
 			socketron.Write(buffer);
 			*/
 
-			string script = "console.log('Test: ' + process.type);";
-			socketron.Main.ExecuteJavaScript(script);
+			//string script = "console.log('Test: ' + process.type);";
+			//socketron.Main.ExecuteJavaScript(script);
+
+			/*
+			socketron.Main.ExecuteJavaScript(new[] {
+				"var browserWindow = new electron.BrowserWindow({",
+					"title: 'aaa',",
+					"useContentSize: true,",
+					"show: true",
+				"});",
+				"return browserWindow.id;"
+			}, (result) => {
+				int? id = result as int?;
+				Console.WriteLine("Window id: {0}", id);
+
+				socketron.Main.ExecuteJavaScript(new[] {
+					"var browserWindow = electron.BrowserWindow.fromId(" + id + ");",
+					"browserWindow.on('close', () => {",
+						"emit('window-close', " + id + ");",
+					"});",
+					"browserWindow.maximize();"
+				});
+			});
+			*/
+			BrowserWindow.Create(socketron, (window) => {
+				//window.SetFullScreen(true);
+				string title = window.GetTitle();
+				Console.WriteLine("test 1: " + title);
+				window.WebContents.OpenDevTools();
+				Console.WriteLine("IsDevToolsOpened: {0}", window.WebContents.IsDevToolsOpened());
+
+				socketron.On("BrowserWindow.close", (result) => {
+					Console.WriteLine("Test close");
+				});
+				window.On("close");
+
+				window.GetTitle((result) => {
+					Console.WriteLine("test 2: " + result);
+				});
+
+				int[] size = window.GetSize();
+				Console.WriteLine("GetSize: {0}, {1}", size[0], size[1]);
+
+				ulong handle1 = window.GetNativeWindowHandle();
+				Console.WriteLine("GetNativeWindowHandle: " + handle1);
+
+				window.SetOpacity(0.755);
+				double opacity = window.GetOpacity();
+				Console.WriteLine("GetOpacity: " + opacity);
+
+				bool b1 = window.IsFocused();
+				Console.WriteLine("test 1: " + b1);
+
+				Rectangle rect1 = window.GetContentBounds();
+				string text = rect1.Stringify();
+				Console.WriteLine("test 1: " + text);
+				Rectangle rect2 = Rectangle.Parse(text);
+				Console.WriteLine("test 1: {0}, {1}, {2}, {3}", rect2.X, rect2.Y, rect2.Width, rect2.Height);
+
+				//window.SetEnabled(false);
+				window.GetSize((w, h) => {
+					Console.WriteLine("GetSize: {0}, {1}", w, h);
+				});
+				window.SetSize(200, 150);
+				Rectangle rect = window.GetContentBounds();
+				Console.WriteLine("GetContentBounds: {0}, {1}", rect.X, rect.Y);
+				window.GetNativeWindowHandle((handle) => {
+					Console.WriteLine("GetNativeWindowHandle: {0}", handle);
+				});
+			});
 		}
 
 		public async void Run() {
 			if (!socketron.IsConnected) {
 				return;
 			}
+			//socketron.IsDebug = false;
 
 			//socketron.executeJavaScript("location.href='http://google.co.jp/'");
 			//var t = await socketron.Main.GetProcessType();
 			//Console.WriteLine("Test: " + t);
 			//*
-			socketron.Renderer.Log("TestJQuery", (data) => {
-				Console.WriteLine("TestJQuery Callback");
-			});
+			socketron.Main.ExecuteJavaScript("console.log('TestJQuery')");
+			socketron.Renderer.ExecuteJavaScript("console.log('TestJQuery')");
 
 			//socketron.Main.ExecuteJavaScript("return process.type;", (arg) => {
 			//	Console.WriteLine("Test: " + arg);
@@ -80,7 +156,8 @@ namespace Socketron {
 			});
 			//*/
 
-			//Test();
+			Test();
+			return;
 			/*socketron.Renderer.GetUserAgent((data) => {
 				Console.WriteLine("UserAgent: {0}", data);
 			});*/
@@ -103,7 +180,10 @@ namespace Socketron {
 			socketron.Main.ExecuteJavaScript(new[] {
 				"electron.app.on('window-all-closed', () => {",
 				"emit('aaabbb', 12345);",
-				"})"
+				"});",
+				//"return this.process"
+			}, (result) => {
+				Console.WriteLine("error: {0}", result);
 			});
 			socketron.Renderer.ExecuteJavaScript(new[] {
 				"emit('aaabbb', 445566);",
@@ -111,6 +191,15 @@ namespace Socketron {
 			}, (result) => {
 				Console.WriteLine("userAgent: {0}", result);
 			});
+			string path = (string)await socketron.Main.ExecuteJavaScriptAsync(new[] {
+				"return electron.app.getAppPath()",
+			});
+			Console.WriteLine("# getAppPath: {0}", path);
+
+			//socketron.WriteTextData(ProcessType.Browser, "exports.test.testFunc2", JsonObject.Array(123, "abc"), (result) => {
+			//	Console.WriteLine("error: {0}", result);
+			//});
+			//return;
 
 			string[] css = {
 				"* {",
@@ -120,37 +209,36 @@ namespace Socketron {
 			};
 			socketron.Renderer.InsertCSS(string.Join("\n", css));
 
-			socketron.Renderer.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (data) => {
-				socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
-					Console.WriteLine("Test: console.log($)");
-				});
-				socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
-				socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
-
-				string[] scriptList = {
-					"$('#button1').click(() => {",
-					"	emit('aaabbb', 123);",
-					"})"
-				};
-				socketron.Renderer.ExecuteJavaScript(scriptList);
-
-				scriptList = new[] {
-					"$('#button2').click(() => {",
-					"	emit('aaabbbccc', '222', true, 111);",
-					"})"
- 				};
-				socketron.Renderer.ExecuteJavaScript(scriptList);
-
-				//string[] script = {
-				//	"var _navigator = { };",
-				//	"for (var i in navigator) _navigator[i] = navigator[i]",
-				//	"Socketron.broadcast(JSON.stringify(_navigator) + '\\n');"
-				//};
-				//socketron.Run(string.Join("\n", script));
+			await socketron.Renderer.InsertJavaScriptAsync("https://code.jquery.com/jquery-3.3.1.min.js");
+			socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
+				Console.WriteLine("Test: console.log($)");
 			});
+			socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
+			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
+			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
+			socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
+			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
+
+			string[] scriptList = {
+				"$('#button1').click(() => {",
+				"	emit('aaabbb', 123);",
+				"})"
+			};
+			socketron.Renderer.ExecuteJavaScript(scriptList);
+
+			scriptList = new[] {
+				"$('#button2').click(() => {",
+				"	emit('aaabbbccc', '222', true, 111);",
+				"})"
+ 			};
+			socketron.Renderer.ExecuteJavaScript(scriptList);
+
+			//string[] script = {
+			//	"var _navigator = { };",
+			//	"for (var i in navigator) _navigator[i] = navigator[i]",
+			//	"Socketron.broadcast(JSON.stringify(_navigator) + '\\n');"
+			//};
+			//socketron.Run(string.Join("\n", script));
 			//*/
 
 		}
