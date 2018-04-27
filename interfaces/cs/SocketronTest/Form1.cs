@@ -1,17 +1,29 @@
 ﻿using System;
+using System.Threading;
 using System.Windows.Forms;
+using Socketron;
 
-namespace Socketron {
+namespace SocketronTest {
 	public partial class Form1 : Form {
-		Socketron socketron;
+		Socketron.Socketron socketron;
 		int count = 0;
+		TestJQuery test;
 
 		public Form1() {
 			InitializeComponent();
+			Thread.CurrentThread.Name = "UI Thread";
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
-			TestJQuery test = new TestJQuery();
+			if (test != null) {
+				test.Close();
+			}
+			test = new TestJQuery();
+			test.Log += (text) => {
+				Invoke((MethodInvoker)(() => {
+					textBox1.AppendText(text + "\n");
+				}));
+			};
 			//test.Run();
 			/*
 			if (socketron != null && socketron.IsConnected) {
@@ -35,7 +47,7 @@ namespace Socketron {
 		}
 
 		private void Run() {
-			socketron.Renderer.Log("Test Client", (data) => {
+			socketron.Renderer.ExecuteJavaScript("console.log('Test Client')", (data) => {
 				Console.WriteLine("Callback Test");
 			});
 			//socketron.Run("alert('test22');");
@@ -59,6 +71,9 @@ namespace Socketron {
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
 			if (socketron != null) {
 				socketron.Close();
+			}
+			if (test != null) {
+				test.Close();
 			}
 		}
 

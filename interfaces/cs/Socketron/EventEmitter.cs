@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Socketron {
 	public delegate void EventListener(params object[] args);
@@ -81,12 +81,21 @@ namespace Socketron {
 			}
 		}
 
+		public void EmitNewThread(string channel, params object[] args) {
+			WaitCallback callback = new WaitCallback((state) => {
+				Emit(channel, args);
+			});
+			ThreadPool.QueueUserWorkItem(callback);
+		}
+
+		/*
 		public async void EmitTask(string channel, params object[] args) {
 			Task task = Task.Run(() => {
 				Emit(channel, args);
 			});
 			await task;
 		}
+		//*/
 
 		public EventEmitter On(string channel, EventListener listener) {
 			channel = channel.ToLower();

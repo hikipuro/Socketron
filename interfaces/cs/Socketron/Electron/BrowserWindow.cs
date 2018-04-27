@@ -1,64 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Web.Script.Serialization;
 
 namespace Socketron {
-
-	public class Rectangle {
-		public int X;
-		public int Y;
-		public int Width;
-		public int Height;
-
-		class Converter : JavaScriptConverter {
-			public override IEnumerable<Type> SupportedTypes {
-				get { return new List<Type>() { typeof(Rectangle) }; }
-			}
-
-			public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer) {
-				var rect = new Rectangle();
-				rect.X = GetIntValue(dictionary, "x");
-				rect.Y = GetIntValue(dictionary, "y");
-				rect.Width = GetIntValue(dictionary, "width");
-				rect.Height = GetIntValue(dictionary, "height");
-				return rect;
-			}
-
-			public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) {
-				var result = new Dictionary<string, object>();
-				var rect = obj as Rectangle;
-				if (rect == null) {
-					return result;
-				}
-				result["x"] = rect.X;
-				result["y"] = rect.Y;
-				result["width"] = rect.Width;
-				result["height"] = rect.Height;
-				return result;
-			}
-
-			protected int GetIntValue(IDictionary<string, object> dictionary, string key) {
-				if (dictionary.ContainsKey(key) && dictionary[key].GetType() == typeof(int)) {
-					return (int)dictionary[key];
-				}
-				return 0;
-			}
-		}
-
-		public static Rectangle Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			serializer.RegisterConverters(new JavaScriptConverter[] { new Converter() });
-			return serializer.Deserialize<Rectangle>(text);
-		}
-
-		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			serializer.RegisterConverters(new JavaScriptConverter[] { new Converter() });
-			return serializer.Serialize(this);
-		}
-	}
-
 	public class BrowserWindow : EventEmitter {
 		public int ID = 0;
 		public WebContents WebContents;
@@ -70,9 +13,6 @@ namespace Socketron {
 		public static void Create(Socketron socketron, Action<BrowserWindow> callback) {
 			string[] scriptList = new[] {
 				"var browserWindow = new electron.BrowserWindow({",
-					"title: 'aaa',",
-					"useContentSize: true,",
-					"show: true",
 				"});",
 				"return [browserWindow.id, browserWindow.webContents.id];"
 			};
@@ -83,11 +23,13 @@ namespace Socketron {
 					int? windowId = list[0] as int?;
 					int? contentsId = list[1] as int?;
 					if (windowId != null && contentsId != null) {
-						BrowserWindow window = new BrowserWindow();
-						window.ID = (int)windowId;
-						window._socketron = socketron;
-						window.WebContents = new WebContents(window);
-						window.WebContents.ID = (int)contentsId;
+						BrowserWindow window = new BrowserWindow() {
+							ID = (int)windowId,
+							_socketron = socketron
+						};
+						window.WebContents = new WebContents(window) {
+							ID = (int)contentsId
+						};
 						callback?.Invoke(window);
 					} else {
 						Console.Error.WriteLine("error");
@@ -96,6 +38,34 @@ namespace Socketron {
 					Console.Error.WriteLine("error");
 				}
 			);
+		}
+
+		public static BrowserWindow Create(Socketron socketron, BrowserWindowOptions options = null) {
+			if (options == null) {
+				options = new BrowserWindowOptions();
+			}
+			string[] scriptList = new[] {
+				"var browserWindow = new electron.BrowserWindow(",
+					options.Stringify(),
+				");",
+				"return [browserWindow.id, browserWindow.webContents.id];"
+			};
+			BrowserWindow window = null;
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, scriptList);
+			int? windowId = result[0] as int?;
+			int? contentsId = result[1] as int?;
+			if (windowId != null && contentsId != null) {
+				window = new BrowserWindow() {
+					ID = (int)windowId,
+					_socketron = socketron
+				};
+				window.WebContents = new WebContents(window) {
+					ID = (int)contentsId
+				};
+			} else {
+				Console.Error.WriteLine("error");
+			}
+			return window;
 		}
 
 		public static void GetAllWindows() {
@@ -121,7 +91,7 @@ namespace Socketron {
 		public void On(string eventName) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.on('" + eventName + "', () => {" +
+				"window.on(" + eventName.Escape() + ", () => {" +
 					"emit('BrowserWindow.close'," + ID + ");",
 				"});"
 			};
@@ -327,7 +297,7 @@ namespace Socketron {
 		public void SetFullScreen(bool flag) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setFullScreen(" + flag.ToString().ToLower() + ");"
+				"window.setFullScreen(" + flag.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -353,7 +323,7 @@ namespace Socketron {
 		public void SetSimpleFullScreen(bool flag) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setSimpleFullScreen(" + flag.ToString().ToLower() + ");"
+				"window.setSimpleFullScreen(" + flag.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -361,7 +331,7 @@ namespace Socketron {
 		public void SetAspectRatio(double aspectRatio) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setAspectRatio(" + aspectRatio.ToString() + ");"
+				"window.setAspectRatio(" + aspectRatio + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -369,7 +339,7 @@ namespace Socketron {
 		public void PreviewFile(string path) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.previewFile(" + path + ");"
+				"window.previewFile(" + path.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -386,10 +356,10 @@ namespace Socketron {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setBounds({",
-					"x:" + bounds.X + ",",
-					"y:" + bounds.Y + ",",
-					"width:" + bounds.Width + ",",
-					"height:" + bounds.Height,
+					"x:" + bounds.x + ",",
+					"y:" + bounds.y + ",",
+					"width:" + bounds.width + ",",
+					"height:" + bounds.height,
 				"});"
 			};
 			_ExecuteJavaScript(scriptList);
@@ -403,10 +373,10 @@ namespace Socketron {
 			_ExecuteJavaScript(scriptList, (result) => {
 				JsonObject json = new JsonObject(result);
 				Rectangle rect = new Rectangle() {
-					X = (int)json["x"],
-					Y = (int)json["y"],
-					Width = (int)json["width"],
-					Height = (int)json["height"]
+					x = (int)json["x"],
+					y = (int)json["y"],
+					width = (int)json["width"],
+					height = (int)json["height"]
 				};
 				callback?.Invoke(rect);
 			});
@@ -420,10 +390,10 @@ namespace Socketron {
 			object result = _ExecuteJavaScriptBlocking<object>(scriptList);
 			JsonObject json = new JsonObject(result);
 			Rectangle rect = new Rectangle() {
-				X = (int)json["x"],
-				Y = (int)json["y"],
-				Width = (int)json["width"],
-				Height = (int)json["height"]
+				x = (int)json["x"],
+				y = (int)json["y"],
+				width = (int)json["width"],
+				height = (int)json["height"]
 			};
 			return rect;
 		}
@@ -431,7 +401,7 @@ namespace Socketron {
 		public void SetEnabled(bool enable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setEnabled(" + enable.ToString().ToLower() + ");"
+				"window.setEnabled(" + enable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -567,7 +537,7 @@ namespace Socketron {
 		public void SetResizable(bool resizable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setResizable(" + resizable.ToString().ToLower() + ");"
+				"window.setResizable(" + resizable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -593,7 +563,7 @@ namespace Socketron {
 		public void SetMovable(bool movable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setMovable(" + movable.ToString().ToLower() + ");"
+				"window.setMovable(" + movable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -619,7 +589,7 @@ namespace Socketron {
 		public void SetMinimizable(bool minimizable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setMinimizable(" + minimizable.ToString().ToLower() + ");"
+				"window.setMinimizable(" + minimizable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -645,7 +615,7 @@ namespace Socketron {
 		public void SetMaximizable(bool maximizable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setMaximizable(" + maximizable.ToString().ToLower() + ");"
+				"window.setMaximizable(" + maximizable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -671,7 +641,7 @@ namespace Socketron {
 		public void SetFullScreenable(bool fullscreenable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setFullScreenable(" + fullscreenable.ToString().ToLower() + ");"
+				"window.setFullScreenable(" + fullscreenable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -697,7 +667,7 @@ namespace Socketron {
 		public void SetClosable(bool closable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setClosable(" + closable.ToString().ToLower() + ");"
+				"window.setClosable(" + closable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -723,7 +693,7 @@ namespace Socketron {
 		public void SetAlwaysOnTop(bool flag) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setAlwaysOnTop(" + flag.ToString().ToLower() + ");"
+				"window.setAlwaysOnTop(" + flag.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -797,7 +767,7 @@ namespace Socketron {
 		public void SetTitle(string title) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setTitle(" + title + ");"
+				"window.setTitle(" + title.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -831,7 +801,7 @@ namespace Socketron {
 		public void FlashFrame(bool flag) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.flashFrame(" + flag.ToString().ToLower() + ");"
+				"window.flashFrame(" + flag.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -839,7 +809,7 @@ namespace Socketron {
 		public void SetSkipTaskbar(bool skip) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setSkipTaskbar(" + skip.ToString().ToLower() + ");"
+				"window.setSkipTaskbar(" + skip.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -847,7 +817,7 @@ namespace Socketron {
 		public void SetKiosk(bool flag) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setKiosk(" + flag.ToString().ToLower() + ");"
+				"window.setKiosk(" + flag.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -951,7 +921,7 @@ namespace Socketron {
 		public void SetRepresentedFilename(string filename) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setRepresentedFilename(" + filename + ");"
+				"window.setRepresentedFilename(" + filename.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -977,7 +947,7 @@ namespace Socketron {
 		public void SetDocumentEdited(bool edited) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setDocumentEdited(" + edited.ToString().ToLower() + ");"
+				"window.setDocumentEdited(" + edited.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1030,7 +1000,7 @@ namespace Socketron {
 		public void LoadURL(string url) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.loadURL(" + url + ");"
+				"window.loadURL(" + url.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1038,7 +1008,7 @@ namespace Socketron {
 		public void LoadFile(string filePath) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.loadFile(" + filePath + ");"
+				"window.loadFile(" + filePath.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1145,10 +1115,10 @@ namespace Socketron {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setThumbnailClip({",
-					"x:" + region.X + ",",
-					"y:" + region.Y + ",",
-					"width:" + region.Width + ",",
-					"height:" + region.Height,
+					"x:" + region.x + ",",
+					"y:" + region.y + ",",
+					"width:" + region.width + ",",
+					"height:" + region.height,
 				");"
 			};
 			_ExecuteJavaScript(scriptList);
@@ -1157,7 +1127,7 @@ namespace Socketron {
 		public void SetThumbnailToolTip(string toolTip) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setThumbnailToolTip(" + toolTip + ");"
+				"window.setThumbnailToolTip(" + toolTip.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1193,7 +1163,7 @@ namespace Socketron {
 		public void SetAutoHideMenuBar(bool hide) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setAutoHideMenuBar(" + hide.ToString().ToLower() + ");"
+				"window.setAutoHideMenuBar(" + hide.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1219,7 +1189,7 @@ namespace Socketron {
 		public void SetMenuBarVisibility(bool visible) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setMenuBarVisibility(" + visible.ToString().ToLower() + ");"
+				"window.setMenuBarVisibility(" + visible.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1245,7 +1215,7 @@ namespace Socketron {
 		public void SetVisibleOnAllWorkspaces(bool visible) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setVisibleOnAllWorkspaces(" + visible.ToString().ToLower() + ");"
+				"window.setVisibleOnAllWorkspaces(" + visible.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1271,7 +1241,7 @@ namespace Socketron {
 		public void SetIgnoreMouseEvents(bool ignore) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setIgnoreMouseEvents(" + ignore.ToString().ToLower() + ");"
+				"window.setIgnoreMouseEvents(" + ignore.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1279,7 +1249,7 @@ namespace Socketron {
 		public void SetContentProtection(bool enable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setContentProtection(" + enable.ToString().ToLower() + ");"
+				"window.setContentProtection(" + enable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1287,7 +1257,7 @@ namespace Socketron {
 		public void SetFocusable(bool focusable) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setFocusable(" + focusable.ToString().ToLower() + ");"
+				"window.setFocusable(" + focusable.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1329,7 +1299,7 @@ namespace Socketron {
 		public void SetAutoHideCursor(bool autoHide) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setAutoHideCursor(" + autoHide.ToString().ToLower() + ");"
+				"window.setAutoHideCursor(" + autoHide.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1387,7 +1357,7 @@ namespace Socketron {
 		public void SetVibrancy(string type) {
 			string[] scriptList = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.setVibrancy(" + type + ");"
+				"window.setVibrancy(" + type.Escape() + ");"
 			};
 			_ExecuteJavaScript(scriptList);
 		}
@@ -1462,7 +1432,42 @@ namespace Socketron {
 			});
 
 			while (!done) {
-				Thread.Sleep(1);
+				Thread.Sleep(TimeSpan.FromTicks(1));
+			}
+			return value;
+		}
+
+		protected static void _ExecuteJavaScript(Socketron socketron, string[] scriptList, Callback success, Callback error) {
+			socketron.Main.ExecuteJavaScript(scriptList, success, error);
+		}
+
+		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] scriptList) {
+			bool done = false;
+			T value = default(T);
+
+			_ExecuteJavaScript(socketron, scriptList, (result) => {
+				if (result == null) {
+					done = true;
+					return;
+				}
+				if (typeof(T) == typeof(double)) {
+					//Console.WriteLine(result.GetType());
+					if (result.GetType() == typeof(int)) {
+						result = (double)(int)result;
+					} else if (result.GetType() == typeof(Decimal)) {
+						result = (double)(Decimal)result;
+					}
+				}
+				value = (T)result;
+				done = true;
+			}, (result) => {
+				Console.Error.WriteLine("error: BrowserWindow._ExecuteJavaScriptBlocking");
+				throw new InvalidOperationException(result as string);
+				//done = true;
+			});
+
+			while (!done) {
+				Thread.Sleep(TimeSpan.FromTicks(1));
 			}
 			return value;
 		}

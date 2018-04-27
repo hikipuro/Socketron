@@ -1,18 +1,23 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Threading;
+using Socketron;
 
-namespace Socketron {
+namespace SocketronTest {
 	class TestJQuery {
-		Socketron socketron;
+		public event Action<string> Log;
+		Socketron.Socketron socketron;
 
 		public TestJQuery() {
-			socketron = new Socketron();
+			socketron = new Socketron.Socketron();
+			//socketron.IsDebug = false;
 			socketron.On("connect", (args) => {
 				//Console.WriteLine("Connected");
 				Run();
 			});
 			socketron.On("debug", (args) => {
 				Console.WriteLine(args[0]);
+				Log?.Invoke(args[0] as string);
 			});
 			//socketron.On("data", (args) => {
 			//	Packet packet = (Packet)args[0];
@@ -33,6 +38,10 @@ namespace Socketron {
 			//} catch (Exception e) {
 			//	Console.WriteLine("Errror !!");
 			//}
+		}
+
+		public void Close() {
+			socketron.Close();
 		}
 
 		void Test() {
@@ -69,55 +78,92 @@ namespace Socketron {
 				});
 			});
 			*/
-			BrowserWindow.Create(socketron, (window) => {
-				//window.SetFullScreen(true);
-				string title = window.GetTitle();
-				Console.WriteLine("test 1: " + title);
-				window.WebContents.OpenDevTools();
-				Console.WriteLine("IsDevToolsOpened: {0}", window.WebContents.IsDevToolsOpened());
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+			BrowserWindowOptions options = new BrowserWindowOptions();
+			options.show = false;
+			//options.width = 400;
+			//options.height = 300;
+			//options.backgroundColor = "#aaa";
+			//options.opacity = 0.5;
+			BrowserWindow window = BrowserWindow.Create(socketron, options);
+			stopwatch.Stop();
+			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 
-				socketron.On("BrowserWindow.close", (result) => {
-					Console.WriteLine("Test close");
-				});
-				window.On("close");
+			//window.SetFullScreen(true);
+			stopwatch.Reset();
+			stopwatch.Start();
+			string title = window.GetTitle();
+			stopwatch.Stop();
+			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
+			Console.WriteLine("test 1: " + title);
 
-				window.GetTitle((result) => {
-					Console.WriteLine("test 2: " + result);
-				});
+			//window.LoadURL("http://google.com");
 
-				int[] size = window.GetSize();
-				Console.WriteLine("GetSize: {0}, {1}", size[0], size[1]);
+			Console.WriteLine("GetOSProcessId: " + window.WebContents.GetOSProcessId());
 
-				ulong handle1 = window.GetNativeWindowHandle();
-				Console.WriteLine("GetNativeWindowHandle: " + handle1);
+			window.LoadURL("file:///src/html/index.html");
+			window.Show();
+			window.WebContents.OpenDevTools();
 
-				window.SetOpacity(0.755);
-				double opacity = window.GetOpacity();
-				Console.WriteLine("GetOpacity: " + opacity);
+			window.WebContents.SetIgnoreMenuShortcuts(true);
 
-				bool b1 = window.IsFocused();
-				Console.WriteLine("test 1: " + b1);
+			//Thread.Sleep(1000);
+			window.WebContents.ExecuteJavaScript("document.write('test')");
+			Console.WriteLine("Test");
 
-				Rectangle rect1 = window.GetContentBounds();
-				string text = rect1.Stringify();
-				Console.WriteLine("test 1: " + text);
-				Rectangle rect2 = Rectangle.Parse(text);
-				Console.WriteLine("test 1: {0}, {1}, {2}, {3}", rect2.X, rect2.Y, rect2.Width, rect2.Height);
+			return;
 
-				//window.SetEnabled(false);
-				window.GetSize((w, h) => {
-					Console.WriteLine("GetSize: {0}, {1}", w, h);
-				});
-				window.SetSize(200, 150);
-				Rectangle rect = window.GetContentBounds();
-				Console.WriteLine("GetContentBounds: {0}, {1}", rect.X, rect.Y);
-				window.GetNativeWindowHandle((handle) => {
-					Console.WriteLine("GetNativeWindowHandle: {0}", handle);
-				});
+			stopwatch.Reset();
+			stopwatch.Start();
+			title = window.GetTitle();
+			stopwatch.Stop();
+			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
+
+			window.WebContents.OpenDevTools();
+			Console.WriteLine("IsDevToolsOpened: {0}", window.WebContents.IsDevToolsOpened());
+
+			socketron.On("BrowserWindow.close", (result) => {
+				Console.WriteLine("Test close");
+			});
+			window.On("close");
+
+			window.GetTitle((result) => {
+				Console.WriteLine("test 2: " + result);
+			});
+
+			int[] size = window.GetSize();
+			Console.WriteLine("GetSize: {0}, {1}", size[0], size[1]);
+
+			ulong handle1 = window.GetNativeWindowHandle();
+			Console.WriteLine("GetNativeWindowHandle: " + handle1);
+
+			window.SetOpacity(0.755);
+			double opacity = window.GetOpacity();
+			Console.WriteLine("GetOpacity: " + opacity);
+
+			bool b1 = window.IsFocused();
+			Console.WriteLine("test 1: " + b1);
+
+			Rectangle rect1 = window.GetContentBounds();
+			string text = rect1.Stringify();
+			Console.WriteLine("test 1: " + text);
+			Rectangle rect2 = Rectangle.Parse(text);
+			Console.WriteLine("test 1: {0}, {1}, {2}, {3}", rect2.x, rect2.y, rect2.width, rect2.height);
+
+			//window.SetEnabled(false);
+			window.GetSize((w, h) => {
+				Console.WriteLine("GetSize: {0}, {1}", w, h);
+			});
+			window.SetSize(200, 150);
+			Rectangle rect = window.GetContentBounds();
+			Console.WriteLine("GetContentBounds: {0}, {1}", rect.x, rect.y);
+			window.GetNativeWindowHandle((handle) => {
+				Console.WriteLine("GetNativeWindowHandle: {0}", handle);
 			});
 		}
 
-		public async void Run() {
+		public void Run() {
 			if (!socketron.IsConnected) {
 				return;
 			}
@@ -191,10 +237,10 @@ namespace Socketron {
 			}, (result) => {
 				Console.WriteLine("userAgent: {0}", result);
 			});
-			string path = (string)await socketron.Main.ExecuteJavaScriptAsync(new[] {
-				"return electron.app.getAppPath()",
-			});
-			Console.WriteLine("# getAppPath: {0}", path);
+			//string path = (string)await socketron.Main.ExecuteJavaScriptAsync(new[] {
+			//	"return electron.app.getAppPath()",
+			//});
+			//Console.WriteLine("# getAppPath: {0}", path);
 
 			//socketron.WriteTextData(ProcessType.Browser, "exports.test.testFunc2", JsonObject.Array(123, "abc"), (result) => {
 			//	Console.WriteLine("error: {0}", result);
@@ -209,37 +255,31 @@ namespace Socketron {
 			};
 			socketron.Renderer.InsertCSS(string.Join("\n", css));
 
-			await socketron.Renderer.InsertJavaScriptAsync("https://code.jquery.com/jquery-3.3.1.min.js");
-			socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
-				Console.WriteLine("Test: console.log($)");
-			});
-			socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
-			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
-			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
-			socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
-			socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
+			socketron.Renderer.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (result) => {
+				socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
+					Console.WriteLine("Test: console.log($)");
+				});
+				socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
+				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
+				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
+				socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
+				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
 
-			string[] scriptList = {
+				string[] scriptList = {
 				"$('#button1').click(() => {",
 				"	emit('aaabbb', 123);",
 				"})"
 			};
-			socketron.Renderer.ExecuteJavaScript(scriptList);
+				socketron.Renderer.ExecuteJavaScript(scriptList);
 
-			scriptList = new[] {
+				scriptList = new[] {
 				"$('#button2').click(() => {",
 				"	emit('aaabbbccc', '222', true, 111);",
 				"})"
  			};
-			socketron.Renderer.ExecuteJavaScript(scriptList);
+				socketron.Renderer.ExecuteJavaScript(scriptList);
 
-			//string[] script = {
-			//	"var _navigator = { };",
-			//	"for (var i in navigator) _navigator[i] = navigator[i]",
-			//	"Socketron.broadcast(JSON.stringify(_navigator) + '\\n');"
-			//};
-			//socketron.Run(string.Join("\n", script));
-			//*/
+			});
 
 		}
 	}

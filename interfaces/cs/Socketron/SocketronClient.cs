@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Socketron {
 	public enum ReadState {
@@ -14,7 +13,7 @@ namespace Socketron {
 	}
 
 	internal class SocketronClient: EventEmitter {
-		public const int ReadBufferSize = 1024;
+		public const int ReadBufferSize = 1024 * 8;
 		public bool IsDebug = true;
 
 		protected TcpClient _tcpClient;
@@ -22,8 +21,13 @@ namespace Socketron {
 		protected int _timeout = 10000;
 		protected Encoding _encoding = Encoding.UTF8;
 		protected Packet _packet = new Packet();
+		protected byte[] _buffer = new byte[ReadBufferSize];
+		protected Thread _readThread;
+		protected ManualResetEvent _readDone = new ManualResetEvent(false);
+		protected AsyncCallback _writeCallback;
 
 		public SocketronClient() {
+			_writeCallback = new AsyncCallback(_OnWrite);
 		}
 
 		public bool IsConnected {
@@ -54,10 +58,82 @@ namespace Socketron {
 			}
 		}
 
-		public async Task Connect(string hostname, int port) {
+		public void Connect(string hostname, int port) {
 			Close();
 			_tcpClient = new TcpClient();
-			await _tcpClient.ConnectAsync(hostname, port);
+			_tcpClient.NoDelay = true;
+			_tcpClient.BeginConnect(
+				hostname, port,
+				new AsyncCallback(_OnConnect),
+				_tcpClient
+			);
+		}
+
+		public void Close() {
+			Console.WriteLine("Socketron close");
+			if (_stream != null) {
+				_stream.Close();
+				_stream = null;
+			}
+			if (_tcpClient != null) {
+				_tcpClient.Close();
+				//_tcpClient = null;
+			}
+			if (_readThread != null) {
+				//_readDone.Set();
+				_readThread.Abort();
+				_readThread = null;
+			}
+		}
+
+		public void Write(byte[] bytes) {
+			try {
+				//*
+				_stream.BeginWrite(
+					bytes, 0, bytes.Length,
+					_writeCallback, _stream
+				);
+				//*/
+				//_stream.Write(bytes, 0, bytes.Length);
+			} catch (IOException) {
+				Close();
+			} catch (NullReferenceException) {
+				Close();
+			}
+		}
+
+		protected void _Read() {
+			AsyncCallback callback = new AsyncCallback(_OnRead);
+			TcpClient tcpClient = _tcpClient;
+			NetworkStream stream = _stream;
+			while (tcpClient.Connected && stream.CanRead) {
+				do {
+					//*
+					stream.BeginRead(
+						_buffer, 0, _buffer.Length,
+						callback, stream
+					);
+					_readDone.WaitOne();
+					_readDone.Reset();
+					//*/
+					/*
+					int bytesReaded = _stream.Read(
+						_buffer, 0, _buffer.Length
+					);
+					if (bytesReaded == 0) {
+						Close();
+						return;
+					}
+					_OnData(_buffer, bytesReaded);
+					//*/
+				} while (stream.DataAvailable);
+				Thread.Sleep(TimeSpan.FromTicks(1));
+			}
+		}
+
+		protected void _OnConnect(IAsyncResult result) {
+			TcpClient client = (TcpClient)result.AsyncState;
+			client.EndConnect(result);
 
 			_DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
 				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
@@ -70,44 +146,36 @@ namespace Socketron {
 			_stream.ReadTimeout = _timeout;
 			_stream.WriteTimeout = _timeout;
 
-			EmitTask("connect");
-			Task task = _Read();
+			_readThread = new Thread(_Read);
+			_readThread.Name = "Socketron read thread";
+			_readThread.Start();
+			Emit("connect");
 		}
 
-		public void Close() {
-			if (_stream != null) {
-				_stream.Close();
-				_stream = null;
-			}
-			if (_tcpClient != null) {
-				_tcpClient.Close();
-				//_tcpClient = null;
-			}
-		}
-
-		public void Write(byte[] bytes) {
+		protected void _OnRead(IAsyncResult result) {
+			NetworkStream stream = (NetworkStream)result.AsyncState;
+			int bytesReaded = 0;
 			try {
-				_stream.WriteAsync(bytes, 0, bytes.Length);
+				bytesReaded = stream.EndRead(result);
 			} catch (IOException) {
-				Close();
-			} catch (NullReferenceException) {
-				Close();
+				_readDone.Set();
+				return;
+			} catch (ObjectDisposedException) {
+				_readDone.Set();
+				return;
 			}
+			if (bytesReaded == 0) {
+				Close();
+				_readDone.Set();
+				return;
+			}
+			_OnData(_buffer, bytesReaded);
+			_readDone.Set();
 		}
 
-		protected async Task _Read() {
-			byte[] bytes = new byte[ReadBufferSize];
-			while (_tcpClient.Connected && _stream.CanRead) {
-				do {
-					int bytesReaded = await _stream.ReadAsync(bytes, 0, bytes.Length);
-					if (bytesReaded == 0) {
-						Close();
-						return;
-					}
-					_OnData(bytes, bytesReaded);
-				} while (_stream.DataAvailable);
-				await Task.Delay(1);
-			}
+		protected void _OnWrite(IAsyncResult result) {
+			//NetworkStream stream = (NetworkStream)result.AsyncState;
+			_stream.EndWrite(result);
 		}
 
 		protected void _OnData(byte[] data, int bytesReaded) {
@@ -151,7 +219,7 @@ namespace Socketron {
 					if (_packet.DataType == DataType.Text) {
 						string text = _packet.GetStringData();
 						_DebugLog("receive: {0}", text);
-						EmitTask("data", SocketronData.Parse(text));
+						EmitNewThread("data", SocketronData.Parse(text));
 					}
 					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
 					_packet.DataOffset = 0;
@@ -167,7 +235,7 @@ namespace Socketron {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
-			EmitTask("debug", string.Format(format, args));
+			EmitNewThread("debug", string.Format(format, args));
 		}
 	}
 }

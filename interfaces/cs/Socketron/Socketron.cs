@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Socketron {
 	public enum DataType {
@@ -42,6 +40,7 @@ namespace Socketron {
 			ExecuteJavaScript(script, success, error);
 		}
 
+		/*
 		public async Task<object> ExecuteJavaScriptAsync(string script) {
 			SocketronData data = new SocketronData() {
 				Type = Type,
@@ -81,6 +80,7 @@ namespace Socketron {
 			Emit("text", socketronData, success, error);
 			return await task;
 		}
+		//*/
 	}
 
 	public class RendererProcess : EventEmitter {
@@ -118,6 +118,7 @@ namespace Socketron {
 			Emit("text", data, success, null);
 		}
 
+		/*
 		public async Task<object> ExecuteJavaScriptAsync(string script) {
 			SocketronData data = new SocketronData() {
 				Func = "executeJavaScript",
@@ -172,6 +173,7 @@ namespace Socketron {
 			Emit("text", socketronData, success, error);
 			return await task;
 		}
+		//*/
 	}
 
 	public class Socketron: EventEmitter {
@@ -222,10 +224,7 @@ namespace Socketron {
 		}
 
 		public void Connect(string hostname, int port = 3000) {
-			Task task = Task.Run(async () => {
-				await _client.Connect(hostname, port);
-			});
-			task.Wait();
+			_client.Connect(hostname, port);
 		}
 
 		public void Close() {
@@ -282,7 +281,7 @@ namespace Socketron {
 			if (data == null) {
 				return;
 			}
-			//Console.WriteLine("data.Command: " + data.Command + " " + data.Command.Text);
+			//Console.WriteLine("data.Func: " + data.Func);
 			//Console.WriteLine("data.Function: " + data.Function);
 			//Console.WriteLine("data.Arguments: " + data.Arguments);
 			//Console.WriteLine("data.SequenceId: " + data.SequenceId);
@@ -333,10 +332,10 @@ namespace Socketron {
 			object args = json["args"];
 			//DebugLog("Return: {0}: {1}", eventName, args);
 			if (args is object[]) {
-				EmitTask(eventName, args as object[]);
+				EmitNewThread(eventName, args as object[]);
 				return;
 			}
-			EmitTask(eventName, args);
+			EmitNewThread(eventName, args);
 		}
 
 		protected void _DebugLog(string format, params object[] args) {
@@ -344,7 +343,7 @@ namespace Socketron {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
-			EmitTask("debug", string.Format(format, args));
+			EmitNewThread("debug", string.Format(format, args));
 		}
 	}
 }

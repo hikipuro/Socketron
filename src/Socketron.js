@@ -294,7 +294,7 @@ class CommandProcessorNode extends EventEmitter {
 			return;
 		}
 		console.log(script);
-		
+		const start = Date.now();
 		const clientId = this._client.id;
 		const funcs = [
 			"var socketron = this.socketron;",
@@ -308,7 +308,9 @@ class CommandProcessorNode extends EventEmitter {
 		];
 		script = funcs.join("") + script;
 		//eval(script);
-		return Function(script).apply(this);
+		const result = Function(script).apply(this);
+		console.log("time: " + (Date.now() - start));
+		return result;
 	}
 
 	_getFunction(name) {
@@ -333,7 +335,11 @@ class CommandProcessorNode extends EventEmitter {
 	}
 	
 	_sendCallback(data, client, args) {
-		this.emit("callback", data, client, args);
+		if (data.sequenceId == null) {
+			return;
+		}
+		this.socketron._sendCallback(data, client, args);
+		//this.emit("callback", data, client, args);
 	}
 	
 	_sendError(data, client, message) {
@@ -344,6 +350,11 @@ class CommandProcessorNode extends EventEmitter {
 class SocketronNode {
 	constructor() {
 		this.browserWindow = null;
+		
+		this._callbackData = new SocketronData({
+			status: "ok",
+			func: "callback"
+		});
 
 		this._server = new SocketronServer();
 		this._server.on("log", (client, message) => {
@@ -523,13 +534,18 @@ class SocketronNode {
 			return;
 		}
 		//this._ipcLog(data);
+		/*
 		let newData = new SocketronData({
 			sequenceId: data.sequenceId,
 			status: "ok",
 			func: "callback",
 			args: args
 		});
-		client.writeTextData(newData);
+		//*/
+		const callbackData = this._callbackData;
+		callbackData.sequenceId = data.sequenceId;
+		callbackData.args = args;
+		client.writeTextData(callbackData);
 	}
 }
 
@@ -590,7 +606,7 @@ class CommandProcessorRenderer extends EventEmitter {
 		if (script == null) {
 			return;
 		}
-		console.log(script);
+		//console.log(script);
 
 		const clientId = this._clientId;
 		const funcs = [
