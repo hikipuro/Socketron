@@ -90,6 +90,26 @@ namespace SocketronTest {
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 
+			window.LoadURL("file:///src/html/index.html");
+
+			window.Once("ready-to-show", (args) => {
+				Console.WriteLine("ready-to-show: {0}", args);
+				window.Show();
+			});
+			window.On("close", (args) => {
+				Console.WriteLine("close: {0}", args);
+			});
+			window.WebContents.On("did-navigate", (args) => {
+				object[] list = args as object[];
+				Console.WriteLine("did-navigate");
+				if (list != null) {
+					foreach (object item in list) {
+						Console.WriteLine("\tParams: {0}", item);
+					}
+				}
+			});
+			return;
+
 			//window.SetFullScreen(true);
 			stopwatch.Reset();
 			stopwatch.Start();
@@ -126,7 +146,6 @@ namespace SocketronTest {
 			socketron.On("BrowserWindow.close", (result) => {
 				Console.WriteLine("Test close");
 			});
-			window.On("close");
 
 			window.GetTitle((result) => {
 				Console.WriteLine("test 2: " + result);

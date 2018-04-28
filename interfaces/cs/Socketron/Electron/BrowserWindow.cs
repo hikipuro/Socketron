@@ -1,13 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Socketron {
-	public class BrowserWindow : EventEmitter {
+	public class BrowserWindow {
+		public const string Name = "BrowserWindow";
 		public int ID = 0;
 		public WebContents WebContents;
 		protected Socketron _socketron;
 
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
 		public BrowserWindow() {
+		}
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
 		}
 
 		public static void Create(Socketron socketron, Action<BrowserWindow> callback) {
@@ -88,13 +100,38 @@ namespace Socketron {
 			return _ExecuteJavaScriptBlocking<T>(scriptList);
 		}
 
-		public void On(string eventName) {
+		public void On(string eventName, Callback callback) {
+			if (callback == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, callback);
 			string[] scriptList = new[] {
-				"var window = electron.BrowserWindow.fromId(" + ID + ");",
-				"window.on(" + eventName.Escape() + ", () => {" +
-					"emit('BrowserWindow.close'," + ID + ");",
-				"});"
+				"var window = electron." + Name + ".fromId(" + ID + ");",
+				"var listener = () => {",
+					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
+				"};",
+				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
+				"window.on(" + eventName.Escape() + ", listener);"
 			};
+			_callbackListId++;
+			_ExecuteJavaScript(scriptList);
+		}
+
+		public void Once(string eventName, Callback callback) {
+			if (callback == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, callback);
+			string[] scriptList = new[] {
+				"var window = electron." + Name + ".fromId(" + ID + ");",
+				"var listener = () => {",
+					"this._removeClientEventListener(" + Name.Escape() + "," + _callbackListId + ");",
+					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
+				"};",
+				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
+				"window.once(" + eventName.Escape() + ", listener);"
+			};
+			_callbackListId++;
 			_ExecuteJavaScript(scriptList);
 		}
 

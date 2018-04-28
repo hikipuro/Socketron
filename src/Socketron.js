@@ -248,6 +248,10 @@ class CommandProcessorNode extends EventEmitter {
 		this.process = process;
 		this.dialog = dialog;
 		this._client = null;
+		this._callbackList = {
+			BrowserWindow: [],
+			webContents: []
+		};
 	}
 
 	run(data, client) {
@@ -332,6 +336,14 @@ class CommandProcessorNode extends EventEmitter {
 			}
 		}
 		return [parent, reference];
+	}
+
+	_addClientEventListener(className, callbackId, func) {
+		this._callbackList[className][callbackId] = func;
+	}
+
+	_removeClientEventListener(className, callbackId) {
+		this._callbackList[className][callbackId] = null;
 	}
 	
 	_sendCallback(data, client, args) {

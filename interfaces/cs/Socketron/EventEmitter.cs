@@ -83,6 +83,7 @@ namespace Socketron {
 
 		public void EmitNewThread(string channel, params object[] args) {
 			WaitCallback callback = new WaitCallback((state) => {
+				Thread.CurrentThread.Name = "EventEmitter.EmitNewThread: " + channel;
 				Emit(channel, args);
 			});
 			ThreadPool.QueueUserWorkItem(callback);

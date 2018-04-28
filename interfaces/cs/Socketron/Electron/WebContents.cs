@@ -1,10 +1,59 @@
-﻿namespace Socketron {
+﻿using System.Collections.Generic;
+
+namespace Socketron {
 	public class WebContents {
+		public const string Name = "webContents";
 		public int ID = 0;
 		protected BrowserWindow _window;
 
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
 		public WebContents(BrowserWindow browserWindow) {
 			_window = browserWindow;
+		}
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
+		}
+
+		public void On(string eventName, Callback callback) {
+			if (callback == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, callback);
+			string[] script = new[] {
+				"var contents = electron." + Name + ".fromId(" + ID + ");",
+				"var listener = (...args) => {",
+				"console.log(['__event'," + Name.Escape() + "," + _callbackListId + "].concat(args.shift()));",
+					"emit.apply(this, ['__event'," + Name.Escape() + "," + _callbackListId + "].concat(args.shift()));",
+				"};",
+				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
+				"contents.on(" + eventName.Escape() + ", listener);"
+			};
+			_callbackListId++;
+			_window.ExecuteJavaScript(script);
+		}
+
+		public void Once(string eventName, Callback callback) {
+			if (callback == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, callback);
+			string[] script = new[] {
+				"var contents = electron." + Name + ".fromId(" + ID + ");",
+				"var listener = (...args) => {",
+					"this._removeClientEventListener(" + Name.Escape() + "," + _callbackListId + ");",
+					"emit.apply(this, ['__event'," + Name.Escape() + "," + _callbackListId + "].concat(args.shift()));",
+				"};",
+				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
+				"contents.once(" + eventName.Escape() + ", listener);"
+			};
+			_callbackListId++;
+			_window.ExecuteJavaScript(script);
 		}
 
 		public void LoadURL(string url) {

@@ -149,7 +149,7 @@ namespace Socketron {
 			_readThread = new Thread(_Read);
 			_readThread.Name = "Socketron read thread";
 			_readThread.Start();
-			Emit("connect");
+			EmitNewThread("connect");
 		}
 
 		protected void _OnRead(IAsyncResult result) {

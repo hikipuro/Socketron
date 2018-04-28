@@ -331,6 +331,44 @@ namespace Socketron {
 			string eventName = json["name"] as string;
 			object args = json["args"];
 			//DebugLog("Return: {0}: {1}", eventName, args);
+
+			if (eventName == "__event") {
+				object[] list = args as object[];
+				string className = list[0] as string;
+				int callbackId = (int)list[1];
+				object[] callbackParams = null;
+				if (list.Length >= 3) {
+					callbackParams = new object[list.Length - 2];
+					Array.Copy(list, 2, callbackParams, 0, list.Length - 2);
+				}
+				Callback callback = null;
+
+				switch (className) {
+					case BrowserWindow.Name:
+						callback = BrowserWindow.GetCallbackFromId((ushort)callbackId);
+						callback?.Invoke(callbackParams);
+						break;
+					case WebContents.Name:
+						callback = WebContents.GetCallbackFromId((ushort)callbackId);
+						callback?.Invoke(callbackParams);
+						break;
+				}
+				return;
+			}
+
+			if (args is object[]) {
+				EmitNewThread(eventName, args as object[]);
+				return;
+			}
+			EmitNewThread(eventName, args);
+		}
+
+		protected void _OnInnerEvent(SocketronData data) {
+			JsonObject json = new JsonObject(data.Params);
+
+			string eventName = json["name"] as string;
+			object args = json["args"];
+			//DebugLog("Return: {0}: {1}", eventName, args);
 			if (args is object[]) {
 				EmitNewThread(eventName, args as object[]);
 				return;
