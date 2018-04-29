@@ -75,6 +75,8 @@
   <ItemGroup>
     <Compile Include="Buffer.cs" />
     <Compile Include="Electron\BrowserWindowOptions.cs" />
+    <Compile Include="Electron\Clipboard.cs" />
+    <Compile Include="Electron\Dialog.cs" />
     <Compile Include="Electron\Rectangle.cs" />
     <Compile Include="EventEmitter.cs" />
     <Compile Include="JsonObject.cs" />

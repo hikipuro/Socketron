@@ -1,6 +1,9 @@
 ﻿namespace Socketron {
 	static class ValueExtension {
 		public static string Escape(this string value) {
+			if (value == null) {
+				return "null";
+			}
 			if (value.Contains("\"")) {
 				return "\"" + value.Replace("\"", "\\\"") + "\"";
 			}

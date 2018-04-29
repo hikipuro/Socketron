@@ -108,6 +108,25 @@ namespace SocketronTest {
 					}
 				}
 			});
+
+			var windows = BrowserWindow.GetAllWindows(socketron);
+			foreach (var w in windows) {
+				Console.WriteLine("window.id: {0}", w.ID);
+				Console.WriteLine("window.getTitle: {0}", w.GetTitle());
+			}
+
+			Clipboard.WriteText(socketron, "aaa test");
+			Console.WriteLine("Clipboard.ReadText: {0}", Clipboard.ReadText(socketron));
+
+			var paths = Dialog.ShowOpenDialog(socketron, new Dialog.OpenDialogOptions {
+				properties = new[] {
+					Dialog.Properties.openFile
+				}
+			});
+			foreach (var path in paths) {
+				Console.WriteLine("OpenDialog: {0}", path);
+			}
+
 			return;
 
 			//window.SetFullScreen(true);

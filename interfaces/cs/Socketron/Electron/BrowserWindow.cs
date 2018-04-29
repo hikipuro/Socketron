@@ -23,13 +23,13 @@ namespace Socketron {
 		}
 
 		public static void Create(Socketron socketron, Action<BrowserWindow> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var browserWindow = new electron.BrowserWindow({",
 				"});",
 				"return [browserWindow.id, browserWindow.webContents.id];"
 			};
 			socketron.Main.ExecuteJavaScript(
-				scriptList,
+				script,
 				(result) => {
 					object[] list = result as object[];
 					int? windowId = list[0] as int?;
@@ -56,14 +56,14 @@ namespace Socketron {
 			if (options == null) {
 				options = new BrowserWindowOptions();
 			}
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var browserWindow = new electron.BrowserWindow(",
 					options.Stringify(),
 				");",
 				"return [browserWindow.id, browserWindow.webContents.id];"
 			};
 			BrowserWindow window = null;
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
 			int? windowId = result[0] as int?;
 			int? contentsId = result[1] as int?;
 			if (windowId != null && contentsId != null) {
@@ -80,24 +80,176 @@ namespace Socketron {
 			return window;
 		}
 
-		public static void GetAllWindows() {
-
+		public static List<BrowserWindow> GetAllWindows(Socketron socketron) {
+			string[] script = new[] {
+				"var result = [];",
+				"var windows = electron.BrowserWindow.getAllWindows();",
+				"for (var window of windows) {",
+					"result.push([window.id,window.webContents.id]);",
+				"}",
+				"return result;"
+			};
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
+			List<BrowserWindow> windows = new List<BrowserWindow>();
+			foreach (object[] item in result) {
+				int windowId = (int)item[0];
+				int contentsId = (int)item[1];
+				BrowserWindow window = new BrowserWindow() {
+					ID = windowId,
+					_socketron = socketron
+				};
+				window.WebContents = new WebContents(window) {
+					ID = contentsId
+				};
+				windows.Add(window);
+			}
+			return windows;
 		}
 
-		public static void GetFocusedWindow() {
-
+		public static BrowserWindow GetFocusedWindow(Socketron socketron) {
+			string[] script = new[] {
+				"var window = electron.BrowserWindow.getFocusedWindow();",
+				"if (window == null) {",
+					"return null",
+				"}",
+				"return [window.id,window.webContents.id];"
+			};
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
+			int windowId = (int)result[0];
+			int contentsId = (int)result[1];
+			BrowserWindow window = new BrowserWindow() {
+				ID = windowId,
+				_socketron = socketron
+			};
+			window.WebContents = new WebContents(window) {
+				ID = contentsId
+			};
+			return window;
 		}
+
+		public static BrowserWindow FromWebContents(Socketron socketron, WebContents webContents) {
+			string[] script = new[] {
+				"var contents = electron.webContents.fromId(" + webContents.ID + ");",
+				"var window = electron.BrowserWindow.fromWebContents(contents);",
+				"if (window == null) {",
+					"return null",
+				"}",
+				"return [window.id,window.webContents.id];"
+			};
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
+			int windowId = (int)result[0];
+			int contentsId = (int)result[1];
+			BrowserWindow window = new BrowserWindow() {
+				ID = windowId,
+				_socketron = socketron
+			};
+			window.WebContents = new WebContents(window) {
+				ID = contentsId
+			};
+			return window;
+		}
+
+		/*
+		public static BrowserWindow FromBrowserView(Socketron socketron, BrowserView browserView) {
+			string[] script = new[] {
+				"var contents = electron.webContents.fromId(" + webContents.ID + ");",
+				"var window = electron.BrowserWindow.fromBrowserView(contents);",
+				"if (window == null) {",
+					"return null",
+				"}",
+				"return [window.id,window.webContents.id];"
+			};
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
+			int windowId = (int)result[0];
+			int contentsId = (int)result[1];
+			BrowserWindow window = new BrowserWindow() {
+				ID = windowId,
+				_socketron = socketron
+			};
+			window.WebContents = new WebContents(window) {
+				ID = contentsId
+			};
+			return window;
+		}
+		//*/
+
+		public static BrowserWindow FromId(Socketron socketron, int id) {
+			string[] script = new[] {
+				"var window = electron.BrowserWindow.fromId(" + id + ");",
+				"if (window == null) {",
+					"return null",
+				"}",
+				"return [window.id,window.webContents.id];"
+			};
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
+			int windowId = (int)result[0];
+			int contentsId = (int)result[1];
+			BrowserWindow window = new BrowserWindow() {
+				ID = windowId,
+				_socketron = socketron
+			};
+			window.WebContents = new WebContents(window) {
+				ID = contentsId
+			};
+			return window;
+		}
+
+		public static void AddExtension(Socketron socketron, string path) {
+			string[] script = new[] {
+				"electron.BrowserWindow.addExtension(" + path.Escape() + ");"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+
+		public static void RemoveExtension(Socketron socketron, string name) {
+			string[] script = new[] {
+				"electron.BrowserWindow.removeExtension(" + name.Escape() + ");"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+
+		/*
+		public static void GetExtensions(Socketron socketron, string name) {
+			string[] script = new[] {
+				"return electron.BrowserWindow.getExtensions();"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+		//*/
+
+		public static void AddDevToolsExtension(Socketron socketron, string path) {
+			string[] script = new[] {
+				"electron.BrowserWindow.addDevToolsExtension(" + path.Escape() + ");"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+
+		public static void RemoveDevToolsExtension(Socketron socketron, string name) {
+			string[] script = new[] {
+				"electron.BrowserWindow.removeDevToolsExtension(" + name.Escape() + ");"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+
+		/*
+		public static void GetDevToolsExtensions(Socketron socketron, string name) {
+			string[] script = new[] {
+				"return electron.BrowserWindow.getDevToolsExtensions();"
+			};
+			_ExecuteJavaScript(socketron, script, null, null);
+		}
+		//*/
 
 		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {
 			_socketron.Main.ExecuteJavaScript(script, success, error);
 		}
 
-		public void ExecuteJavaScript(string[] scriptList, Callback success = null, Callback error = null) {
-			_socketron.Main.ExecuteJavaScript(scriptList, success, error);
+		public void ExecuteJavaScript(string[] script, Callback success = null, Callback error = null) {
+			_socketron.Main.ExecuteJavaScript(script, success, error);
 		}
 
-		public T ExecuteJavaScriptBlocking<T>(string[] scriptList) {
-			return _ExecuteJavaScriptBlocking<T>(scriptList);
+		public T ExecuteJavaScriptBlocking<T>(string[] script) {
+			return _ExecuteJavaScriptBlocking<T>(script);
 		}
 
 		public void On(string eventName, Callback callback) {
@@ -105,7 +257,7 @@ namespace Socketron {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron." + Name + ".fromId(" + ID + ");",
 				"var listener = () => {",
 					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
@@ -114,7 +266,7 @@ namespace Socketron {
 				"window.on(" + eventName.Escape() + ", listener);"
 			};
 			_callbackListId++;
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Once(string eventName, Callback callback) {
@@ -122,7 +274,7 @@ namespace Socketron {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron." + Name + ".fromId(" + ID + ");",
 				"var listener = () => {",
 					"this._removeClientEventListener(" + Name.Escape() + "," + _callbackListId + ");",
@@ -132,265 +284,265 @@ namespace Socketron {
 				"window.once(" + eventName.Escape() + ", listener);"
 			};
 			_callbackListId++;
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Destroy() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.destroy();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Close() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.close();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Focus() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.focus();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Blur() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.blur();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsFocused(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFocused();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsFocused() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFocused();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void IsDestroyed(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isDestroyed();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsDestroyed() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isDestroyed();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void Show() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.show();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void ShowInactive() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.showInactive();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Hide() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.hide();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsVisible(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isVisible();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsVisible() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isVisible();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void IsModal(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isModal();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsModal() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isModal();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void Maximize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.maximize();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Unmaximize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.unmaximize();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMaximized(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMaximized();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMaximized() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMaximized();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void Minimize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.minimize();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Restore() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.restore();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMinimized(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMinimized();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMinimized() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMinimized();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetFullScreen(bool flag) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setFullScreen(" + flag.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsFullScreen(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFullScreen();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsFullScreen() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFullScreen();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetSimpleFullScreen(bool flag) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setSimpleFullScreen(" + flag.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetAspectRatio(double aspectRatio) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setAspectRatio(" + aspectRatio + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void PreviewFile(string path) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.previewFile(" + path.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void CloseFilePreview() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.closeFilePreview();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetBounds(Rectangle bounds) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setBounds({",
 					"x:" + bounds.x + ",",
@@ -399,15 +551,15 @@ namespace Socketron {
 					"height:" + bounds.height,
 				"});"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetContentBounds(Action<Rectangle> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getContentBounds();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				JsonObject json = new JsonObject(result);
 				Rectangle rect = new Rectangle() {
 					x = (int)json["x"],
@@ -420,11 +572,11 @@ namespace Socketron {
 		}
 
 		public Rectangle GetContentBounds() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getContentBounds();"
 			};
-			object result = _ExecuteJavaScriptBlocking<object>(scriptList);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
 			Rectangle rect = new Rectangle() {
 				x = (int)json["x"],
@@ -436,27 +588,27 @@ namespace Socketron {
 		}
 
 		public void SetEnabled(bool enable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setEnabled(" + enable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetSize(int width, int height) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setSize(" + width + "," + height + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetSize(Action<int, int> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getSize();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				object[] resultList = result as object[];
 				int width = (int)resultList[0];
 				int height = (int)resultList[1];
@@ -465,30 +617,30 @@ namespace Socketron {
 		}
 
 		public int[] GetSize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getSize();"
 			};
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int width = (int)result[0];
 			int height = (int)result[1];
 			return new int[] { width, height };
 		}
 
 		public void SetContentSize(int width, int height) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setContentSize(" + width + "," + height + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetContentSize(Action<int, int> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getContentSize();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				object[] resultList = result as object[];
 				int width = (int)resultList[0];
 				int height = (int)resultList[1];
@@ -497,30 +649,30 @@ namespace Socketron {
 		}
 
 		public int[] GetContentSize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getContentSize();"
 			};
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int width = (int)result[0];
 			int height = (int)result[1];
 			return new int[] { width, height };
 		}
 
 		public void SetMinimumSize(int width, int height) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMinimumSize(" + width + "," + height + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetMinimumSize(Action<int, int> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getMinimumSize();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				object[] resultList = result as object[];
 				int width = (int)resultList[0];
 				int height = (int)resultList[1];
@@ -529,30 +681,30 @@ namespace Socketron {
 		}
 
 		public int[] GetMinimumSize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getMinimumSize();"
 			};
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int width = (int)result[0];
 			int height = (int)result[1];
 			return new int[] { width, height };
 		}
 
 		public void SetMaximumSize(int width, int height) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMaximumSize(" + width + "," + height + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetMaximumSize(Action<int, int> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getMaximumSize();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				object[] resultList = result as object[];
 				int width = (int)resultList[0];
 				int height = (int)resultList[1];
@@ -561,228 +713,228 @@ namespace Socketron {
 		}
 
 		public int[] GetMaximumSize() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getMaximumSize();"
 			};
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int width = (int)result[0];
 			int height = (int)result[1];
 			return new int[] { width, height };
 		}
 
 		public void SetResizable(bool resizable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setResizable(" + resizable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsResizable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isResizable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsResizable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isResizable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetMovable(bool movable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMovable(" + movable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMovable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMovable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMovable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMovable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetMinimizable(bool minimizable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMinimizable(" + minimizable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMinimizable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMinimizable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMinimizable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMinimizable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetMaximizable(bool maximizable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMaximizable(" + maximizable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMaximizable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMaximizable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMaximizable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMaximizable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetFullScreenable(bool fullscreenable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setFullScreenable(" + fullscreenable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsFullScreenable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFullScreenable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsFullScreenable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isFullScreenable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetClosable(bool closable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setClosable(" + closable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsClosable(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isClosable();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsClosable() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isClosable();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetAlwaysOnTop(bool flag) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setAlwaysOnTop(" + flag.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsAlwaysOnTop(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isAlwaysOnTop();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsAlwaysOnTop() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isAlwaysOnTop();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void MoveTop() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.moveTop();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Center() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.center();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetPosition(int x, int y) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setPosition(" + x + "," + y + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetPosition(Action<int, int> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getPosition();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				object[] resultList = result as object[];
 				int x = (int)resultList[0];
 				int y = (int)resultList[1];
@@ -791,98 +943,98 @@ namespace Socketron {
 		}
 
 		public int[] GetPosition() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getPosition();"
 			};
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(scriptList);
+			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int x = (int)result[0];
 			int y = (int)result[1];
 			return new int[] { x, y };
 		}
 
 		public void SetTitle(string title) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setTitle(" + title.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetTitle(Callback<string> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getTitle();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke(result as string);
 			});
 		}
 
 		public string GetTitle() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getTitle();"
 			};
-			return _ExecuteJavaScriptBlocking<string>(scriptList);
+			return _ExecuteJavaScriptBlocking<string>(script);
 		}
 
 		public void SetSheetOffset(double offsetY) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setSheetOffset(" + offsetY + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void FlashFrame(bool flag) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.flashFrame(" + flag.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetSkipTaskbar(bool skip) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setSkipTaskbar(" + skip.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetKiosk(bool flag) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setKiosk(" + flag.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsKiosk(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isKiosk();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsKiosk() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isKiosk();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void GetNativeWindowHandle(Action<ulong> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getNativeWindowHandle();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				JsonObject json = new JsonObject(result);
 				object[] data = json["data"] as object[];
 				byte[] bytes = new byte[8];
@@ -896,11 +1048,11 @@ namespace Socketron {
 		}
 
 		public ulong GetNativeWindowHandle() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getNativeWindowHandle();"
 			};
-			object result = _ExecuteJavaScriptBlocking<object>(scriptList);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
 			object[] data = json["data"] as object[];
 			byte[] bytes = new byte[8];
@@ -913,243 +1065,243 @@ namespace Socketron {
 
 		/*
 		public void HookWindowMessage() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.hookWindowMessage();"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void IsWindowMessageHooked(int message, Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isWindowMessageHooked(" + message + ");"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsWindowMessageHooked(int message) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isWindowMessageHooked(" + message + ");"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void UnhookWindowMessage(int message) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.unhookWindowMessage(" + message + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void UnhookAllWindowMessages() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.unhookAllWindowMessages();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetRepresentedFilename(string filename) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setRepresentedFilename(" + filename.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetRepresentedFilename(Action<string> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getRepresentedFilename();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke(result as string);
 			});
 		}
 
 		public string GetRepresentedFilename() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getRepresentedFilename();"
 			};
-			return _ExecuteJavaScriptBlocking<string>(scriptList);
+			return _ExecuteJavaScriptBlocking<string>(script);
 		}
 
 		public void SetDocumentEdited(bool edited) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setDocumentEdited(" + edited.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsDocumentEdited(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isDocumentEdited();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsDocumentEdited() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isDocumentEdited();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void FocusOnWebView() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.focusOnWebView();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void BlurWebView() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.blurWebView();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void CapturePage(Rectangle rect, Action callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.capturePage();"
 			};
-			ExecuteJavaScript(scriptList, (result) => {
+			ExecuteJavaScript(script, (result) => {
 			});
 		}
 		//*/
 
 		public void LoadURL(string url) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.loadURL(" + url.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void LoadFile(string filePath) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.loadFile(" + filePath.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Reload() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.reload();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void SetMenu(string menu) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setMenu(" + menu + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void SetProgressBar(double progress) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setProgressBar(" + progress + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void SetOverlayIcon(string overlay) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setOverlayIcon(" + overlay + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void SetHasShadow(bool hasShadow) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setHasShadow(" + hasShadow.ToString().ToLower() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void HasShadow(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.hasShadow();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool HasShadow() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.hasShadow();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetOpacity(double opacity) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setOpacity(" + opacity + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void GetOpacity(Action<double> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getOpacity();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((double)result);
 			});
 		}
 
 		public double GetOpacity() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.getOpacity();"
 			};
-			return _ExecuteJavaScriptBlocking<double>(scriptList);
+			return _ExecuteJavaScriptBlocking<double>(script);
 		}
 
 		/*
 		public void SetThumbarButtons(string buttons) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setThumbarButtons(" + buttons + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void SetThumbnailClip(Rectangle region) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setThumbnailClip({",
 					"x:" + region.x + ",",
@@ -1158,164 +1310,164 @@ namespace Socketron {
 					"height:" + region.height,
 				");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetThumbnailToolTip(string toolTip) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setThumbnailToolTip(" + toolTip.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void SetAppDetails(string options) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setAppDetails(" + options + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void ShowDefinitionForSelection() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.showDefinitionForSelection();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void setIcon(string icon) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setIcon(" + icon + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void SetAutoHideMenuBar(bool hide) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setAutoHideMenuBar(" + hide.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMenuBarAutoHide(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMenuBarAutoHide();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMenuBarAutoHide() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMenuBarAutoHide();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetMenuBarVisibility(bool visible) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setMenuBarVisibility(" + visible.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsMenuBarVisible(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMenuBarVisible();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsMenuBarVisible() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isMenuBarVisible();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetVisibleOnAllWorkspaces(bool visible) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setVisibleOnAllWorkspaces(" + visible.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void IsVisibleOnAllWorkspaces(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isVisibleOnAllWorkspaces();"
 			};
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 
 		public bool IsVisibleOnAllWorkspaces() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"return window.isVisibleOnAllWorkspaces();"
 			};
-			return _ExecuteJavaScriptBlocking<bool>(scriptList);
+			return _ExecuteJavaScriptBlocking<bool>(script);
 		}
 
 		public void SetIgnoreMouseEvents(bool ignore) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setIgnoreMouseEvents(" + ignore.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetContentProtection(bool enable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setContentProtection(" + enable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SetFocusable(bool focusable) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setFocusable(" + focusable.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void SetParentWindow(BrowserWindow parent) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setParentWindow(" + parent + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		/*
 		public void GetParentWindow(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"return window.getParentWindow();"
 			};
-			ExecuteJavaScript(scriptList, (result) => {
+			ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
@@ -1323,131 +1475,131 @@ namespace Socketron {
 
 		/*
 		public void GetChildWindows(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"return window.getChildWindows();"
 			};
-			ExecuteJavaScript(scriptList, (result) => {
+			ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 		//*/
 
 		public void SetAutoHideCursor(bool autoHide) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setAutoHideCursor(" + autoHide.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SelectPreviousTab() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.selectPreviousTab();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void SelectNextTab() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.selectNextTab();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void MergeAllWindows() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.mergeAllWindows();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void MoveTabToNewWindow() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.moveTabToNewWindow();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		public void ToggleTabBar() {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.toggleTabBar();"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void AddTabbedWindow(BrowserWindow browserWindow) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.addTabbedWindow();"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		public void SetVibrancy(string type) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + ID + ");",
 				"window.setVibrancy(" + type.Escape() + ");"
 			};
-			_ExecuteJavaScript(scriptList);
+			_ExecuteJavaScript(script);
 		}
 
 		/*
 		public void SetTouchBar(string touchBar) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setTouchBar(" + touchBar + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		/*
 		public void SetBrowserView(string browserView) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"window.setBrowserView(" + browserView + ");"
 			};
-			ExecuteJavaScript(scriptList);
+			ExecuteJavaScript(script);
 		}
 		//*/
 
 		/*
 		public void GetBrowserView(Action<bool> callback) {
-			string[] scriptList = new[] {
+			string[] script = new[] {
 				"var window = electron.BrowserWindow.fromId(" + id + ");",
 				"return window.getBrowserView();"
 			};
-			ExecuteJavaScript(scriptList, (result) => {
+			ExecuteJavaScript(script, (result) => {
 				callback?.Invoke((bool)result);
 			});
 		}
 		//*/
 
-		protected void _ExecuteJavaScript(string[] scriptList) {
-			_socketron.Main.ExecuteJavaScript(scriptList);
+		protected void _ExecuteJavaScript(string[] script) {
+			_socketron.Main.ExecuteJavaScript(script);
 		}
 
-		protected void _ExecuteJavaScript(string[] scriptList, Callback callback) {
-			_socketron.Main.ExecuteJavaScript(scriptList, callback);
+		protected void _ExecuteJavaScript(string[] script, Callback callback) {
+			_socketron.Main.ExecuteJavaScript(script, callback);
 		}
 
-		protected void _ExecuteJavaScript(string[] scriptList, Callback success, Callback error) {
-			_socketron.Main.ExecuteJavaScript(scriptList, success, error);
+		protected void _ExecuteJavaScript(string[] script, Callback success, Callback error) {
+			_socketron.Main.ExecuteJavaScript(script, success, error);
 		}
 
-		protected T _ExecuteJavaScriptBlocking<T>(string[] scriptList) {
+		protected T _ExecuteJavaScriptBlocking<T>(string[] script) {
 			bool done = false;
 			T value = default(T);
 
-			_ExecuteJavaScript(scriptList, (result) => {
+			_ExecuteJavaScript(script, (result) => {
 				if (result == null) {
 					done = true;
 					return;
@@ -1474,15 +1626,15 @@ namespace Socketron {
 			return value;
 		}
 
-		protected static void _ExecuteJavaScript(Socketron socketron, string[] scriptList, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(scriptList, success, error);
+		protected static void _ExecuteJavaScript(Socketron socketron, string[] script, Callback success, Callback error) {
+			socketron.Main.ExecuteJavaScript(script, success, error);
 		}
 
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] scriptList) {
+		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] script) {
 			bool done = false;
 			T value = default(T);
 
-			_ExecuteJavaScript(socketron, scriptList, (result) => {
+			_ExecuteJavaScript(socketron, script, (result) => {
 				if (result == null) {
 					done = true;
 					return;
