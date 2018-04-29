@@ -118,6 +118,7 @@ namespace SocketronTest {
 			Clipboard.WriteText(socketron, "aaa test");
 			Console.WriteLine("Clipboard.ReadText: {0}", Clipboard.ReadText(socketron));
 
+			/*
 			var paths = Dialog.ShowOpenDialog(socketron, new Dialog.OpenDialogOptions {
 				properties = new[] {
 					Dialog.Properties.openFile
@@ -126,6 +127,17 @@ namespace SocketronTest {
 			foreach (var path in paths) {
 				Console.WriteLine("OpenDialog: {0}", path);
 			}
+			//*/
+
+			Console.WriteLine("Notification.IsSupported: " + Notification.IsSupported(socketron));
+			var notification = Notification.Create(socketron, new Notification.Options {
+				title = "Title",
+				body = "Body"
+			});
+			notification.On("show", (args) => {
+				Console.WriteLine("Notification show event");
+			});
+			notification.Show();
 
 			return;
 

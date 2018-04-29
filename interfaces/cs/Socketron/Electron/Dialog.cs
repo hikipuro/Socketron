@@ -185,7 +185,7 @@ namespace Socketron {
 				value = (T)result;
 				done = true;
 			}, (result) => {
-				Console.Error.WriteLine("error: Clipboard._ExecuteJavaScriptBlocking");
+				Console.Error.WriteLine("error: Dialog._ExecuteJavaScriptBlocking");
 				throw new InvalidOperationException(result as string);
 				//done = true;
 			});
