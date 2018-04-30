@@ -2,8 +2,8 @@
 
 namespace Socketron {
 	public class CPUUsage {
-		public double? percentCPUUsage;
-		public double? idleWakeupsPerSecond;
+		public double percentCPUUsage;
+		public double idleWakeupsPerSecond;
 
 		public static CPUUsage Parse(string text) {
 			var serializer = new JavaScriptSerializer();

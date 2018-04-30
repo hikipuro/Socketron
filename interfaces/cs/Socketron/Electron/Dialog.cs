@@ -4,6 +4,10 @@ using System.Threading;
 using System.Web.Script.Serialization;
 
 namespace Socketron {
+	/// <summary>
+	/// Display native system dialogs for opening and saving files, alerting, etc.
+	/// <para>Process: Main</para>
+	/// </summary>
 	public class Dialog {
 		public class Properties {
 			public const string openFile = "openFile";

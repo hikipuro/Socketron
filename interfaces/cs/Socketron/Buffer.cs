@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -8,6 +9,21 @@ namespace Socketron {
 
 		public Buffer() {
 			_data = new MemoryStream();
+		}
+
+		public static Buffer FromJson(JsonObject json) {
+			if (json == null) {
+				return null;
+			}
+			if (json["type"] as string != "Buffer") {
+				return null;
+			}
+			object[] data = json["data"] as object[];
+			Buffer buffer = new Buffer();
+			foreach (object item in data) {
+				buffer.WriteUInt8((byte)(int)item);
+			}
+			return buffer;
 		}
 
 		public byte this[uint i] {
@@ -101,6 +117,14 @@ namespace Socketron {
 			return encoding.GetString(
 				_data.GetBuffer(), start, end - start
 			);
+		}
+
+		public string Stringify() {
+			byte[] bytes = ToByteArray();
+			JsonObject json = new JsonObject();
+			json["type"] = "Buffer";
+			json["data"] = new List<byte>(bytes);
+			return json.Stringify();
 		}
 	}
 }

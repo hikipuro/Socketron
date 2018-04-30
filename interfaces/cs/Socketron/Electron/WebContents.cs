@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 
 namespace Socketron {
+	/// <summary>
+	/// Render and control web pages.
+	/// <para>Process: Main</para>
+	/// </summary>
 	public class WebContents {
 		public const string Name = "webContents";
 		public int ID = 0;

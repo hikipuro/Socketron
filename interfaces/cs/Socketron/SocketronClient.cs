@@ -13,20 +13,20 @@ namespace Socketron {
 	}
 
 	internal class SocketronClient: EventEmitter {
-		public const int ReadBufferSize = 1024 * 8;
-		public bool IsDebug = true;
-
+		public Config Config = new Config();
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
-		protected int _timeout = 10000;
-		protected Encoding _encoding = Encoding.UTF8;
 		protected Packet _packet = new Packet();
-		protected byte[] _buffer = new byte[ReadBufferSize];
+		protected byte[] _buffer;
 		protected Thread _readThread;
 		protected ManualResetEvent _readDone = new ManualResetEvent(false);
 		protected AsyncCallback _writeCallback;
 
-		public SocketronClient() {
+		public SocketronClient(Config config = null) {
+			if (config != null) {
+				Config = config;
+			}
+			_buffer = new byte[Config.ReadBufferSize];
 			_writeCallback = new AsyncCallback(_OnWrite);
 		}
 
@@ -36,25 +36,6 @@ namespace Socketron {
 					return true;
 				}
 				return false;
-			}
-		}
-
-		public int Timeout {
-			get { return _timeout; }
-			set {
-				_timeout = value;
-				if (_stream != null) {
-					_stream.ReadTimeout = value;
-					_stream.WriteTimeout = value;
-				}
-			}
-		}
-
-		public Encoding Encoding {
-			get { return _encoding; }
-			set {
-				_encoding = value;
-				_packet.Encoding = value;
 			}
 		}
 
@@ -143,8 +124,8 @@ namespace Socketron {
 			);
 
 			_stream = _tcpClient.GetStream();
-			_stream.ReadTimeout = _timeout;
-			_stream.WriteTimeout = _timeout;
+			_stream.ReadTimeout = Config.Timeout;
+			_stream.WriteTimeout = Config.Timeout;
 
 			_readThread = new Thread(_Read);
 			_readThread.Name = "Socketron read thread";
@@ -231,7 +212,7 @@ namespace Socketron {
 		}
 
 		protected void _DebugLog(string format, params object[] args) {
-			if (!IsDebug) {
+			if (!Config.IsDebug) {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);

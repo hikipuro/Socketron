@@ -2,7 +2,7 @@
 
 namespace Socketron {
 	public class MemoryInfo {
-		public int? pid;
+		//public int? pid;
 		public int? workingSetSize;
 		public int? peakWorkingSetSize;
 		public int? privateBytes;

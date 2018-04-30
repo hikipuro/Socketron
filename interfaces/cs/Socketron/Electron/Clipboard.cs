@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 
 namespace Socketron {
+	/// <summary>
+	/// Perform copy and paste operations on the system clipboard.
+	/// <para>Process: Main, Renderer</para>
+	/// </summary>
 	public class Clipboard {
 		public const string Name = "Clipboard";
 

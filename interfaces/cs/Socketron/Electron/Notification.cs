@@ -4,6 +4,10 @@ using System.Threading;
 using System.Web.Script.Serialization;
 
 namespace Socketron {
+	/// <summary>
+	/// Create OS desktop notifications.
+	/// <para>Process: Main</para>
+	/// </summary>
 	public class Notification : IDisposable {
 		public const string Name = "Notification";
 		protected Socketron _socketron;
@@ -32,6 +36,13 @@ namespace Socketron {
 		}
 
 		protected Notification() {
+		}
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
 		}
 
 		public static Notification Create(Socketron socketron, Options options) {

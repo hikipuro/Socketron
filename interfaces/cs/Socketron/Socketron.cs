@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace Socketron {
@@ -178,7 +179,7 @@ namespace Socketron {
 
 	public class Socketron: EventEmitter {
 		public string ID = string.Empty;
-		public bool IsDebug = true;
+		public Config Config = new Config();
 		public MainProcess Main;
 		public RendererProcess Renderer;
 		SocketronClient _client;
@@ -187,9 +188,9 @@ namespace Socketron {
 		ushort _sequenceId = 0;
 
 		public Socketron() {
-			_client = new SocketronClient();
+			_client = new SocketronClient(Config);
 			_client.On("debug", (args) => {
-				if (!IsDebug) {
+				if (!Config.IsDebug) {
 					return;
 				}
 				Emit("debug", args[0]);
@@ -211,16 +212,6 @@ namespace Socketron {
 
 		public bool IsConnected {
 			get { return _client.IsConnected; }
-		}
-
-		public Encoding Encoding {
-			get { return _client.Encoding; }
-			set { _client.Encoding = value; }
-		}
-
-		public int Timeout {
-			get { return _client.Timeout; }
-			set { _client.Timeout = value; }
 		}
 
 		public void Connect(string hostname, int port = 3000) {
@@ -255,7 +246,7 @@ namespace Socketron {
 				_successList[_sequenceId++] = callback;
 			}
 			//Console.WriteLine("data: " + data.Stringify());
-			Write(data.ToBuffer(DataType.Text, Encoding));
+			Write(data.ToBuffer(DataType.Text, Config.Encoding));
 		}
 
 		protected void _OnText(object[] args) {
@@ -270,10 +261,10 @@ namespace Socketron {
 				}
 				_sequenceId++;
 			}
-			if (IsDebug) {
+			if (Config.IsDebug) {
 				_DebugLog("send: {0}", data.Stringify());
 			}
-			Write(data.ToBuffer(DataType.Text, Encoding));
+			Write(data.ToBuffer(DataType.Text, Config.Encoding));
 		}
 
 		protected void _OnData(object[] args) {
@@ -335,7 +326,7 @@ namespace Socketron {
 			if (eventName == "__event") {
 				object[] list = args as object[];
 				string className = list[0] as string;
-				int callbackId = (int)list[1];
+				ushort callbackId = (ushort)(int)list[1];
 				object[] callbackParams = null;
 				if (list.Length >= 3) {
 					callbackParams = new object[list.Length - 2];
@@ -343,6 +334,22 @@ namespace Socketron {
 				}
 				Callback callback = null;
 
+				className = "Socketron." + Char.ToUpper(className[0]) + className.Substring(1);
+				Type type = GetType().Assembly.GetType(className);
+				if (type == null) {
+					return;
+				}
+				MethodInfo method = type.GetMethod(
+					"GetCallbackFromId",
+					BindingFlags.Static | BindingFlags.Public
+				);
+				if (method == null) {
+					return;
+				}
+				callback = method.Invoke(null, new[] { (object)callbackId }) as Callback;
+				callback?.Invoke(callbackParams);
+
+				/*
 				switch (className) {
 					case BrowserWindow.Name:
 						callback = BrowserWindow.GetCallbackFromId((ushort)callbackId);
@@ -353,6 +360,7 @@ namespace Socketron {
 						callback?.Invoke(callbackParams);
 						break;
 				}
+				//*/
 				return;
 			}
 
@@ -377,7 +385,7 @@ namespace Socketron {
 		}
 
 		protected void _DebugLog(string format, params object[] args) {
-			if (!IsDebug) {
+			if (!Config.IsDebug) {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);

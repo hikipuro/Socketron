@@ -1,4 +1,7 @@
 ﻿namespace Socketron {
+	/// <summary>
+	/// Locale values returned by app.getLocale().
+	/// </summary>
 	public class Locales {
 		/// <summary>Afrikaans</summary>
 		public const string af = "af";

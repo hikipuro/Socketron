@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Web.Script.Serialization;
 
 namespace Socketron {
@@ -51,6 +52,40 @@ namespace Socketron {
 				return base[name];
 			}
 			set { base[name] = value; }
+		}
+
+		public string String(string name) {
+			return this[name] as string;
+		}
+
+		public double Double(string name) {
+			object obj = this[name];
+			Type type = obj.GetType();
+			if (type == typeof(int)) {
+				return (int)obj;
+			}
+			if (type == typeof(decimal)) {
+				return (double)(decimal)obj;
+			}
+			return (double)obj;
+		}
+
+		public long Int64(string name) {
+			object obj = this[name];
+			Type type = obj.GetType();
+			if (type == typeof(decimal)) {
+				return (long)(decimal)obj;
+			}
+			return (long)obj;
+		}
+
+		public int Int32(string name) {
+			object obj = this[name];
+			Type type = obj.GetType();
+			if (type == typeof(decimal)) {
+				return (int)(decimal)obj;
+			}
+			return (int)obj;
 		}
 
 		/*

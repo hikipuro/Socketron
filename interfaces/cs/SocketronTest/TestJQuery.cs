@@ -80,7 +80,7 @@ namespace SocketronTest {
 			*/
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
-			BrowserWindowOptions options = new BrowserWindowOptions();
+			BrowserWindow.Options options = new BrowserWindow.Options();
 			options.show = false;
 			//options.width = 400;
 			//options.height = 300;
@@ -109,6 +109,58 @@ namespace SocketronTest {
 				}
 			});
 
+			/*
+			MenuItem.Options[] template = new MenuItem.Options[] {
+				new MenuItem.Options() {
+					label = "Edit",
+					submenu = new MenuItem.Options[] {
+						new MenuItem.Options() {
+							role = "undo"
+						},
+						new MenuItem.Options() {
+							role = "redo"
+						}
+					}
+				}
+			};
+			Menu menu = Menu.BuildFromTemplate(socketron, template);
+			//*/
+			string[] template = new[] {
+				"[",
+					"{",
+						"label: 'Edit',",
+						"submenu: [",
+							"{type: 'checkbox', label: 'Test'},",
+							"{role: 'undo'},",
+							"{type: 'separator'},",
+							"{role: 'redo'}",
+						"]",
+					"}",
+				"]"
+			};
+			MenuItem.Options[] menuItemOptions = MenuItem.Options.ParseArray(string.Join("", template));
+			menuItemOptions[0].submenu[0].@checked = true;
+			Menu menu = Menu.BuildFromTemplate(socketron, menuItemOptions);
+
+			/*
+			string[] template = new[] {
+				"[",
+					"{",
+						"label: 'Edit',",
+						"submenu: [",
+							"{role: 'undo'},",
+							"{type: 'separator'},",
+							"{role: 'redo'},",
+						"]",
+					"}",
+				"]"
+			};
+			Menu menu = Menu.BuildFromTemplate(socketron, string.Join("", template));
+			//*/
+			Menu.SetApplicationMenu(socketron, menu);
+
+			return;
+
 			var windows = BrowserWindow.GetAllWindows(socketron);
 			foreach (var w in windows) {
 				Console.WriteLine("window.id: {0}", w.ID);
@@ -129,6 +181,40 @@ namespace SocketronTest {
 			}
 			//*/
 
+			/*
+			GlobalShortcut.Register(socketron, Accelerator.CmdOrCtrl + "+A", (args) => {
+				Console.WriteLine("Ctrl + A pressed");
+				GlobalShortcut.Unregister(socketron, Accelerator.CmdOrCtrl + "+A");
+			});
+			//*/
+			Console.WriteLine("GetPlatform: {0}", Socketron.Process.GetPlatform(socketron));
+			Console.WriteLine("GetType: {0}", Socketron.Process.GetType(socketron));
+			Console.WriteLine("GetWindowsStore: {0}", Socketron.Process.GetWindowsStore(socketron));
+			Console.WriteLine("GetElectron: {0}", Socketron.Process.Versions.GetElectron(socketron));
+			Console.WriteLine("GetCursorScreenPoint: {0}", Screen.GetCursorScreenPoint(socketron).Stringify());
+			//Console.WriteLine("GetMenuBarHeight: {0}", Screen.GetMenuBarHeight(socketron));
+			Console.WriteLine("GetPrimaryDisplay: {0}", Screen.GetPrimaryDisplay(socketron).Stringify());
+
+			var displayList = Screen.GetAllDisplays(socketron);
+			foreach (var display in displayList) {
+				Console.WriteLine("GetAllDisplays: {0}", display.Stringify());
+			}
+			Console.WriteLine("GetDisplayNearestPoint: {0}", Screen.GetDisplayNearestPoint(socketron, new Point() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayMatching: {0}", Screen.GetDisplayMatching(socketron, new Rectangle() { x = -10, y = 0 }).Stringify());
+
+			//Shell.ShowItemInFolder(socketron, "c:/");
+			//Shell.OpenExternal(socketron, "http://google.com");
+			//Shell.Beep(socketron);
+
+			return;
+
+			Console.WriteLine("IsRegistered: " + GlobalShortcut.IsRegistered(socketron, Accelerator.CmdOrCtrl + "+A"));
+
+			Console.WriteLine("GetCPUUsage: {0}", Socketron.Process.GetCPUUsage(socketron).Stringify());
+			Console.WriteLine("GetIOCounters: {0}", Socketron.Process.GetIOCounters(socketron).Stringify());
+			Console.WriteLine("GetProcessMemoryInfo: {0}", Socketron.Process.GetProcessMemoryInfo(socketron).Stringify());
+
+
 			Console.WriteLine("Notification.IsSupported: " + Notification.IsSupported(socketron));
 			var notification = Notification.Create(socketron, new Notification.Options {
 				title = "Title",
@@ -138,6 +224,13 @@ namespace SocketronTest {
 				Console.WriteLine("Notification show event");
 			});
 			notification.Show();
+
+			var image = NativeImage.CreateEmpty(socketron);
+			Console.WriteLine("image.IsEmpty: {0}", image.IsEmpty());
+			Console.WriteLine("image.GetSize: {0}", image.GetSize());
+			Console.WriteLine("image.GetAspectRatio: {0}", image.GetAspectRatio());
+			Console.WriteLine("image.ToDataURL: {0}", image.ToDataURL());
+			image.ToPNG();
 
 			return;
 

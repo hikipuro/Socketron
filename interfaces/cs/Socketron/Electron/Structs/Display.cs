@@ -2,7 +2,7 @@
 
 namespace Socketron {
 	public class Display {
-		public int? id;
+		public long? id;
 		public double? rotation;
 		public double? scaleFactor;
 		public string touchSupport;
