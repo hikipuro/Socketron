@@ -12,6 +12,11 @@ namespace Socketron {
 		public int ID;
 		protected Socketron _socketron;
 
+		public class Events {
+			public const string MenuWillShow = "menu-will-show";
+			public const string MenuWillClose = "menu-will-close";
+		}
+
 		protected Menu() {
 		}
 

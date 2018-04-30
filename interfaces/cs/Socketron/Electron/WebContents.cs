@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Socketron {
 	/// <summary>
@@ -12,6 +13,49 @@ namespace Socketron {
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
+		public class Events {
+			public const string DidFinishLoad = "did-finish-load";
+			public const string DidFailLoad = "did-fail-load";
+			public const string DidFrameFinishLoad = "did-frame-finish-load";
+			public const string DidStartLoading = "did-start-loading";
+			public const string DidStopLoading = "did-stop-loading";
+			/// <summary>*Deprecated*</summary>
+			[Obsolete]
+			public const string DidGetResponseDetails = "did-get-response-details";
+			/// <summary>*Deprecated*</summary>
+			[Obsolete]
+			public const string DidGetRedirectRequest = "did-get-redirect-request";
+			public const string DomReady = "dom-ready";
+			public const string PageFaviconUpdated = "page-favicon-updated";
+			public const string NewWindow = "new-window";
+			public const string WillNavigate = "will-navigate";
+			public const string DidNavigate = "did-navigate";
+			public const string DidNavigateInPage = "did-navigate-in-page";
+			public const string WillPreventUnload = "will-prevent-unload";
+			public const string Crashed = "crashed";
+			public const string PluginCrashed = "plugin-crashed";
+			public const string Destroyed = "destroyed";
+			public const string BeforeInputEvent = "before-input-event";
+			public const string DevtoolsOpened = "devtools-opened";
+			public const string DevtoolsClosed = "devtools-closed";
+			public const string DevtoolsFocused = "devtools-focused";
+			public const string CertificateError = "certificate-error";
+			public const string SelectClientCertificate = "select-client-certificate";
+			public const string Login = "login";
+			public const string FoundInPage = "found-in-page";
+			public const string MediaStartedPlaying = "media-started-playing";
+			public const string MediaPaused = "media-paused";
+			public const string UpdateTargetUrl = "update-target-url";
+			public const string CursorChanged = "cursor-changed";
+			public const string ContextMenu = "context-menu";
+			public const string SelectBluetoothDevice = "select-bluetooth-device";
+			public const string Paint = "paint";
+			public const string DevtoolsReloadPage = "devtools-reload-page";
+			public const string WillAttachWebview = "will-attach-webview";
+			public const string DidAttachWebview = "did-attach-webview";
+			public const string ConsoleMessage = "console-message";
+		}
 
 		public WebContents(BrowserWindow browserWindow) {
 			_window = browserWindow;

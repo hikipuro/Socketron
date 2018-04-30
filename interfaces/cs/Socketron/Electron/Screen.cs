@@ -8,6 +8,12 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	public class Screen {
+		public class Events {
+			public const string DisplayAdded = "display-added";
+			public const string DisplayRemoved = "display-removed";
+			public const string DisplayMetricsChanged = "display-metrics-changed";
+		}
+
 		protected Screen() {
 		}
 

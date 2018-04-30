@@ -271,12 +271,8 @@ namespace SocketronTest {
 				Console.WriteLine("Test close");
 			});
 
-			window.GetTitle((result) => {
-				Console.WriteLine("test 2: " + result);
-			});
-
-			int[] size = window.GetSize();
-			Console.WriteLine("GetSize: {0}, {1}", size[0], size[1]);
+			Size size = window.GetSize();
+			Console.WriteLine("GetSize: {0}", size.Stringify());
 
 			ulong handle1 = window.GetNativeWindowHandle();
 			Console.WriteLine("GetNativeWindowHandle: " + handle1);
@@ -295,15 +291,11 @@ namespace SocketronTest {
 			Console.WriteLine("test 1: {0}, {1}, {2}, {3}", rect2.x, rect2.y, rect2.width, rect2.height);
 
 			//window.SetEnabled(false);
-			window.GetSize((w, h) => {
-				Console.WriteLine("GetSize: {0}, {1}", w, h);
-			});
 			window.SetSize(200, 150);
 			Rectangle rect = window.GetContentBounds();
 			Console.WriteLine("GetContentBounds: {0}, {1}", rect.x, rect.y);
-			window.GetNativeWindowHandle((handle) => {
-				Console.WriteLine("GetNativeWindowHandle: {0}", handle);
-			});
+			ulong handle = window.GetNativeWindowHandle();
+			Console.WriteLine("GetNativeWindowHandle: {0}", handle);
 		}
 
 		public void Run() {

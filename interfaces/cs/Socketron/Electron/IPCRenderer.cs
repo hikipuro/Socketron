@@ -1,40 +1,43 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Socketron {
 	/// <summary>
-	/// Submit crash reports to a remote server.
-	/// <para>Process: Main, Renderer</para>
+	/// Communicate asynchronously from a renderer process to the main process.
+	/// <para>Process: Renderer</para>
 	/// </summary>
-	public class CrashReporter {
-		public void Start() {
+	class IPCRenderer {
+		public void On() {
 			throw new NotImplementedException();
 		}
 
-		public void GetLastCrashReport() {
+		public void Once() {
 			throw new NotImplementedException();
 		}
 
-		public void GetUploadedReports() {
+		public void RemoveListener() {
 			throw new NotImplementedException();
 		}
 
-		public void GetUploadToServer() {
+		public void RemoveAllListeners() {
 			throw new NotImplementedException();
 		}
 
-		public void SetUploadToServer() {
+		public void Send() {
 			throw new NotImplementedException();
 		}
 
-		public void AddExtraParameter() {
+		public void SendSync() {
 			throw new NotImplementedException();
 		}
 
-		public void RemoveExtraParameter() {
+		public void SendTo() {
 			throw new NotImplementedException();
 		}
 
-		public void GetParameters() {
+		public void SendToHost() {
 			throw new NotImplementedException();
 		}
 	}

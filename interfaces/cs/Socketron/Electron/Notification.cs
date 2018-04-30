@@ -16,6 +16,16 @@ namespace Socketron {
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
+		public class Events {
+			public const string Show = "show";
+			public const string Click = "click";
+			public const string Close = "close";
+			/// <summary>*macOS*</summary>
+			public const string Reply = "reply";
+			/// <summary>*macOS*</summary>
+			public const string Action = "action";
+		}
+
 		public class Options {
 			public string title;
 			public string subtitle;

@@ -7,6 +7,10 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	public class Process {
+		public class Events {
+			public const string Loaded = "loaded";
+		}
+
 		protected Process() {
 		}
 

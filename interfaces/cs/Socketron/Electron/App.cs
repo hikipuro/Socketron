@@ -6,6 +6,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	public class App : EventEmitter {
+		public const string Name = "App";
 		const string Type = ProcessType.Browser;
 		const string Prefix = "electron.app.";
 		public AppCommandLine CommandLine;

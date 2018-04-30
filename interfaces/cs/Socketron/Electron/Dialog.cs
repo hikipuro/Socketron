@@ -32,7 +32,7 @@ namespace Socketron {
 			public string title;
 			public string defaultPath;
 			public string buttonLabel;
-			//public FileFilter[] filters;
+			public FileFilter[] filters;
 			public string[] properties;
 			public string message;
 			public bool? securityScopedBookmarks;
@@ -48,7 +48,7 @@ namespace Socketron {
 			public string title;
 			public string defaultPath;
 			public string buttonLabel;
-			//public FileFilter[] filters;
+			public FileFilter[] filters;
 			public string[] properties;
 			public string message;
 			public string nameFieldLabel;
@@ -71,7 +71,7 @@ namespace Socketron {
 			public string detail;
 			public string checkboxLabel;
 			public bool? checkboxChecked;
-			//public NativeImage icon;
+			public NativeImage icon;
 			public int? cancelId;
 			public bool? noLink;
 			public bool? normalizeAccessKeys;
@@ -84,7 +84,7 @@ namespace Socketron {
 		}
 
 		public class CertificateTrustDialogOptions {
-			//public Certificate certificate;
+			public Certificate certificate;
 			public string message;
 
 			public string Stringify() {

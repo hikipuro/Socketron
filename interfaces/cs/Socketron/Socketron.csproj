@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buffer.cs" />
+    <Compile Include="Color.cs" />
     <Compile Include="Electron\Accelerator.cs" />
     <Compile Include="Electron\BrowserView.cs" />
     <Compile Include="Electron\BrowserWindowOptions.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Electron\InAppPurchase.cs" />
     <Compile Include="Electron\IncomingMessage.cs" />
     <Compile Include="Electron\IPCMain.cs" />
+    <Compile Include="Electron\IPCRenderer.cs" />
     <Compile Include="Electron\Locales.cs" />
     <Compile Include="Electron\Menu.cs" />
     <Compile Include="Electron\MenuItem.cs" />
@@ -161,6 +163,7 @@
     <Compile Include="Node\Node.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptBuilder.cs" />
     <Compile Include="Socketron.cs" />
     <Compile Include="SocketronClient.cs" />
     <Compile Include="SocketronData.cs" />

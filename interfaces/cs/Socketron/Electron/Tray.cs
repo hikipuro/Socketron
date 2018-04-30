@@ -11,6 +11,38 @@ namespace Socketron {
 		public int ID;
 		protected Socketron _socketron;
 
+		public class Events {
+			public const string Click = "click";
+			/// <summary>*macOS Windows*</summary>
+			public const string RightClick = "right-click";
+			/// <summary>*macOS Windows*</summary>
+			public const string DoubleClick = "double-click";
+			/// <summary>*Windows*</summary>
+			public const string BalloonShow = "balloon-show";
+			/// <summary>*Windows*</summary>
+			public const string BalloonClick = "balloon-click";
+			/// <summary>*Windows*</summary>
+			public const string BalloonClosed = "balloon-closed";
+			/// <summary>*macOS*</summary>
+			public const string Drop = "drop";
+			/// <summary>*macOS*</summary>
+			public const string DropFiles = "drop-files";
+			/// <summary>*macOS*</summary>
+			public const string DropText = "drop-text";
+			/// <summary>*macOS*</summary>
+			public const string DragEnter = "drag-enter";
+			/// <summary>*macOS*</summary>
+			public const string DragLeave = "drag-leave";
+			/// <summary>*macOS*</summary>
+			public const string DragEnd = "drag-end";
+			/// <summary>*macOS*</summary>
+			public const string MouseEnter = "mouse-enter";
+			/// <summary>*macOS*</summary>
+			public const string MouseLeave = "mouse-leave";
+			/// <summary>*macOS*</summary>
+			public const string MouseMove = "mouse-move";
+		}
+
 		protected Tray() {
 		}
 
