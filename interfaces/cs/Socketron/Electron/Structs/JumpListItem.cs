@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class JumpListItem {
 		public string type;
 		public string path;
@@ -12,13 +10,11 @@ namespace Socketron {
 		public int? iconIndex;
 
 		public static JumpListItem Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<JumpListItem>(text);
+			return JSON.Parse<JumpListItem>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

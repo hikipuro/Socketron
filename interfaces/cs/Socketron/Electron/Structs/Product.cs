@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Product {
 		public string productIdentifier;
 		public string localizedDescription;
@@ -12,13 +10,11 @@ namespace Socketron {
 		public bool? downloadable;
 
 		public static Product Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Product>(text);
+			return JSON.Parse<Product>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

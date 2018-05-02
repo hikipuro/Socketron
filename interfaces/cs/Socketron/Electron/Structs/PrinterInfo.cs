@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class PrinterInfo {
 		public string name;
 		public string description;
@@ -8,13 +6,11 @@ namespace Socketron {
 		public bool? isDefault;
 
 		public static PrinterInfo Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<PrinterInfo>(text);
+			return JSON.Parse<PrinterInfo>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class CertificatePrincipal {
 		public string commonName;
 		public string[] organizations;
@@ -10,13 +8,11 @@ namespace Socketron {
 		public string country;
 
 		public static CertificatePrincipal Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<CertificatePrincipal>(text);
+			return JSON.Parse<CertificatePrincipal>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

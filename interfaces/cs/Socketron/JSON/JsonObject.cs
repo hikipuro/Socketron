@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web.Script.Serialization;
 
 namespace Socketron {
 	public class JsonObject : Dictionary<string, object> {
@@ -25,11 +24,7 @@ namespace Socketron {
 		}
 
 		public static JsonObject Parse(string text) {
-			JavaScriptSerializer serializer = new JavaScriptSerializer();
-			var data = serializer.Deserialize<JsonObject>(text);
-			//JsonObject json = new JsonObject();
-			//json._objects = data;
-			return data;
+			return JSON.Parse<JsonObject>(text);
 		}
 
 		public static JsonObject FromObject(object obj) {
@@ -103,8 +98,7 @@ namespace Socketron {
 		*/
 
 		public string Stringify() {
-			JavaScriptSerializer serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

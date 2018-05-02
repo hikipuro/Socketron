@@ -248,6 +248,7 @@ class CommandProcessorNode extends EventEmitter {
 		this.process = process;
 		this.dialog = dialog;
 		this._client = null;
+		this._data = null;
 		this._callbackList = {};
 		this._objRefs = [];
 		this._objRefsIndex = 0;
@@ -280,38 +281,39 @@ class CommandProcessorNode extends EventEmitter {
 			return;
 		}
 		this._client = client;
+		this._data = data;
 		try {
 			let result = func[1].apply(func[0], data.args);
-			if (result != null) {
+			//if (result != null) {
 				this._sendCallback(data, client, result);
-			}
+			//}
 		} catch (e) {
 			console.error(e);
 			this._sendError(data, client, e.stack);
 		}
 		this._client = null;
+		this._data = null;
 	}
 
 	executeJavaScript(script) {
 		if (script == null) {
 			return;
 		}
-		console.log(script);
 		const start = Date.now();
+		console.log(script);
 		const clientId = this._client.id;
-		const funcs = [
-			"var socketron = this.socketron;",
-			"var electron = this.electron;",
-			"var emit = function (eventName, ...args) {",
-				"socketron.emitToClient(",
-					"'" + clientId + "',",
-					"eventName, args",
-				");",
-			"};"
-		];
-		script = funcs.join("") + script;
-		//eval(script);
-		const result = Function(script).apply(this);
+		const emit = (eventName, ...args) => {
+			this.socketron.emitToClient(clientId, eventName, args);
+		};
+		const func = Function(
+			"electron",
+			"emit",
+			 script
+		);
+		const result = func.call(this,
+			 this.electron,
+			 emit
+		);
 		console.log("time: " + (Date.now() - start));
 		return result;
 	}
@@ -371,6 +373,7 @@ class CommandProcessorNode extends EventEmitter {
 	
 	_sendError(data, client, message) {
 		this.emit("error", data, client, message);
+		this.socketron._sendErrorCallback(data, client, message);
 	}
 }
 
@@ -574,6 +577,19 @@ class SocketronNode {
 		callbackData.args = args;
 		client.writeTextData(callbackData);
 	}
+	
+	_sendErrorCallback(data, client, args) {
+		if (data.sequenceId == null) {
+			return;
+		}
+		let newData = new SocketronData({
+			sequenceId: data.sequenceId,
+			status: "error",
+			func: "callback",
+			args: args
+		});
+		client.writeTextData(newData);
+	}
 }
 
 class CommandProcessorRenderer extends EventEmitter {
@@ -648,6 +664,7 @@ class CommandProcessorRenderer extends EventEmitter {
 		];
 		script = funcs.join("") + script;
 		//eval(script);
+		
 		return Function(script).apply(this);
 	}
 

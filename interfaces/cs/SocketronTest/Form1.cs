@@ -12,6 +12,12 @@ namespace SocketronTest {
 		public Form1() {
 			InitializeComponent();
 			Thread.CurrentThread.Name = "UI Thread";
+			DoubleBuffered = true;
+#if DEBUG
+			textBox1.Text = "Debug mode\n";
+#else
+			textBox1.Text = "Release mode\n";
+#endif
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
@@ -20,9 +26,11 @@ namespace SocketronTest {
 			}
 			test = new TestJQuery();
 			test.Log += (text) => {
-				Invoke((MethodInvoker)(() => {
-					textBox1.AppendText(text + "\n");
+				//*
+				textBox1.Invoke((MethodInvoker)(() => {
+					textBox1.AppendText(text + Environment.NewLine);
 				}));
+				//*/
 			};
 			//test.Run();
 			/*

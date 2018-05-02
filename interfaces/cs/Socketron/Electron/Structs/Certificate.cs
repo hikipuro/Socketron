@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Certificate {
 		public string data;
 		public CertificatePrincipal issuer;
@@ -14,13 +12,11 @@ namespace Socketron {
 		public string fingerprint;
 
 		public static Certificate Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Certificate>(text);
+			return JSON.Parse<Certificate>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

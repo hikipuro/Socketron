@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class UploadFile {
 		public string type;
 		public string filePath;
@@ -9,13 +7,11 @@ namespace Socketron {
 		public double? modificationTime;
 
 		public static UploadFile Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<UploadFile>(text);
+			return JSON.Parse<UploadFile>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

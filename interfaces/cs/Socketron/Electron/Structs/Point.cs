@@ -1,18 +1,14 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Point {
 		public int x;
 		public int y;
 
 		public static Point Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Point>(text);
+			return JSON.Parse<Point>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class RemovePassword {
 		public string type;
 		public string origin;
@@ -10,13 +8,11 @@ namespace Socketron {
 		public string password;
 
 		public static RemovePassword Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<RemovePassword>(text);
+			return JSON.Parse<RemovePassword>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

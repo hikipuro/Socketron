@@ -73,14 +73,22 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buffer.cs" />
+    <Compile Include="Electron\Classes\BrowserWindowClass.cs" />
+    <Compile Include="Electron\Classes\MenuClass.cs" />
+    <Compile Include="Electron\Classes\NativeImageClass.cs" />
+    <Compile Include="Electron\Classes\NotificationClass.cs" />
+    <Compile Include="Electron\Classes\ScreenClass.cs" />
+    <Compile Include="Electron\Dialog.cs" />
+    <Compile Include="Electron\Electron.cs" />
+    <Compile Include="Electron\WebPreferences.cs" />
+    <Compile Include="Node\Buffer.cs" />
     <Compile Include="Color.cs" />
     <Compile Include="Electron\Accelerator.cs" />
     <Compile Include="Electron\BrowserView.cs" />
     <Compile Include="Electron\BrowserWindowOptions.cs" />
     <Compile Include="Electron\BrowserWindowProxy.cs" />
     <Compile Include="Electron\ClientRequest.cs" />
-    <Compile Include="Electron\Clipboard.cs" />
+    <Compile Include="Electron\Classes\ClipboardClass.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Electron\CommandLineSwitches.cs" />
     <Compile Include="Electron\ContentTracing.cs" />
@@ -88,12 +96,13 @@
     <Compile Include="Electron\CrashReporter.cs" />
     <Compile Include="Electron\Debugger.cs" />
     <Compile Include="Electron\DesktopCapturer.cs" />
-    <Compile Include="Electron\Dialog.cs" />
+    <Compile Include="Electron\Classes\DialogClass.cs" />
     <Compile Include="Electron\DownloadItem.cs" />
+    <Compile Include="Electron\ElectronBase.cs" />
     <Compile Include="Electron\GlobalShortcut.cs" />
     <Compile Include="Electron\InAppPurchase.cs" />
     <Compile Include="Electron\IncomingMessage.cs" />
-    <Compile Include="Electron\IPCMain.cs" />
+    <Compile Include="Electron\Classes\IPCMainClass.cs" />
     <Compile Include="Electron\IPCRenderer.cs" />
     <Compile Include="Electron\Locales.cs" />
     <Compile Include="Electron\Menu.cs" />
@@ -154,8 +163,9 @@
     <Compile Include="Electron\Tray.cs" />
     <Compile Include="Electron\WebFrame.cs" />
     <Compile Include="Electron\WebRequest.cs" />
-    <Compile Include="EventEmitter.cs" />
-    <Compile Include="JsonObject.cs" />
+    <Compile Include="Node\EventEmitter.cs" />
+    <Compile Include="JSON\JsonObject.cs" />
+    <Compile Include="JSON\JSON.cs" />
     <Compile Include="JSON\NullPropertiesConverter.cs" />
     <Compile Include="Electron\App.cs" />
     <Compile Include="Electron\BrowserWindow.cs" />
@@ -167,6 +177,7 @@
     <Compile Include="Socketron.cs" />
     <Compile Include="SocketronClient.cs" />
     <Compile Include="SocketronData.cs" />
+    <Compile Include="SocketronObject.cs" />
     <Compile Include="ValueExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

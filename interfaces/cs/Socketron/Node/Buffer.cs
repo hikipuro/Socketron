@@ -121,9 +121,10 @@ namespace Socketron {
 
 		public string Stringify() {
 			byte[] bytes = ToByteArray();
-			JsonObject json = new JsonObject();
-			json["type"] = "Buffer";
-			json["data"] = new List<byte>(bytes);
+			JsonObject json = new JsonObject() {
+				["type"] = "Buffer",
+				["data"] = new List<byte>(bytes)
+			};
 			return json.Stringify();
 		}
 	}

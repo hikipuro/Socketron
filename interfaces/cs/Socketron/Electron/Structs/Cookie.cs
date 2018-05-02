@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Cookie {
 		public string name;
 		public string value;
@@ -13,13 +11,11 @@ namespace Socketron {
 		public double expirationDate;
 
 		public static Cookie Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Cookie>(text);
+			return JSON.Parse<Cookie>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Socketron {
 	/// <summary>
 	/// Create and control browser windows.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public partial class BrowserWindow {
+	public partial class BrowserWindow : ElectronBase {
 		public const string Name = "BrowserWindow";
 		public int ID = 0;
 		public WebContents WebContents;
-		protected Socketron _socketron;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
+		/// <summary>
+		/// BrowserWindow event keys.
+		/// </summary>
 		public class Events {
 			public const string PageTitleUpdated = "page-title-updated";
 			public const string Close = "close";
@@ -59,7 +60,8 @@ namespace Socketron {
 			public const string NewWindowForTab = "new-window-for-tab";
 		}
 
-		public BrowserWindow() {
+		public BrowserWindow(Socketron socketron) {
+			_socketron = socketron;
 		}
 
 		public static Callback GetCallbackFromId(ushort id) {
@@ -68,246 +70,27 @@ namespace Socketron {
 			}
 			return _callbackList[id];
 		}
-		
-		public static BrowserWindow Create(Socketron socketron, Options options = null) {
-			if (options == null) {
-				options = new Options();
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = new electron.BrowserWindow({0});",
-					"return [window.id, window.webContents.id];"
-				),
-				options.Stringify()
-			);
-			BrowserWindow window = null;
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			int? windowId = result[0] as int?;
-			int? contentsId = result[1] as int?;
-			if (windowId != null && contentsId != null) {
-				window = new BrowserWindow() {
-					ID = (int)windowId,
-					_socketron = socketron
-				};
-				window.WebContents = new WebContents(window) {
-					ID = (int)contentsId
-				};
-			} else {
-				Console.Error.WriteLine("error");
-			}
-			return window;
-		}
-
-		public static List<BrowserWindow> GetAllWindows(Socketron socketron) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var result = [];",
-					"var windows = electron.BrowserWindow.getAllWindows();",
-					"for (var window of windows) {{",
-						"result.push([window.id,window.webContents.id]);",
-					"}}",
-					"return result;"
-				)
-			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			List<BrowserWindow> windows = new List<BrowserWindow>();
-			foreach (object[] item in result) {
-				int windowId = (int)item[0];
-				int contentsId = (int)item[1];
-				BrowserWindow window = new BrowserWindow() {
-					ID = windowId,
-					_socketron = socketron
-				};
-				window.WebContents = new WebContents(window) {
-					ID = contentsId
-				};
-				windows.Add(window);
-			}
-			return windows;
-		}
-
-		public static BrowserWindow GetFocusedWindow(Socketron socketron) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.getFocusedWindow();",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return [window.id,window.webContents.id];"
-				)
-			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow() {
-				ID = windowId,
-				_socketron = socketron
-			};
-			window.WebContents = new WebContents(window) {
-				ID = contentsId
-			};
-			return window;
-		}
-
-		public static BrowserWindow FromWebContents(Socketron socketron, WebContents webContents) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"var window = electron.BrowserWindow.fromWebContents(contents);",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return [window.id,window.webContents.id];"
-				),
-				webContents.ID
-			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow() {
-				ID = windowId,
-				_socketron = socketron
-			};
-			window.WebContents = new WebContents(window) {
-				ID = contentsId
-			};
-			return window;
-		}
-		
-		public static BrowserWindow FromBrowserView(Socketron socketron, BrowserView browserView) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"var window = electron.BrowserWindow.fromBrowserView(view);",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return [window.id,window.webContents.id];"
-				),
-				browserView.ID
-			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow() {
-				ID = windowId,
-				_socketron = socketron
-			};
-			window.WebContents = new WebContents(window) {
-				ID = contentsId
-			};
-			return window;
-		}
-
-		public static BrowserWindow FromId(Socketron socketron, int id) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"if (window == null) {{",
-						"return null;",
-					"}}",
-					"return [window.id,window.webContents.id];"
-				),
-				id
-			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow() {
-				ID = windowId,
-				_socketron = socketron
-			};
-			window.WebContents = new WebContents(window) {
-				ID = contentsId
-			};
-			return window;
-		}
-
-		public static void AddExtension(Socketron socketron, string path) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.BrowserWindow.addExtension({0});"
-				),
-				path.Escape()
-			);
-			_ExecuteJavaScript(socketron, script, null, null);
-		}
-
-		public static void RemoveExtension(Socketron socketron, string name) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.BrowserWindow.removeExtension({0});"
-				),
-				name.Escape()
-			);
-			_ExecuteJavaScript(socketron, script, null, null);
-		}
-
-		public static JsonObject GetExtensions(Socketron socketron) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.BrowserWindow.getExtensions();"
-				)
-			);
-			object result = _ExecuteJavaScriptBlocking<object>(socketron, script);
-			return new JsonObject(result);
-		}
-
-		public static void AddDevToolsExtension(Socketron socketron, string path) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.BrowserWindow.addDevToolsExtension({0});"
-				),
-				path.Escape()
-			);
-			_ExecuteJavaScript(socketron, script, null, null);
-		}
-
-		public static void RemoveDevToolsExtension(Socketron socketron, string name) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.BrowserWindow.removeDevToolsExtension({0});"
-				),
-				name.Escape()
-			);
-			_ExecuteJavaScript(socketron, script, null, null);
-		}
-
-		public static JsonObject GetDevToolsExtensions(Socketron socketron) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.BrowserWindow.getDevToolsExtensions();"
-				)
-			);
-			object result = _ExecuteJavaScriptBlocking<object>(socketron, script);
-			return new JsonObject(result);
-		}
-
-		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {
-			_socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		public void ExecuteJavaScript(string[] script, Callback success = null, Callback error = null) {
-			_socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		public T ExecuteJavaScriptBlocking<T>(string[] script) {
-			return _ExecuteJavaScriptBlocking<T>(string.Join("\n", script));
-		}
 
 		public void On(string eventName, Callback callback) {
 			if (callback == null) {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] script = new[] {
-				"var window = electron." + Name + ".fromId(" + ID + ");",
-				"var listener = () => {",
-					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
-				"};",
-				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
-				"window.on(" + eventName.Escape() + ", listener);"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var window = electron.{0}.fromId({1});",
+					"var listener = () => {{",
+						"emit('__event',{2},{3});",
+					"}};",
+					"this._addClientEventListener({2},{3},listener);",
+					"window.on({4}, listener);"
+				),
+				Name,
+				ID,
+				Name.Escape(),
+				_callbackListId,
+				eventName.Escape()
+			);
 			_callbackListId++;
 			_ExecuteJavaScript(script);
 		}
@@ -317,15 +100,22 @@ namespace Socketron {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] script = new[] {
-				"var window = electron." + Name + ".fromId(" + ID + ");",
-				"var listener = () => {",
-					"this._removeClientEventListener(" + Name.Escape() + "," + _callbackListId + ");",
-					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
-				"};",
-				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
-				"window.once(" + eventName.Escape() + ", listener);"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var window = electron.{0}.fromId({1});",
+					"var listener = () => {{",
+						"this._removeClientEventListener({2},{3});",
+						"emit('__event',{2},{3});",
+					"}};",
+					"this._addClientEventListener({2},{3},listener);",
+					"window.once({4}, listener);"
+				),
+				Name,
+				ID,
+				Name.Escape(),
+				_callbackListId,
+				eventName.Escape()
+			);
 			_callbackListId++;
 			_ExecuteJavaScript(script);
 		}
@@ -1562,7 +1352,7 @@ namespace Socketron {
 				message,
 				callback.Escape()
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -1810,7 +1600,7 @@ namespace Socketron {
 					menu.ID
 				);
 			}
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -1869,7 +1659,7 @@ namespace Socketron {
 				overlay.ID,
 				description.Escape()
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2006,7 +1796,7 @@ namespace Socketron {
 				ID,
 				options.Stringify()
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2037,7 +1827,7 @@ namespace Socketron {
 				ID,
 				icon.ID
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2237,7 +2027,7 @@ namespace Socketron {
 					parent.ID
 				);
 			}
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2258,11 +2048,10 @@ namespace Socketron {
 			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
 			int windowId = (int)result[0];
 			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow() {
-				ID = windowId,
-				_socketron = _socketron
+			BrowserWindow window = new BrowserWindow(_socketron) {
+				ID = windowId
 			};
-			window.WebContents = new WebContents(window) {
+			window.WebContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;
@@ -2291,11 +2080,10 @@ namespace Socketron {
 			foreach (object[] item in result) {
 				int windowId = (int)item[0];
 				int contentsId = (int)item[1];
-				BrowserWindow window = new BrowserWindow() {
-					ID = windowId,
-					_socketron = _socketron
+				BrowserWindow window = new BrowserWindow(_socketron) {
+					ID = windowId
 				};
-				window.WebContents = new WebContents(window) {
+				window.WebContents = new WebContents(_socketron, window) {
 					ID = contentsId
 				};
 				windows.Add(window);
@@ -2409,7 +2197,7 @@ namespace Socketron {
 				ID,
 				browserWindow.ID
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2453,7 +2241,7 @@ namespace Socketron {
 				ID,
 				browserView.ID
 			);
-			ExecuteJavaScript(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -2477,92 +2265,6 @@ namespace Socketron {
 				ID = result
 			};
 			return view;
-		}
-
-		protected void _ExecuteJavaScript(string script) {
-			_socketron.Main.ExecuteJavaScript(script);
-		}
-
-		protected void _ExecuteJavaScript(string script, Callback success, Callback error) {
-			_socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected void _ExecuteJavaScript(string[] script) {
-			_socketron.Main.ExecuteJavaScript(script);
-		}
-
-		protected void _ExecuteJavaScript(string[] script, Callback callback) {
-			_socketron.Main.ExecuteJavaScript(script, callback);
-		}
-
-		protected void _ExecuteJavaScript(string[] script, Callback success, Callback error) {
-			_socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected T _ExecuteJavaScriptBlocking<T>(string script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: BrowserWindow._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(TimeSpan.FromTicks(1));
-			}
-			return value;
-		}
-
-		protected static void _ExecuteJavaScript(Socketron socketron, string script, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(socketron, script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: BrowserWindow._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(TimeSpan.FromTicks(1));
-			}
-			return value;
 		}
 	}
 }

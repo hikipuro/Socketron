@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class ProcessMetric {
 		public int? pid;
 		public string type;
@@ -8,13 +6,11 @@ namespace Socketron {
 		public CPUUsage cpu;
 
 		public static ProcessMetric Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<ProcessMetric>(text);
+			return JSON.Parse<ProcessMetric>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

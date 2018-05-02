@@ -1,317 +1,354 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Web.Script.Serialization;
 
 namespace Socketron {
 	/// <summary>
 	/// Create tray, dock, and application icons using PNG or JPG files.
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
-	public class NativeImage : IDisposable {
+	public class NativeImage : ElectronBase, IDisposable {
 		public const string Name = "NativeImage";
 		public int ID;
-		protected Socketron _socketron;
 
-		public class PNGOptions {
+		public class Options {
 			public double scaleFactor;
 
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 
-		protected NativeImage() {
+		public class DPISuffixes {
+			public const string x1 = "@1x";
+			public const string x1_25 = "@1.25x";
+			public const string x1_33 = "@1.33x";
+			public const string x1_4 = "@1.4x";
+			public const string x1_5 = "@1.5x";
+			public const string x1_8 = "@1.8x";
+			public const string x2 = "@2x";
+			public const string x2_5 = "@2.5x";
+			public const string x3 = "@3x";
+			public const string x4 = "@4x";
+			public const string x5 = "@5x";
 		}
 
-		public static NativeImage CreateEmpty(Socketron socketron) {
-			string[] script = new[] {
-				"var image = electron.nativeImage.createEmpty();",
-				"return this._addObjectReference(image);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			NativeImage image = new NativeImage() {
-				_socketron = socketron,
-				ID = result
-			};
-			return image;
-		}
-
-		public static NativeImage CreateFromPath(Socketron socketron, string path) {
-			string[] script = new[] {
-				"var image = electron.nativeImage.createFromPath(" + path.Escape() + ");",
-				"return this._addObjectReference(image);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			NativeImage image = new NativeImage() {
-				_socketron = socketron,
-				ID = result
-			};
-			return image;
-		}
-
-		public static NativeImage CreateFromBuffer(Socketron socketron, Buffer buffer) {
-			string[] script = new[] {
-				"var image = electron.nativeImage.createFromBuffer(" + buffer.Stringify() + ");",
-				"return this._addObjectReference(image);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			NativeImage image = new NativeImage() {
-				_socketron = socketron,
-				ID = result
-			};
-			return image;
-		}
-
-		public static NativeImage CreateFromDataURL(Socketron socketron, string dataURL) {
-			string[] script = new[] {
-				"var image = electron.nativeImage.createFromDataURL(" + dataURL.Escape() + ");",
-				"return this._addObjectReference(image);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			NativeImage image = new NativeImage() {
-				_socketron = socketron,
-				ID = result
-			};
-			return image;
-		}
-
-		public static NativeImage CreateFromNamedImage(Socketron socketron, string imageName) {
-			string[] script = new[] {
-				"var image = electron.nativeImage.createFromNamedImage(" + imageName.Escape() + ");",
-				"return this._addObjectReference(image);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			NativeImage image = new NativeImage() {
-				_socketron = socketron,
-				ID = result
-			};
-			return image;
+		public NativeImage(Socketron socketron) {
+			_socketron = socketron;
 		}
 
 		public void Dispose() {
-			string[] script = new[] {
-				"this._removeObjectReference(" + ID + ");"
-			};
-			_ExecuteJavaScript(_socketron, script, null, null);
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"this._removeObjectReference({0});"
+				),
+				ID
+			);
+			_ExecuteJavaScript(script);
 		}
 
-		public Buffer ToPNG(PNGOptions options = null) {
-			List<string> script = new List<string> {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}"
-			};
-			if (options == null) {
-				script.Add("return image.toPNG();");
-			} else {
-				script.Add("return image.toPNG(" + options.Stringify() + ");");
+		/// <summary>
+		/// Returns Buffer - A Buffer that contains the image's PNG encoded data.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public Buffer ToPNG(Options options = null) {
+			string option = string.Empty;
+			if (options != null) {
+				option = options.Stringify();
 			}
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script.ToArray());
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.toPNG({1});"
+				),
+				ID,
+				option
+			);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
 			return Buffer.FromJson(json);
 		}
 
+		/// <summary>
+		/// Returns Buffer - A Buffer that contains the image's JPEG encoded data.
+		/// </summary>
+		/// <param name="quality"></param>
+		/// <returns></returns>
 		public Buffer ToJPEG(int quality) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.toJPEG(" + quality + ");"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.toJPEG({1});"
+				),
+				ID,
+				quality
+			);
 			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
 			JsonObject json = new JsonObject(result);
 			return Buffer.FromJson(json);
 		}
 
-		public Buffer ToBitmap(int quality) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.toBitmap(" + quality + ");"
-			};
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
-		}
-
-		public string ToDataURL() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.toDataURL();"
-			};
-			return _ExecuteJavaScriptBlocking<string>(_socketron, script);
-		}
-
-		/*
-		public Buffer GetBitmap(int quality) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + _ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.getBitmap(" + quality + ");"
-			};
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
-		}
-		//*/
-
-		public Buffer GetNativeHandle() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.getNativeHandle();"
-			};
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
-		}
-
-		public bool IsEmpty() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.isEmpty();"
-			};
-			return _ExecuteJavaScriptBlocking<bool>(_socketron, script);
-		}
-
-		public Size GetSize() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.getSize();"
-			};
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
-			JsonObject json = new JsonObject(result);
-			Size size = new Size();
-			size.width = (int)json["width"];
-			size.height = (int)json["height"];
-			return size;
-		}
-
-		public void SetTemplateImage(bool option) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.setTemplateImage(" + option.Escape() + ");"
-			};
-			_ExecuteJavaScript(_socketron, script, null, null);
-		}
-
-		public bool IsTemplateImage() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.isTemplateImage();"
-			};
-			return _ExecuteJavaScriptBlocking<bool>(_socketron, script);
-		}
-
-		/*
-		public NativeImage Crop(Rectangle rect) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + _ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.crop(" + rect.Stringify() + ");"
-			};
-			return _ExecuteJavaScriptBlocking<object>(_socketron, script);
-		}
-		//*/
-
-		/*
-		public NativeImage Resize(Rectangle rect) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + _ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.resize(" + rect.Stringify() + ");"
-			};
-			return _ExecuteJavaScriptBlocking<object>(_socketron, script);
-		}
-		//*/
-
-		public double GetAspectRatio() {
-			string[] script = new[] {
-				"var image = this._objRefs[" + ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.getAspectRatio();"
-			};
-			return _ExecuteJavaScriptBlocking<double>(_socketron, script);
-		}
-
-		/*
-		public void AddRepresentation(double scaleFactor, int width, int height, Buffer buffer, string dataURL) {
-			string[] script = new[] {
-				"var image = this._objRefs[" + _ID + "];",
-				"if (image == null) {",
-					"return;",
-				"}",
-				"return image.addRepresentation(" + option.Escape() + ");"
-			};
-			_ExecuteJavaScript(_socketron, script, null, null);
-		}
-		//*/
-
-		protected static void _ExecuteJavaScript(Socketron socketron, string[] script, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(socketron, script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: NativeImage._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(TimeSpan.FromTicks(1));
+		/// <summary>
+		/// Returns Buffer - A Buffer that contains a copy of the image's raw bitmap pixel data.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public Buffer ToBitmap(Options options = null) {
+			string option = string.Empty;
+			if (options != null) {
+				option = options.Stringify();
 			}
-			return value;
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.toBitmap({1});"
+				),
+				ID,
+				option
+			);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
+			JsonObject json = new JsonObject(result);
+			return Buffer.FromJson(json);
+		}
+
+		/// <summary>
+		/// Returns String - The data URL of the image.
+		/// </summary>
+		/// <returns></returns>
+		public string ToDataURL() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.toDataURL();"
+				),
+				ID
+			);
+			return _ExecuteJavaScriptBlocking<string>(script);
+		}
+
+		/// <summary>
+		/// Returns Buffer - A Buffer that contains the image's raw bitmap pixel data.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public Buffer GetBitmap(Options options) {
+			string option = string.Empty;
+			if (options != null) {
+				option = options.Stringify();
+			}
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.getBitmap({1});"
+				),
+				ID,
+				option
+			);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
+			JsonObject json = new JsonObject(result);
+			return Buffer.FromJson(json);
+		}
+
+		/// <summary>
+		/// *macOS* Returns Buffer - A Buffer that stores C pointer to underlying
+		/// native handle of the image. On macOS, a pointer to NSImage instance would be returned.
+		/// </summary>
+		/// <returns></returns>
+		public Buffer GetNativeHandle() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.getNativeHandle();"
+				),
+				ID
+			);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
+			JsonObject json = new JsonObject(result);
+			return Buffer.FromJson(json);
+		}
+
+		/// <summary>
+		/// Returns Boolean - Whether the image is empty.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsEmpty() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.isEmpty();"
+				),
+				ID
+			);
+			return _ExecuteJavaScriptBlocking<bool>(script);
+		}
+
+		/// <summary>
+		/// Returns Size.
+		/// </summary>
+		/// <returns></returns>
+		public Size GetSize() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.getSize();"
+				),
+				ID
+			);
+			object result = _ExecuteJavaScriptBlocking<object>(script);
+			return Size.FromObject(result);
+		}
+
+		/// <summary>
+		/// Marks the image as a template image.
+		/// </summary>
+		/// <param name="option"></param>
+		public void SetTemplateImage(bool option) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.setTemplateImage({1});"
+				),
+				ID,
+				option.Escape()
+			);
+			_ExecuteJavaScript(script);
+		}
+
+		/// <summary>
+		/// Returns Boolean - Whether the image is a template image.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsTemplateImage() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.isTemplateImage();"
+				),
+				ID
+			);
+			return _ExecuteJavaScriptBlocking<bool>(script);
+		}
+
+		/// <summary>
+		/// Returns NativeImage - The cropped image.
+		/// </summary>
+		/// <param name="rect"></param>
+		/// <returns></returns>
+		public NativeImage Crop(Rectangle rect) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"image = image.crop({1});",
+					"return this._addObjectReference(image);"
+				),
+				ID,
+				rect.Stringify()
+			);
+			int result = _ExecuteJavaScriptBlocking<int>(script);
+			NativeImage image = new NativeImage(_socketron) {
+				ID = result
+			};
+			return image;
+		}
+
+		/// <summary>
+		/// Returns NativeImage - The resized image.
+		/// <para>
+		/// If only the height or the width are specified then the current aspect ratio
+		/// will be preserved in the resized image.
+		/// </para>
+		/// </summary>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public NativeImage Resize(JsonObject options) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"image = image.resize({1});",
+					"return this._addObjectReference(image);"
+				),
+				ID,
+				options.Stringify()
+			);
+			int result = _ExecuteJavaScriptBlocking<int>(script);
+			NativeImage image = new NativeImage(_socketron) {
+				ID = result
+			};
+			return image;
+		}
+
+		/// <summary>
+		/// Returns Float - The image's aspect ratio.
+		/// </summary>
+		/// <returns></returns>
+		public double GetAspectRatio() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return null;",
+					"}}",
+					"return image.getAspectRatio();"
+				),
+				ID
+			);
+			return _ExecuteJavaScriptBlocking<double>(script);
+		}
+
+		/// <summary>
+		/// Add an image representation for a specific scale factor.
+		/// This can be used to explicitly add different scale factor representations to an image.
+		/// This can be called on empty images.
+		/// </summary>
+		/// <param name="options"></param>
+		public void AddRepresentation(JsonObject options) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = this._objRefs[{0}];",
+					"if (image == null) {{",
+						"return;",
+					"}}",
+					"image.addRepresentation({1});"
+				),
+				ID,
+				options.Stringify()
+			);
+			_ExecuteJavaScript(script);
 		}
 	}
 }

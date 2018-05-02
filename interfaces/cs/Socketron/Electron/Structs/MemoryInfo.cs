@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class MemoryInfo {
 		//public int? pid;
 		public int? workingSetSize;
@@ -9,13 +7,11 @@ namespace Socketron {
 		public int? sharedBytes;
 
 		public static MemoryInfo Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<MemoryInfo>(text);
+			return JSON.Parse<MemoryInfo>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

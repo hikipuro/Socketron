@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Rectangle {
 		public int x;
 		public int y;
@@ -21,13 +19,11 @@ namespace Socketron {
 		}
 
 		public static Rectangle Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Rectangle>(text);
+			return JSON.Parse<Rectangle>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

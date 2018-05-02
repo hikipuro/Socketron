@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class GPUFeatureStatus {
 		public string _2d_canvas;
 		public string flash_3d;
@@ -17,13 +15,11 @@ namespace Socketron {
 		public string webgl2;
 
 		public static GPUFeatureStatus Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<GPUFeatureStatus>(text);
+			return JSON.Parse<GPUFeatureStatus>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

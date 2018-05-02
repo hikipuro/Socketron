@@ -41,8 +41,9 @@ namespace Socketron {
 
 		public void Connect(string hostname, int port) {
 			Close();
-			_tcpClient = new TcpClient();
-			_tcpClient.NoDelay = true;
+			_tcpClient = new TcpClient() {
+				NoDelay = true
+			};
 			_tcpClient.BeginConnect(
 				hostname, port,
 				new AsyncCallback(_OnConnect),
@@ -108,7 +109,7 @@ namespace Socketron {
 					_OnData(_buffer, bytesReaded);
 					//*/
 				} while (stream.DataAvailable);
-				Thread.Sleep(TimeSpan.FromTicks(1));
+				//Thread.Sleep(TimeSpan.FromTicks(1));
 			}
 		}
 
@@ -127,8 +128,9 @@ namespace Socketron {
 			_stream.ReadTimeout = Config.Timeout;
 			_stream.WriteTimeout = Config.Timeout;
 
-			_readThread = new Thread(_Read);
-			_readThread.Name = "Socketron read thread";
+			_readThread = new Thread(_Read) {
+				Name = "Socketron read thread"
+			};
 			_readThread.Start();
 			EmitNewThread("connect");
 		}

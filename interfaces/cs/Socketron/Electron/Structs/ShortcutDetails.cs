@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class ShortcutDetails {
 		public string target;
 		public string cwd;
@@ -11,13 +9,11 @@ namespace Socketron {
 		public string appUserModelId;
 
 		public static ShortcutDetails Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<ShortcutDetails>(text);
+			return JSON.Parse<ShortcutDetails>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web.Script.Serialization;
 
 namespace Socketron {
 	/// <summary>
@@ -23,19 +22,15 @@ namespace Socketron {
 			public string position;
 
 			public static Options Parse(string text) {
-				var serializer = new JavaScriptSerializer();
-				return serializer.Deserialize<Options>(text);
+				return JSON.Parse<Options>(text);
 			}
 
 			public static Options[] ParseArray(string text) {
-				var serializer = new JavaScriptSerializer();
-				return serializer.Deserialize<Options[]>(text);
+				return JSON.Parse<Options[]>(text);
 			}
 
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 

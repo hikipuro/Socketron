@@ -5,7 +5,11 @@ namespace Socketron {
 	/// Communicate asynchronously from the main process to renderer processes.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class IPCMain {
+	public class IPCMainClass : ElectronBase {
+		public IPCMainClass(Socketron socketron) {
+			_socketron = socketron;
+		}
+
 		public void On() {
 			throw new NotImplementedException();
 		}

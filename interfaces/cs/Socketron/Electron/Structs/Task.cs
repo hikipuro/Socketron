@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Task {
 		public string program;
 		public string arguments;
@@ -10,13 +8,11 @@ namespace Socketron {
 		public int? iconIndex;
 
 		public static Task Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Task>(text);
+			return JSON.Parse<Task>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

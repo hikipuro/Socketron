@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Web.Script.Serialization;
+﻿using System.Collections.Generic;
 
 namespace Socketron {
 	/// <summary>
 	/// Create OS desktop notifications.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Notification : IDisposable {
+	public class Notification : ElectronBase {
 		public const string Name = "Notification";
-		protected Socketron _socketron;
-		protected int _ID;
+		public int ID;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
+		/// <summary>
+		/// Notification instance events.
+		/// </summary>
 		public class Events {
 			public const string Show = "show";
 			public const string Click = "click";
@@ -26,26 +25,66 @@ namespace Socketron {
 			public const string Action = "action";
 		}
 
+		/// <summary>
+		/// Notification create options.
+		/// </summary>
 		public class Options {
+			/// <summary>
+			/// A title for the notification,
+			/// which will be shown at the top of the notification window when it is shown.
+			/// </summary>
 			public string title;
+			/// <summary>
+			/// (optional) *macOS* 
+			/// A subtitle for the notification, which will be displayed below the title.
+			/// </summary>
 			public string subtitle;
+			/// <summary>
+			/// The body text of the notification, which will be displayed below the title or subtitle.
+			/// </summary>
 			public string body;
+			/// <summary>
+			/// (optional) Whether or not to emit an OS notification noise when showing the notification.
+			/// </summary>
 			public bool? silent;
+			/// <summary>
+			/// (optional) An icon to use in the notification.
+			/// </summary>
 			public string icon;
+			/// <summary>
+			/// (optional) *macOS* Whether or not to add an inline reply option to the notification.
+			/// </summary>
 			public bool? hasReply;
+			/// <summary>
+			/// (optional) *macOS* The placeholder to write in the inline reply input field.
+			/// </summary>
 			public string replyPlaceholder;
+			/// <summary>
+			/// (optional) *macOS* The name of the sound file to play when the notification is shown.
+			/// </summary>
 			public string sound;
+			/// <summary>
+			/// (optional) *macOS* Actions to add to the notification.
+			/// Please read the available actions and limitations in the NotificationAction documentation.
+			/// </summary>
 			//public NotificationAction[] actions;
+			/// <summary>
+			/// (optional) *macOS* A custom title for the close button of an alert.
+			/// An empty string will cause the default localized text to be used.
+			/// </summary>
 			public string closeButtonText;
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 
-		protected Notification() {
+		public Notification(Socketron socketron) {
+			_socketron = socketron;
 		}
 
 		public static Callback GetCallbackFromId(ushort id) {
@@ -55,32 +94,13 @@ namespace Socketron {
 			return _callbackList[id];
 		}
 
-		public static Notification Create(Socketron socketron, Options options) {
-			string[] script = new[] {
-				"var notification = new electron.Notification(",
-					options.Stringify(),
-				");",
-				"return this._addObjectReference(notification);"
-			};
-			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			Notification notification = new Notification() {
-				_socketron = socketron,
-				_ID = result
-			};
-			return notification;
-		}
-
-		public static bool IsSupported(Socketron socketron) {
-			string[] script = new[] {
-				"return electron.Notification.isSupported();"
-			};
-			return _ExecuteJavaScriptBlocking<bool>(socketron, script);
-		}
-
 		public void Dispose() {
-			string[] script = new[] {
-				"this._removeObjectReference(" + _ID + ");"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"this._removeObjectReference({0});"
+				),
+				ID
+			);
 			_ExecuteJavaScript(_socketron, script, null, null);
 		}
 
@@ -89,19 +109,25 @@ namespace Socketron {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] script = new[] {
-				"var notification = this._objRefs[" + _ID + "];",
-				"if (notification == null) {",
-					"return;",
-				"}",
-				"var listener = () => {",
-					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
-				"};",
-				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
-				"notification.on(" + eventName.Escape() + ", listener);"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var notification = this._objRefs[{0}];",
+					"if (notification == null) {{",
+						"return;",
+					"}}",
+					"var listener = () => {{",
+						"emit('__event',{1},{2});",
+					"}};",
+					"this._addClientEventListener({1},{2},listener);",
+					"notification.on({3}, listener);"
+				),
+				ID,
+				Name.Escape(),
+				_callbackListId,
+				eventName.Escape()
+			);
 			_callbackListId++;
-			_ExecuteJavaScript(_socketron, script, null, null);
+			_ExecuteJavaScript(script);
 		}
 
 		public void Once(string eventName, Callback callback) {
@@ -109,76 +135,68 @@ namespace Socketron {
 				return;
 			}
 			_callbackList.Add(_callbackListId, callback);
-			string[] script = new[] {
-				"var notification = this._objRefs[" + _ID + "];",
-				"if (notification == null) {",
-					"return;",
-				"}",
-				"var listener = () => {",
-					"emit('__event'," + Name.Escape() + "," + _callbackListId + ");",
-				"};",
-				"this._addClientEventListener(" + Name.Escape() + "," + _callbackListId + ",listener);",
-				"notification.once(" + eventName.Escape() + ", listener);"
-			};
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var notification = this._objRefs[{0}];",
+					"if (notification == null) {{",
+						"return;",
+					"}}",
+					"var listener = () => {{",
+						"this._removeClientEventListener({1},{2});",
+						"emit('__event',{1},{2});",
+					"}};",
+					"this._addClientEventListener({1},{2},listener);",
+					"notification.once({3}, listener);"
+				),
+				ID,
+				Name.Escape(),
+				_callbackListId,
+				eventName.Escape()
+			);
 			_callbackListId++;
-			_ExecuteJavaScript(_socketron, script, null, null);
+			_ExecuteJavaScript(script);
 		}
 
+		/// <summary>
+		/// Immediately shows the notification to the user,
+		/// please note this means unlike the HTML5 Notification implementation,
+		/// simply instantiating a new Notification does not immediately show it to the user,
+		/// you need to call this method before the OS will display it.
+		/// <para>
+		/// If the notification has been shown before,
+		/// this method will dismiss the previously shown notification
+		/// and create a new one with identical properties.
+		/// </para>
+		/// </summary>
 		public void Show() {
-			string[] script = new[] {
-				"var notification = this._objRefs[" + _ID + "];",
-				"if (notification == null) {",
-					"return;",
-				"}",
-				"notification.show();"
-			};
-			_ExecuteJavaScript(_socketron, script, null, null);
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var notification = this._objRefs[{0}];",
+					"if (notification == null) {{",
+						"return;",
+					"}}",
+					"notification.show();"
+				),
+				ID
+			);
+			_ExecuteJavaScript(script);
 		}
 
+		/// <summary>
+		/// Dismisses the notification.
+		/// </summary>
 		public void Close() {
-			string[] script = new[] {
-				"var notification = this._objRefs[" + _ID + "];",
-				"if (notification == null) {",
-					"return;",
-				"}",
-				"notification.close();"
-			};
-			_ExecuteJavaScript(_socketron, script, null, null);
-		}
-
-		protected static void _ExecuteJavaScript(Socketron socketron, string[] script, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(socketron, script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: Notification._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(TimeSpan.FromTicks(1));
-			}
-			return value;
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var notification = this._objRefs[{0}];",
+					"if (notification == null) {{",
+						"return;",
+					"}}",
+					"notification.close();"
+				),
+				ID
+			);
+			_ExecuteJavaScript(script);
 		}
 	}
 }

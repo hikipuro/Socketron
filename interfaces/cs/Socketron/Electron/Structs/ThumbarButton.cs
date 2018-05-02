@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web.Script.Serialization;
 
 namespace Socketron {
 	public class ThumbarButton {
@@ -18,13 +17,11 @@ namespace Socketron {
 		public string[] flags;
 
 		public static ThumbarButton Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<ThumbarButton>(text);
+			return JSON.Parse<ThumbarButton>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

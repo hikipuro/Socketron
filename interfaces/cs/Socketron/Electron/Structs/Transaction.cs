@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Transaction {
 		public string transactionIdentifier;
 		public string transactionDate;
@@ -11,13 +9,11 @@ namespace Socketron {
 		public object payment;
 
 		public static Transaction Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Transaction>(text);
+			return JSON.Parse<Transaction>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

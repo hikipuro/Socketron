@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
 using Socketron;
 
 namespace SocketronTest {
-	class TestJQuery {
+	class TestJQuery : SocketronObject {
 		public event Action<string> Log;
-		Socketron.Socketron socketron;
 
 		public TestJQuery() {
 			socketron = new Socketron.Socketron();
@@ -16,7 +14,9 @@ namespace SocketronTest {
 				Run();
 			});
 			socketron.On("debug", (args) => {
+#if DEBUG
 				Console.WriteLine(args[0]);
+#endif
 				Log?.Invoke(args[0] as string);
 			});
 			//socketron.On("data", (args) => {
@@ -38,6 +38,8 @@ namespace SocketronTest {
 			//} catch (Exception e) {
 			//	Console.WriteLine("Errror !!");
 			//}
+
+			Init(socketron);
 		}
 
 		public void Close() {
@@ -78,6 +80,11 @@ namespace SocketronTest {
 				});
 			});
 			*/
+
+
+			//var aa = new BrowserWindow.Options();
+			//aa.type = BrowserWindow.Types.
+			electron.Dialog.ShowErrorBox("title", "content");
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
 			BrowserWindow.Options options = new BrowserWindow.Options();
@@ -86,10 +93,10 @@ namespace SocketronTest {
 			//options.height = 300;
 			//options.backgroundColor = "#aaa";
 			//options.opacity = 0.5;
-			BrowserWindow window = BrowserWindow.Create(socketron, options);
+			BrowserWindow window = electron.BrowserWindow.Create(options);
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
-
+			
 			window.LoadURL("file:///src/html/index.html");
 
 			window.Once("ready-to-show", (args) => {
@@ -108,6 +115,7 @@ namespace SocketronTest {
 					}
 				}
 			});
+			return;
 
 			/*
 			MenuItem.Options[] template = new MenuItem.Options[] {
@@ -140,7 +148,9 @@ namespace SocketronTest {
 			};
 			MenuItem.Options[] menuItemOptions = MenuItem.Options.ParseArray(string.Join("", template));
 			menuItemOptions[0].submenu[0].@checked = true;
-			Menu menu = Menu.BuildFromTemplate(socketron, menuItemOptions);
+			//Console.WriteLine(JSON.Stringify(menuItemOptions, true));
+			Menu menu = electron.Menu.BuildFromTemplate(menuItemOptions);
+			return;
 
 			/*
 			string[] template = new[] {
@@ -157,18 +167,24 @@ namespace SocketronTest {
 			};
 			Menu menu = Menu.BuildFromTemplate(socketron, string.Join("", template));
 			//*/
-			Menu.SetApplicationMenu(socketron, menu);
+			electron.Menu.SetApplicationMenu(menu);
+
+			int timer = Node.SetTimeout(socketron, (args) => {
+				Console.WriteLine("setTimeout test");
+			}, 3000);
+			//Node.ClearTimeout(socketron, timer);
+
 
 			return;
 
-			var windows = BrowserWindow.GetAllWindows(socketron);
+			var windows = electron.BrowserWindow.GetAllWindows();
 			foreach (var w in windows) {
 				Console.WriteLine("window.id: {0}", w.ID);
 				Console.WriteLine("window.getTitle: {0}", w.GetTitle());
 			}
 
-			Clipboard.WriteText(socketron, "aaa test");
-			Console.WriteLine("Clipboard.ReadText: {0}", Clipboard.ReadText(socketron));
+			electron.Clipboard.WriteText("aaa test");
+			Console.WriteLine("Clipboard.ReadText: {0}", electron.Clipboard.ReadText());
 
 			/*
 			var paths = Dialog.ShowOpenDialog(socketron, new Dialog.OpenDialogOptions {
@@ -191,16 +207,16 @@ namespace SocketronTest {
 			Console.WriteLine("GetType: {0}", Socketron.Process.GetType(socketron));
 			Console.WriteLine("GetWindowsStore: {0}", Socketron.Process.GetWindowsStore(socketron));
 			Console.WriteLine("GetElectron: {0}", Socketron.Process.Versions.GetElectron(socketron));
-			Console.WriteLine("GetCursorScreenPoint: {0}", Screen.GetCursorScreenPoint(socketron).Stringify());
+			Console.WriteLine("GetCursorScreenPoint: {0}", electron.Screen.GetCursorScreenPoint().Stringify());
 			//Console.WriteLine("GetMenuBarHeight: {0}", Screen.GetMenuBarHeight(socketron));
-			Console.WriteLine("GetPrimaryDisplay: {0}", Screen.GetPrimaryDisplay(socketron).Stringify());
+			Console.WriteLine("GetPrimaryDisplay: {0}", electron.Screen.GetPrimaryDisplay().Stringify());
 
-			var displayList = Screen.GetAllDisplays(socketron);
+			var displayList = electron.Screen.GetAllDisplays();
 			foreach (var display in displayList) {
 				Console.WriteLine("GetAllDisplays: {0}", display.Stringify());
 			}
-			Console.WriteLine("GetDisplayNearestPoint: {0}", Screen.GetDisplayNearestPoint(socketron, new Point() { x = -10, y = 0 }).Stringify());
-			Console.WriteLine("GetDisplayMatching: {0}", Screen.GetDisplayMatching(socketron, new Rectangle() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayNearestPoint: {0}", electron.Screen.GetDisplayNearestPoint(new Point() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayMatching: {0}", electron.Screen.GetDisplayMatching(new Rectangle() { x = -10, y = 0 }).Stringify());
 
 			//Shell.ShowItemInFolder(socketron, "c:/");
 			//Shell.OpenExternal(socketron, "http://google.com");
@@ -215,8 +231,8 @@ namespace SocketronTest {
 			Console.WriteLine("GetProcessMemoryInfo: {0}", Socketron.Process.GetProcessMemoryInfo(socketron).Stringify());
 
 
-			Console.WriteLine("Notification.IsSupported: " + Notification.IsSupported(socketron));
-			var notification = Notification.Create(socketron, new Notification.Options {
+			Console.WriteLine("Notification.IsSupported: " + electron.Notification.IsSupported());
+			var notification = electron.Notification.Create(new Notification.Options {
 				title = "Title",
 				body = "Body"
 			});
@@ -225,7 +241,7 @@ namespace SocketronTest {
 			});
 			notification.Show();
 
-			var image = NativeImage.CreateEmpty(socketron);
+			var image = electron.NativeImage.CreateEmpty();
 			Console.WriteLine("image.IsEmpty: {0}", image.IsEmpty());
 			Console.WriteLine("image.GetSize: {0}", image.GetSize());
 			Console.WriteLine("image.GetAspectRatio: {0}", image.GetAspectRatio());

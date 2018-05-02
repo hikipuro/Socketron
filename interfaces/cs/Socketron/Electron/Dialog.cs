@@ -1,25 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	/// <summary>
 	/// Display native system dialogs for opening and saving files, alerting, etc.
 	/// <para>Process: Main</para>
 	/// </summary>
 	public class Dialog {
+		/// <summary>
+		/// OpenDialogOptions.properties values.
+		/// </summary>
 		public class Properties {
+			/// <summary>
+			/// Allow files to be selected.
+			/// </summary>
 			public const string openFile = "openFile";
+			/// <summary>
+			/// Allow directories to be selected.
+			/// </summary>
 			public const string openDirectory = "openDirectory";
+			/// <summary>
+			/// Allow multiple paths to be selected.
+			/// </summary>
 			public const string multiSelections = "multiSelections";
+			/// <summary>
+			/// Show hidden files in dialog.
+			/// </summary>
 			public const string showHiddenFiles = "showHiddenFiles";
+			/// <summary>
+			/// *macOS* Allow creating new directories from dialog.
+			/// </summary>
 			public const string createDirectory = "createDirectory";
+			/// <summary>
+			/// *Windows* Prompt for creation if the file path entered in the dialog does not exist. 
+			/// </summary>
 			public const string promptToCreate = "promptToCreate";
+			/// <summary>
+			/// *macOS* Disable the automatic alias (symlink) path resolution.
+			/// </summary>
 			public const string noResolveAliases = "noResolveAliases";
+			/// <summary>
+			/// *macOS* Treat packages, such as .app folders, as a directory instead of a file.
+			/// </summary>
 			public const string treatPackageAsDirectory = "treatPackageAsDirectory";
 		}
 
+		/// <summary>
+		/// MessageBoxOptions.type values.
+		/// </summary>
 		public class Type {
 			public const string none = "none";
 			public const string info = "info";
@@ -28,176 +53,179 @@ namespace Socketron {
 			public const string warning = "warning";
 		}
 
+		/// <summary>
+		/// ShowOpenDialog options.
+		/// </summary>
 		public class OpenDialogOptions {
+			/// <summary>(optional)</summary>
 			public string title;
+			/// <summary>(optional)</summary>
 			public string defaultPath;
+			/// <summary>
+			/// (optional) Custom label for the confirmation button,
+			/// when left empty the default label will be used.
+			/// </summary>
 			public string buttonLabel;
+			/// <summary>(optional)</summary>
 			public FileFilter[] filters;
+			/// <summary>
+			/// (optional) Contains which features the dialog should use.
+			/// </summary>
 			public string[] properties;
+			/// <summary>
+			/// (optional) *macOS* Message to display above input boxes.
+			/// </summary>
 			public string message;
+			/// <summary>
+			/// (optional) *masOS* Create security scoped bookmarks
+			/// when packaged for the Mac App Store.
+			/// </summary>
 			public bool? securityScopedBookmarks;
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 
+		/// <summary>
+		/// ShowSaveDialog options.
+		/// </summary>
 		public class SaveDialogOptions {
+			/// <summary>(optional)</summary>
 			public string title;
+			/// <summary>
+			/// (optional) Absolute directory path, absolute file path,
+			/// or file name to use by default.
+			/// </summary>
 			public string defaultPath;
+			/// <summary>
+			/// (optional) Custom label for the confirmation button,
+			/// when left empty the default label will be used.
+			/// </summary>
 			public string buttonLabel;
+			/// <summary>(optional)</summary>
 			public FileFilter[] filters;
-			public string[] properties;
+			/// <summary>
+			/// (optional) *macOS* Message to display above text fields.
+			/// </summary>
 			public string message;
+			/// <summary>
+			/// (optional) *macOS* Custom label for the text displayed
+			/// in front of the filename text field.
+			/// </summary>
 			public string nameFieldLabel;
+			/// <summary>
+			/// (optional) *macOS* Show the tags input box, defaults to true.
+			/// </summary>
 			public bool? showsTagField;
+			/// <summary>
+			/// (optional) *macOS* Create a security scoped bookmark
+			/// when packaged for the Mac App Store. 
+			/// </summary>
 			public bool? securityScopedBookmarks;
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 
+		/// <summary>
+		/// ShowMessageBox options.
+		/// </summary>
 		public class MessageBoxOptions {
+			/// <summary>
+			/// (optional) Can be "none", "info", "error", "question" or "warning".
+			/// On Windows, "question" displays the same icon as "info",
+			/// unless you set an icon using the "icon" option.
+			/// On macOS, both "warning" and "error" display the same warning icon.
+			/// </summary>
 			public string type;
+			/// <summary>
+			/// (optional) Array of texts for buttons.
+			/// On Windows, an empty array will result in one button labeled "OK".
+			/// </summary>
 			public string[] buttons;
+			/// <summary>
+			/// (optional) Index of the button in the buttons array
+			/// which will be selected by default when the message box opens.
+			/// </summary>
 			public int? defaultId;
+			/// <summary>
+			/// (optional) Title of the message box, some platforms will not show it.
+			/// </summary>
 			public string title;
+			/// <summary>
+			/// Content of the message box.
+			/// </summary>
 			public string message;
+			/// <summary>
+			/// (optional) Extra information of the message.
+			/// </summary>
 			public string detail;
+			/// <summary>
+			/// (optional) If provided, the message box will include a checkbox with the given label.
+			/// The checkbox state can be inspected only when using callback.
+			/// </summary>
 			public string checkboxLabel;
+			/// <summary>
+			/// (optional) Initial checked state of the checkbox. false by default.
+			/// </summary>
 			public bool? checkboxChecked;
+			/// <summary>(optional)</summary>
 			public NativeImage icon;
+			/// <summary>
+			/// (optional) The index of the button to be used to cancel the dialog, via the Esc key.
+			/// </summary>
 			public int? cancelId;
+			/// <summary>
+			///  (optional) On Windows Electron will try to figure out which one of the buttons
+			///  are common buttons (like "Cancel" or "Yes"), and show the others as command links in the dialog.
+			///  This can make the dialog appear in the style of modern Windows apps.
+			///  If you don't like this behavior, you can set noLink to true.
+			/// </summary>
 			public bool? noLink;
+			/// <summary>
+			/// (optional) Normalize the keyboard access keys across platforms. 
+			/// </summary>
 			public bool? normalizeAccessKeys;
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
 		}
 
+		/// <summary>
+		/// ShowCertificateTrustDialog options.
+		/// </summary>
 		public class CertificateTrustDialogOptions {
+			/// <summary>
+			/// The certificate to trust/import.
+			/// </summary>
 			public Certificate certificate;
+			/// <summary>
+			/// The message to display to the user.
+			/// </summary>
 			public string message;
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
-				var serializer = new JavaScriptSerializer();
-				serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter() });
-				return serializer.Serialize(this);
+				return JSON.Stringify(this);
 			}
-		}
-
-		public static List<string> ShowOpenDialog(Socketron socketron, OpenDialogOptions options, BrowserWindow browserWindow = null) {
-			string optionsText = options.Stringify();
-			string[] script = new[] {
-				"return electron.dialog.showOpenDialog(" + optionsText + ");"
-			};
-			if (browserWindow != null) {
-				script = new[] {
-					"var window = electron.BrowserWindow.fromId(" + browserWindow.ID + ");",
-					"return electron.dialog.showOpenDialog(window," + optionsText + ");"
-				};
-			}
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(socketron, script);
-			if (result == null) {
-				return null;
-			}
-			List<string> paths = new List<string>();
-			foreach (object item in result) {
-				paths.Add(item as string);
-			}
-			return paths;
-		}
-
-		public static string ShowSaveDialog(Socketron socketron, SaveDialogOptions options, BrowserWindow browserWindow = null) {
-			string optionsText = options.Stringify();
-			string[] script = new[] {
-				"return electron.dialog.showSaveDialog(" + optionsText + ");"
-			};
-			if (browserWindow != null) {
-				script = new[] {
-					"var window = electron.BrowserWindow.fromId(" + browserWindow.ID + ");",
-					"return electron.dialog.showSaveDialog(window," + optionsText + ");"
-				};
-			}
-			return _ExecuteJavaScriptBlocking<string>(socketron, script);
-		}
-
-		public static int ShowMessageBox(Socketron socketron, MessageBoxOptions options, BrowserWindow browserWindow = null) {
-			string optionsText = options.Stringify();
-			string[] script = new[] {
-				"return electron.dialog.showMessageBox(" + optionsText + ");"
-			};
-			if (browserWindow != null) {
-				script = new[] {
-					"var window = electron.BrowserWindow.fromId(" + browserWindow.ID + ");",
-					"return electron.dialog.showMessageBox(window," + optionsText + ");"
-				};
-			}
-			return _ExecuteJavaScriptBlocking<int>(socketron, script);
-		}
-
-		public static void ShowErrorBox(Socketron socketron, string title, string content) {
-			string[] script = new[] {
-				"return electron.dialog.showErrorBox(" + title.Escape() + "," + content.Escape() + ");"
-			};
-			_ExecuteJavaScript(socketron, script, null, null);
-		}
-
-		public static int ShowCertificateTrustDialog(Socketron socketron, CertificateTrustDialogOptions options, BrowserWindow browserWindow = null) {
-			string optionsText = options.Stringify();
-			string[] script = new[] {
-				"return electron.dialog.showCertificateTrustDialog(" + optionsText + ");"
-			};
-			if (browserWindow != null) {
-				script = new[] {
-					"var window = electron.BrowserWindow.fromId(" + browserWindow.ID + ");",
-					"return electron.dialog.showCertificateTrustDialog(window," + optionsText + ");"
-				};
-			}
-			return _ExecuteJavaScriptBlocking<int>(socketron, script);
-		}
-
-		protected static void _ExecuteJavaScript(Socketron socketron, string[] script, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string[] script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(socketron, script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: Dialog._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(10);
-			}
-			return value;
 		}
 	}
 }

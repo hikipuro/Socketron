@@ -1,20 +1,16 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class DesktopCapturerSource {
 		public string id;
 		public string name;
-		//public NativeImage thumbnail;
+		public NativeImage thumbnail;
 		public string display_id;
 
 		public static DesktopCapturerSource Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<DesktopCapturerSource>(text);
+			return JSON.Parse<DesktopCapturerSource>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }

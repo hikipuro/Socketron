@@ -1,6 +1,4 @@
-﻿using System.Web.Script.Serialization;
-
-namespace Socketron {
+﻿namespace Socketron {
 	public class Display {
 		public long? id;
 		public double? rotation;
@@ -12,13 +10,11 @@ namespace Socketron {
 		public Size workAreaSize;
 
 		public static Display Parse(string text) {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Deserialize<Display>(text);
+			return JSON.Parse<Display>(text);
 		}
 
 		public string Stringify() {
-			var serializer = new JavaScriptSerializer();
-			return serializer.Serialize(this);
+			return JSON.Stringify(this);
 		}
 	}
 }
