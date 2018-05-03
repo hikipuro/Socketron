@@ -111,7 +111,7 @@ namespace Socketron {
 			_callbackList.Add(_callbackListId, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var notification = this._objRefs[{0}];",
+					"var notification = {0};",
 					"if (notification == null) {{",
 						"return;",
 					"}}",
@@ -121,7 +121,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.on({3}, listener);"
 				),
-				ID,
+				Script.GetObject(ID),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -137,7 +137,7 @@ namespace Socketron {
 			_callbackList.Add(_callbackListId, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var notification = this._objRefs[{0}];",
+					"var notification = {0};",
 					"if (notification == null) {{",
 						"return;",
 					"}}",
@@ -148,7 +148,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.once({3}, listener);"
 				),
-				ID,
+				Script.GetObject(ID),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -171,13 +171,13 @@ namespace Socketron {
 		public void Show() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var notification = this._objRefs[{0}];",
+					"var notification = {0};",
 					"if (notification == null) {{",
 						"return;",
 					"}}",
 					"notification.show();"
 				),
-				ID
+				Script.GetObject(ID)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -188,13 +188,13 @@ namespace Socketron {
 		public void Close() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var notification = this._objRefs[{0}];",
+					"var notification = {0};",
 					"if (notification == null) {{",
 						"return;",
 					"}}",
 					"notification.close();"
 				),
-				ID
+				Script.GetObject(ID)
 			);
 			_ExecuteJavaScript(script);
 		}

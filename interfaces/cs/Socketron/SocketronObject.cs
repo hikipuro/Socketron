@@ -1,10 +1,10 @@
 ﻿namespace Socketron {
-	public class SocketronObject {
-		protected Socketron socketron;
+	public class SocketronObject : Node {
 		protected Electron electron;
 
-		public void Init(Socketron socketron) {
-			this.socketron = socketron;
+		public override void Init(Socketron socketron) {
+			base.Init(socketron);
+			_socketron = socketron;
 			electron = new Electron(socketron);
 		}
 	}

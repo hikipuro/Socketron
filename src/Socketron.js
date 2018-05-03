@@ -245,6 +245,7 @@ class CommandProcessorNode extends EventEmitter {
 		this.socketron = null;
 		this.exports = {};
 		this.electron = Electron;
+		this.require = require;
 		this.process = process;
 		this.dialog = dialog;
 		this._client = null;
@@ -311,8 +312,8 @@ class CommandProcessorNode extends EventEmitter {
 			 script
 		);
 		const result = func.call(this,
-			 this.electron,
-			 emit
+			this.electron,
+			emit
 		);
 		console.log("time: " + (Date.now() - start));
 		return result;
@@ -348,6 +349,10 @@ class CommandProcessorNode extends EventEmitter {
 
 	_removeClientEventListener(className, callbackId) {
 		this._callbackList[className][callbackId] = null;
+	}
+	
+	_getClientEventListener(className, callbackId) {
+		return this._callbackList[className][callbackId];
 	}
 	
 	_addObjectReference(obj) {

@@ -40,7 +40,7 @@
 		public const string MediaPlayPause = "MediaPlayPause";
 		public const string PrintScreen = "PrintScreen";
 
-		public static string Concat(string[] keys) {
+		public static string Concat(params string[] keys) {
 			return string.Join("+", keys);
 		}
 	}

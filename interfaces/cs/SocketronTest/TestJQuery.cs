@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Windows.Forms;
 using Socketron;
 
 namespace SocketronTest {
@@ -7,13 +8,13 @@ namespace SocketronTest {
 		public event Action<string> Log;
 
 		public TestJQuery() {
-			socketron = new Socketron.Socketron();
+			_socketron = new Socketron.Socketron();
 			//socketron.IsDebug = false;
-			socketron.On("connect", (args) => {
+			_socketron.On("connect", (args) => {
 				//Console.WriteLine("Connected");
 				Run();
 			});
-			socketron.On("debug", (args) => {
+			_socketron.On("debug", (args) => {
 #if DEBUG
 				Console.WriteLine(args[0]);
 #endif
@@ -23,27 +24,27 @@ namespace SocketronTest {
 			//	Packet packet = (Packet)args[0];
 			//	Console.WriteLine("Test: {0}, {1}", packet.SequenceId, packet.GetStringData());
 			//});
-			socketron.On("aaabbb", (args) => {
+			_socketron.On("aaabbb", (args) => {
 				int? value = args[0] as int?;
 				Console.WriteLine("event aaabbb: {0}", value);
 			});
-			socketron.On("aaabbbccc", (args) => {
+			_socketron.On("aaabbbccc", (args) => {
 				Console.WriteLine("event aaabbbccc: {0}, {1}, {2}", args[0], args[1], args[2]);
 			});
-			socketron.On("window-close", (args) => {
+			_socketron.On("window-close", (args) => {
 				Console.WriteLine("event window-close: {0}", args[0]);
 			});
 			//try {
-				socketron.Connect("127.0.0.1");
+				_socketron.Connect("127.0.0.1");
 			//} catch (Exception e) {
 			//	Console.WriteLine("Errror !!");
 			//}
 
-			Init(socketron);
+			Init(_socketron);
 		}
 
 		public void Close() {
-			socketron.Close();
+			_socketron.Close();
 		}
 
 		void Test() {
@@ -80,11 +81,45 @@ namespace SocketronTest {
 				});
 			});
 			*/
+			//electron.App.Quit();
+
+			os.require();
+			Console.WriteLine("os.EOL: " + os.EOL);
+
+			path.require();
+			Console.WriteLine("path.delimiter: " + path.delimiter);
+			Console.WriteLine("path.join: " + path.join("a", "b", "ddd"));
+			Console.WriteLine("path.win32: " + path.posix);
+
+			console.clear();
+			console.count();
+			console.time();
+			console.log();
+			console.log("test");
+			console.log("test", 1, 1.2345, true, false, null);
+			console.timeEnd();
+			console.trace("test");
+			var t = setTimeout((args) => {
+				Console.WriteLine("Timeout test *****");
+				//process.abort();
+			}, 1000);
+			Console.WriteLine(JSON.Stringify(process.isDefaultApp()));
+			//Test2();
+			clearTimeout(t);
+			var t3 = setImmediate((args) => {
+				Console.WriteLine("setImmediate test");
+			});
+			clearImmediate(t3);
+			return;
+			var t2 = setInterval((args) => {
+				Console.WriteLine("Timeout test *****");
+			}, 12000);
+			return;
 
 
 			//var aa = new BrowserWindow.Options();
 			//aa.type = BrowserWindow.Types.
-			electron.Dialog.ShowErrorBox("title", "content");
+			//electron.Dialog.ShowErrorBox("title", "content");
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
 			BrowserWindow.Options options = new BrowserWindow.Options();
@@ -106,7 +141,7 @@ namespace SocketronTest {
 			window.On("close", (args) => {
 				Console.WriteLine("close: {0}", args);
 			});
-			window.WebContents.On("did-navigate", (args) => {
+			window.webContents.On("did-navigate", (args) => {
 				object[] list = args as object[];
 				Console.WriteLine("did-navigate");
 				if (list != null) {
@@ -146,10 +181,10 @@ namespace SocketronTest {
 					"}",
 				"]"
 			};
-			MenuItem.Options[] menuItemOptions = MenuItem.Options.ParseArray(string.Join("", template));
+			var menuItemOptions = Socketron.MenuItem.Options.ParseArray(string.Join("", template));
 			menuItemOptions[0].submenu[0].@checked = true;
 			//Console.WriteLine(JSON.Stringify(menuItemOptions, true));
-			Menu menu = electron.Menu.BuildFromTemplate(menuItemOptions);
+			Socketron.Menu menu = electron.Menu.BuildFromTemplate(menuItemOptions);
 			return;
 
 			/*
@@ -169,7 +204,7 @@ namespace SocketronTest {
 			//*/
 			electron.Menu.SetApplicationMenu(menu);
 
-			int timer = Node.SetTimeout(socketron, (args) => {
+			int timer = setTimeout((args) => {
 				Console.WriteLine("setTimeout test");
 			}, 3000);
 			//Node.ClearTimeout(socketron, timer);
@@ -183,8 +218,8 @@ namespace SocketronTest {
 				Console.WriteLine("window.getTitle: {0}", w.GetTitle());
 			}
 
-			electron.Clipboard.WriteText("aaa test");
-			Console.WriteLine("Clipboard.ReadText: {0}", electron.Clipboard.ReadText());
+			electron.clipboard.WriteText("aaa test");
+			Console.WriteLine("Clipboard.ReadText: {0}", electron.clipboard.ReadText());
 
 			/*
 			var paths = Dialog.ShowOpenDialog(socketron, new Dialog.OpenDialogOptions {
@@ -203,20 +238,16 @@ namespace SocketronTest {
 				GlobalShortcut.Unregister(socketron, Accelerator.CmdOrCtrl + "+A");
 			});
 			//*/
-			Console.WriteLine("GetPlatform: {0}", Socketron.Process.GetPlatform(socketron));
-			Console.WriteLine("GetType: {0}", Socketron.Process.GetType(socketron));
-			Console.WriteLine("GetWindowsStore: {0}", Socketron.Process.GetWindowsStore(socketron));
-			Console.WriteLine("GetElectron: {0}", Socketron.Process.Versions.GetElectron(socketron));
-			Console.WriteLine("GetCursorScreenPoint: {0}", electron.Screen.GetCursorScreenPoint().Stringify());
+			Console.WriteLine("GetCursorScreenPoint: {0}", electron.screen.GetCursorScreenPoint().Stringify());
 			//Console.WriteLine("GetMenuBarHeight: {0}", Screen.GetMenuBarHeight(socketron));
-			Console.WriteLine("GetPrimaryDisplay: {0}", electron.Screen.GetPrimaryDisplay().Stringify());
+			Console.WriteLine("GetPrimaryDisplay: {0}", electron.screen.GetPrimaryDisplay().Stringify());
 
-			var displayList = electron.Screen.GetAllDisplays();
+			var displayList = electron.screen.GetAllDisplays();
 			foreach (var display in displayList) {
 				Console.WriteLine("GetAllDisplays: {0}", display.Stringify());
 			}
-			Console.WriteLine("GetDisplayNearestPoint: {0}", electron.Screen.GetDisplayNearestPoint(new Point() { x = -10, y = 0 }).Stringify());
-			Console.WriteLine("GetDisplayMatching: {0}", electron.Screen.GetDisplayMatching(new Rectangle() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayNearestPoint: {0}", electron.screen.GetDisplayNearestPoint(new Point() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayMatching: {0}", electron.screen.GetDisplayMatching(new Rectangle() { x = -10, y = 0 }).Stringify());
 
 			//Shell.ShowItemInFolder(socketron, "c:/");
 			//Shell.OpenExternal(socketron, "http://google.com");
@@ -224,13 +255,8 @@ namespace SocketronTest {
 
 			return;
 
-			Console.WriteLine("IsRegistered: " + GlobalShortcut.IsRegistered(socketron, Accelerator.CmdOrCtrl + "+A"));
-
-			Console.WriteLine("GetCPUUsage: {0}", Socketron.Process.GetCPUUsage(socketron).Stringify());
-			Console.WriteLine("GetIOCounters: {0}", Socketron.Process.GetIOCounters(socketron).Stringify());
-			Console.WriteLine("GetProcessMemoryInfo: {0}", Socketron.Process.GetProcessMemoryInfo(socketron).Stringify());
-
-
+			Console.WriteLine("IsRegistered: " + electron.globalShortcut.IsRegistered(Accelerator.CmdOrCtrl + "+A"));
+			
 			Console.WriteLine("Notification.IsSupported: " + electron.Notification.IsSupported());
 			var notification = electron.Notification.Create(new Notification.Options {
 				title = "Title",
@@ -241,7 +267,7 @@ namespace SocketronTest {
 			});
 			notification.Show();
 
-			var image = electron.NativeImage.CreateEmpty();
+			var image = electron.nativeImage.CreateEmpty();
 			Console.WriteLine("image.IsEmpty: {0}", image.IsEmpty());
 			Console.WriteLine("image.GetSize: {0}", image.GetSize());
 			Console.WriteLine("image.GetAspectRatio: {0}", image.GetAspectRatio());
@@ -260,16 +286,16 @@ namespace SocketronTest {
 
 			//window.LoadURL("http://google.com");
 
-			Console.WriteLine("GetOSProcessId: " + window.WebContents.GetOSProcessId());
+			Console.WriteLine("GetOSProcessId: " + window.webContents.GetOSProcessId());
 
 			window.LoadURL("file:///src/html/index.html");
 			window.Show();
-			window.WebContents.OpenDevTools();
+			window.webContents.OpenDevTools();
 
-			window.WebContents.SetIgnoreMenuShortcuts(true);
+			window.webContents.SetIgnoreMenuShortcuts(true);
 
 			//Thread.Sleep(1000);
-			window.WebContents.ExecuteJavaScript("document.write('test')");
+			window.webContents.ExecuteJavaScript("document.write('test')");
 			Console.WriteLine("Test");
 
 			return;
@@ -280,10 +306,10 @@ namespace SocketronTest {
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 
-			window.WebContents.OpenDevTools();
-			Console.WriteLine("IsDevToolsOpened: {0}", window.WebContents.IsDevToolsOpened());
+			window.webContents.OpenDevTools();
+			Console.WriteLine("IsDevToolsOpened: {0}", window.webContents.IsDevToolsOpened());
 
-			socketron.On("BrowserWindow.close", (result) => {
+			_socketron.On("BrowserWindow.close", (result) => {
 				Console.WriteLine("Test close");
 			});
 
@@ -315,7 +341,7 @@ namespace SocketronTest {
 		}
 
 		public void Run() {
-			if (!socketron.IsConnected) {
+			if (!_socketron.IsConnected) {
 				return;
 			}
 			//socketron.IsDebug = false;
@@ -324,8 +350,8 @@ namespace SocketronTest {
 			//var t = await socketron.Main.GetProcessType();
 			//Console.WriteLine("Test: " + t);
 			//*
-			socketron.Main.ExecuteJavaScript("console.log('TestJQuery')");
-			socketron.Renderer.ExecuteJavaScript("console.log('TestJQuery')");
+			_socketron.Main.ExecuteJavaScript("console.log('TestJQuery')");
+			_socketron.Renderer.ExecuteJavaScript("console.log('TestJQuery')");
 
 			//socketron.Main.ExecuteJavaScript("return process.type;", (arg) => {
 			//	Console.WriteLine("Test: " + arg);
@@ -374,7 +400,7 @@ namespace SocketronTest {
 			//socketron.Main.App.GetLocale((result) => {
 			//	Console.WriteLine("GetLocale: {0}", result);
 			//});
-			socketron.Main.ExecuteJavaScript(new[] {
+			_socketron.Main.ExecuteJavaScript(new[] {
 				"electron.app.on('window-all-closed', () => {",
 				"emit('aaabbb', 12345);",
 				"});",
@@ -382,7 +408,7 @@ namespace SocketronTest {
 			}, (result) => {
 				Console.WriteLine("error: {0}", result);
 			});
-			socketron.Renderer.ExecuteJavaScript(new[] {
+			_socketron.Renderer.ExecuteJavaScript(new[] {
 				"emit('aaabbb', 445566);",
 				"return window.navigator.userAgent",
 			}, (result) => {
@@ -404,31 +430,31 @@ namespace SocketronTest {
 				"	font-size: 20px;",
 				"}",
 			};
-			socketron.Renderer.InsertCSS(string.Join("\n", css));
+			_socketron.Renderer.InsertCSS(string.Join("\n", css));
 
-			socketron.Renderer.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (result) => {
-				socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
+			_socketron.Renderer.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (result) => {
+				_socketron.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
 					Console.WriteLine("Test: console.log($)");
 				});
-				socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
-				socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
-				socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
+				_socketron.Renderer.ExecuteJavaScript("$(document.body).empty()");
+				_socketron.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
+				_socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
+				_socketron.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
+				_socketron.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
 
 				string[] scriptList = {
 				"$('#button1').click(() => {",
 				"	emit('aaabbb', 123);",
 				"})"
 			};
-				socketron.Renderer.ExecuteJavaScript(scriptList);
+				_socketron.Renderer.ExecuteJavaScript(scriptList);
 
 				scriptList = new[] {
 				"$('#button2').click(() => {",
 				"	emit('aaabbbccc', '222', true, 111);",
 				"})"
  			};
-				socketron.Renderer.ExecuteJavaScript(scriptList);
+				_socketron.Renderer.ExecuteJavaScript(scriptList);
 
 			});
 

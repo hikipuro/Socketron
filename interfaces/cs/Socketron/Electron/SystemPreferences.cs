@@ -1,11 +1,12 @@
-﻿using System;
-
-namespace Socketron {
+﻿namespace Socketron {
 	/// <summary>
 	/// Get system preferences.
 	/// <para>Process: Main</para>
 	/// </summary>
 	public class SystemPreferences {
+		/// <summary>
+		/// SystemPreferences module events.
+		/// </summary>
 		public class Events {
 			/// <summary>*Windows*</summary>
 			public const string AccentColorChanged = "accent-color-changed";
@@ -15,6 +16,9 @@ namespace Socketron {
 			public const string InvertedColorSchemeChanged = "inverted-color-scheme-changed";
 		}
 
+		/// <summary>
+		/// SystemPreferences.GetColor color values.
+		/// </summary>
 		public class WindowsColors {
 			/// <summary>Dark shadow for three-dimensional display elements.</summary>
 			public const string _3DDarkShadow = "3d-dark-shadow";
@@ -105,82 +109,6 @@ namespace Socketron {
 
 			/// <summary>Text in windows.</summary>
 			public const string WindowText = "window-text";
-		}
-
-		public void IsDarkMode() {
-			throw new NotImplementedException();
-		}
-
-		public void IsSwipeTrackingFromScrollEventsEnabled() {
-			throw new NotImplementedException();
-		}
-
-		public void PostNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void PostLocalNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void PostWorkspaceNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void SubscribeNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void SubscribeLocalNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void SubscribeWorkspaceNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void UnsubscribeNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void UnsubscribeLocalNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void UnsubscribeWorkspaceNotification() {
-			throw new NotImplementedException();
-		}
-
-		public void RegisterDefaults() {
-			throw new NotImplementedException();
-		}
-
-		public void GetUserDefault() {
-			throw new NotImplementedException();
-		}
-
-		public void SetUserDefault() {
-			throw new NotImplementedException();
-		}
-
-		public void RemoveUserDefault() {
-			throw new NotImplementedException();
-		}
-
-		public void IsAeroGlassEnabled() {
-			throw new NotImplementedException();
-		}
-
-		public void GetAccentColor() {
-			throw new NotImplementedException();
-		}
-
-		public void GetColor() {
-			throw new NotImplementedException();
-		}
-
-		public void IsInvertedColorScheme() {
-			throw new NotImplementedException();
 		}
 	}
 }

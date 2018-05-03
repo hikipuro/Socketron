@@ -1,23 +1,35 @@
 ﻿namespace Socketron {
 	public class Electron {
+		public AppClass app;
 		public BrowserWindowClass BrowserWindow;
-		public ClipboardClass Clipboard;
-		public DialogClass Dialog;
-		public NativeImageClass NativeImage;
+		public ClipboardClass clipboard;
+		public DialogClass dialog;
+		public NativeImageClass nativeImage;
 		public MenuClass Menu;
-		public IPCMainClass IPCMain;
+		public MenuItemClass MenuItem;
+		public IPCMainClass ipcMain;
 		public NotificationClass Notification;
-		public ScreenClass Screen;
+		public ScreenClass screen;
+		public ShellClass shell;
+		public SystemPreferencesClass systemPreferences;
+		public GlobalShortcutClass globalShortcut;
+		public TrayClass Tray;
 
 		public Electron(Socketron socketron) {
+			app = new AppClass(socketron);
 			BrowserWindow = new BrowserWindowClass(socketron);
-			Clipboard = new ClipboardClass(socketron);
-			Dialog = new DialogClass(socketron);
-			NativeImage = new NativeImageClass(socketron);
+			clipboard = new ClipboardClass(socketron);
+			dialog = new DialogClass(socketron);
+			nativeImage = new NativeImageClass(socketron);
 			Menu = new MenuClass(socketron);
-			IPCMain = new IPCMainClass(socketron);
+			MenuItem = new MenuItemClass(socketron);
+			ipcMain = new IPCMainClass(socketron);
 			Notification = new NotificationClass(socketron);
-			Screen = new ScreenClass(socketron);
+			screen = new ScreenClass(socketron);
+			shell = new ShellClass(socketron);
+			systemPreferences = new SystemPreferencesClass(socketron);
+			globalShortcut = new GlobalShortcutClass(socketron);
+			Tray = new TrayClass(socketron);
 		}
 	}
 }

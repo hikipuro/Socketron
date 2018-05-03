@@ -9,6 +9,10 @@
 			return JSON.Parse<PrinterInfo>(text);
 		}
 
+		/// <summary>
+		/// Create JSON text.
+		/// </summary>
+		/// <returns></returns>
 		public string Stringify() {
 			return JSON.Stringify(this);
 		}

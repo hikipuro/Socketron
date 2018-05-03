@@ -5,9 +5,15 @@ namespace Socketron {
 	/// Query and modify a session's cookies.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Cookies {
+	public class Cookies : ElectronBase {
 		public class Events {
 			public const string Changed = "changed";
+		}
+
+		public int id;
+
+		public Cookies(Socketron socketron) {
+			_socketron = socketron;
 		}
 
 		public void Get() {

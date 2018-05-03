@@ -17,13 +17,8 @@ namespace Socketron {
 
 	public class MainProcess : EventEmitter {
 		const string Type = ProcessType.Browser;
-		public App App;
 
 		public MainProcess() {
-			App = new App();
-			App.On("text", (args) => {
-				Emit("text", args[0], args[1]);
-			});
 		}
 
 		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {

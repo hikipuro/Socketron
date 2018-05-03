@@ -131,19 +131,19 @@ namespace Socketron {
 			if (type != null) {
 				script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var image = this._objRefs[{0}];",
+						"var image = {0};",
 						"electron.clipboard.writeImage(image,{1});"
 					),
-					image.ID,
+					Script.GetObject(image.ID),
 					type.Escape()
 				);
 			} else {
 				script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var image = this._objRefs[{0}];",
+						"var image = {0};",
 						"electron.clipboard.writeImage(image);"
 					),
-					image.ID
+					Script.GetObject(image.ID)
 				);
 			}
 			_ExecuteJavaScript(script);

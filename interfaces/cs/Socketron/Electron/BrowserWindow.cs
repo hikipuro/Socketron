@@ -9,7 +9,7 @@ namespace Socketron {
 	public partial class BrowserWindow : ElectronBase {
 		public const string Name = "BrowserWindow";
 		public int ID = 0;
-		public WebContents WebContents;
+		public WebContents webContents;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -1593,11 +1593,11 @@ namespace Socketron {
 				script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"var window = electron.BrowserWindow.fromId({0});",
-						"var menu = this._objRefs[{1}];",
+						"var menu = {1};",
 						"window.setMenu(menu);"
 					),
 					ID,
-					menu.ID
+					Script.GetObject(menu.ID)
 				);
 			}
 			_ExecuteJavaScript(script);
@@ -1652,11 +1652,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var window = electron.BrowserWindow.fromId({0});",
-					"var image = this._objRefs[{1}];",
+					"var image = {1};",
 					"window.setOverlayIcon(image,{2});"
 				),
 				ID,
-				overlay.ID,
+				Script.GetObject(overlay.ID),
 				description.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1821,11 +1821,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var window = electron.BrowserWindow.fromId({0});",
-					"var icon = this._objRefs[{1}];",
+					"var icon = {1};",
 					"window.setIcon(icon);"
 				),
 				ID,
-				icon.ID
+				Script.GetObject(icon.ID)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2051,7 +2051,7 @@ namespace Socketron {
 			BrowserWindow window = new BrowserWindow(_socketron) {
 				ID = windowId
 			};
-			window.WebContents = new WebContents(_socketron, window) {
+			window.webContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;
@@ -2083,7 +2083,7 @@ namespace Socketron {
 				BrowserWindow window = new BrowserWindow(_socketron) {
 					ID = windowId
 				};
-				window.WebContents = new WebContents(_socketron, window) {
+				window.webContents = new WebContents(_socketron, window) {
 					ID = contentsId
 				};
 				windows.Add(window);

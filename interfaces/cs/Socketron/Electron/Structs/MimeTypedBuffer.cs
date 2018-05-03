@@ -1,12 +1,22 @@
 ﻿namespace Socketron {
 	public class MimeTypedBuffer {
+		/// <summary>
+		/// The mimeType of the Buffer that you are sending.
+		/// </summary>
 		public string mimeType;
+		/// <summary>
+		/// The actual Buffer content.
+		/// </summary>
 		public Buffer data;
 
 		public static MimeTypedBuffer Parse(string text) {
 			return JSON.Parse<MimeTypedBuffer>(text);
 		}
 
+		/// <summary>
+		/// Create JSON text.
+		/// </summary>
+		/// <returns></returns>
 		public string Stringify() {
 			return JSON.Stringify(this);
 		}

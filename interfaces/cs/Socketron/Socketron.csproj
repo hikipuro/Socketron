@@ -73,11 +73,19 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Electron\Classes\AppClass.cs" />
+    <Compile Include="Electron\Classes\AutoUpdaterClass.cs" />
     <Compile Include="Electron\Classes\BrowserWindowClass.cs" />
+    <Compile Include="Electron\Classes\ElectronProcessClass.cs" />
     <Compile Include="Electron\Classes\MenuClass.cs" />
+    <Compile Include="Electron\Classes\MenuItemClass.cs" />
     <Compile Include="Electron\Classes\NativeImageClass.cs" />
     <Compile Include="Electron\Classes\NotificationClass.cs" />
     <Compile Include="Electron\Classes\ScreenClass.cs" />
+    <Compile Include="Electron\Classes\SessionClass.cs" />
+    <Compile Include="Electron\Classes\SystemPreferencesClass.cs" />
+    <Compile Include="Electron\Classes\TrayClass.cs" />
+    <Compile Include="Electron\Classes\WebContentsClass.cs" />
     <Compile Include="Electron\Dialog.cs" />
     <Compile Include="Electron\Electron.cs" />
     <Compile Include="Electron\WebPreferences.cs" />
@@ -99,7 +107,7 @@
     <Compile Include="Electron\Classes\DialogClass.cs" />
     <Compile Include="Electron\DownloadItem.cs" />
     <Compile Include="Electron\ElectronBase.cs" />
-    <Compile Include="Electron\GlobalShortcut.cs" />
+    <Compile Include="Electron\Classes\GlobalShortcutClass.cs" />
     <Compile Include="Electron\InAppPurchase.cs" />
     <Compile Include="Electron\IncomingMessage.cs" />
     <Compile Include="Electron\Classes\IPCMainClass.cs" />
@@ -117,7 +125,7 @@
     <Compile Include="Electron\Remote.cs" />
     <Compile Include="Electron\Screen.cs" />
     <Compile Include="Electron\Session.cs" />
-    <Compile Include="Electron\Shell.cs" />
+    <Compile Include="Electron\Classes\ShellClass.cs" />
     <Compile Include="Electron\Structs\BluetoothDevice.cs" />
     <Compile Include="Electron\Structs\Certificate.cs" />
     <Compile Include="Electron\Structs\CertificatePrincipal.cs" />
@@ -148,7 +156,7 @@
     <Compile Include="Electron\Structs\ShortcutDetails.cs" />
     <Compile Include="Electron\Structs\Size.cs" />
     <Compile Include="Electron\Structs\StreamProtocolResponse.cs" />
-    <Compile Include="Electron\Structs\Task.cs" />
+    <Compile Include="Electron\Structs\TaskObject.cs" />
     <Compile Include="Electron\Structs\ThumbarButton.cs" />
     <Compile Include="Electron\Structs\Transaction.cs" />
     <Compile Include="Electron\Structs\UploadBlob.cs" />
@@ -163,6 +171,8 @@
     <Compile Include="Electron\Tray.cs" />
     <Compile Include="Electron\WebFrame.cs" />
     <Compile Include="Electron\WebRequest.cs" />
+    <Compile Include="Node\NetClass.cs" />
+    <Compile Include="Node\NodeConsole.cs" />
     <Compile Include="Node\EventEmitter.cs" />
     <Compile Include="JSON\JsonObject.cs" />
     <Compile Include="JSON\JSON.cs" />
@@ -171,6 +181,9 @@
     <Compile Include="Electron\BrowserWindow.cs" />
     <Compile Include="Electron\WebContents.cs" />
     <Compile Include="Node\Node.cs" />
+    <Compile Include="Node\OSModule.cs" />
+    <Compile Include="Node\PathModule.cs" />
+    <Compile Include="Node\ProcessClass.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptBuilder.cs" />

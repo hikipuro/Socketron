@@ -30,7 +30,7 @@ namespace Socketron {
 				window = new BrowserWindow(_socketron) {
 					ID = (int)windowId
 				};
-				window.WebContents = new WebContents(_socketron, window) {
+				window.webContents = new WebContents(_socketron, window) {
 					ID = (int)contentsId
 				};
 			} else {
@@ -58,7 +58,7 @@ namespace Socketron {
 				BrowserWindow window = new BrowserWindow(_socketron) {
 					ID = windowId
 				};
-				window.WebContents = new WebContents(_socketron, window) {
+				window.webContents = new WebContents(_socketron, window) {
 					ID = contentsId
 				};
 				windows.Add(window);
@@ -82,7 +82,7 @@ namespace Socketron {
 			BrowserWindow window = new BrowserWindow(_socketron) {
 				ID = windowId,
 			};
-			window.WebContents = new WebContents(_socketron, window) {
+			window.webContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;
@@ -106,7 +106,7 @@ namespace Socketron {
 			BrowserWindow window = new BrowserWindow(_socketron) {
 				ID = windowId
 			};
-			window.WebContents = new WebContents(_socketron, window) {
+			window.webContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;
@@ -130,7 +130,7 @@ namespace Socketron {
 			BrowserWindow window = new BrowserWindow(_socketron) {
 				ID = windowId
 			};
-			window.WebContents = new WebContents(_socketron, window) {
+			window.webContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;
@@ -153,7 +153,7 @@ namespace Socketron {
 			BrowserWindow window = new BrowserWindow(_socketron) {
 				ID = windowId
 			};
-			window.WebContents = new WebContents(_socketron, window) {
+			window.webContents = new WebContents(_socketron, window) {
 				ID = contentsId
 			};
 			return window;

@@ -101,5 +101,21 @@ namespace Socketron {
 			resetEvent.WaitOne();
 			return value;
 		}
+
+		protected ScriptHelper Script = new ScriptHelper();
+		protected class ScriptHelper {
+			public string GetObject(int id) {
+				return string.Format("this._objRefs[{0}]", id);
+			}
+			public string AddObject(string name) {
+				return string.Format("this._addObjectReference({0})", name);
+			}
+			public string RemoveObject(int id) {
+				return string.Format("this._removeObjectReference({0})", id);
+			}
+			public string RemoveObject(string name) {
+				return string.Format("this._removeObjectReference({0})", name);
+			}
+		}
 	}
 }

@@ -5,7 +5,13 @@ namespace Socketron {
 	/// Register a custom protocol and intercept existing protocol requests.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Protocol {
+	public class Protocol : ElectronBase {
+		public int id;
+
+		public Protocol(Socketron socketron) {
+			_socketron = socketron;
+		}
+
 		public void RegisterStandardSchemes() {
 			throw new NotImplementedException();
 		}

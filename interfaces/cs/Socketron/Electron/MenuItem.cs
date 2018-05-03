@@ -1,24 +1,80 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace Socketron {
 	/// <summary>
 	/// Add items to native application menus and context menus.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class MenuItem {
+	public class MenuItem : ElectronBase {
+		public const string Name = "MenuItem";
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
+		}
+
 		public class Options {
-			public Action click;
+			/// <summary>
+			/// (optional) Will be called with click(menuItem, browserWindow, event)
+			/// when the menu item is clicked.
+			/// </summary>
+			public Callback click;
+			/// <summary>
+			/// (optional) Define the action of the menu item,
+			/// when specified the click property will be ignored. See roles.
+			/// </summary>
 			public string role;
+			/// <summary>
+			/// (optional) Can be normal, separator, submenu, checkbox or radio.
+			/// </summary>
 			public string type;
+			/// <summary>
+			/// (optional)
+			/// </summary>
 			public string label;
+			/// <summary>
+			/// (optional)
+			/// </summary>
 			public string sublabel;
+			/// <summary>
+			/// (optional)
+			/// </summary>
 			public string accelerator;
+			/// <summary>
+			/// (optional)
+			/// </summary>
 			public NativeImage icon;
+			/// <summary>
+			/// (optional) If false, the menu item will be greyed out and unclickable.
+			/// </summary>
 			public bool? enabled;
+			/// <summary>
+			/// (optional) If false, the menu item will be entirely hidden.
+			/// </summary>
 			public bool? visible;
+			/// <summary>
+			/// (optional) Should only be specified for checkbox or radio type menu items.
+			/// </summary>
 			public bool? @checked;
+			/// <summary>
+			/// (optional) Should be specified for submenu type menu items.
+			/// If submenu is specified, the type: 'submenu' can be omitted.
+			/// If the value is not a Menu then it will be automatically converted
+			/// to one using Menu.buildFromTemplate.
+			/// </summary>
 			public Options[] submenu;
+			/// <summary>
+			/// (optional) Unique within a single menu.
+			/// If defined then it can be used as a reference to this item by the position attribute.
+			/// </summary>
 			public string id;
+			/// <summary>
+			/// (optional) This field allows fine-grained definition of the specific location within a given menu.
+			/// </summary>
 			public string position;
 
 			public static Options Parse(string text) {
@@ -32,6 +88,14 @@ namespace Socketron {
 			public string Stringify() {
 				return JSON.Stringify(this);
 			}
+		}
+
+		public class Types {
+			public const string normal = "normal";
+			public const string separator = "separator";
+			public const string submenu = "submenu";
+			public const string checkbox = "checkbox";
+			public const string radio = "radio";
 		}
 
 		public class Roles {
@@ -80,70 +144,183 @@ namespace Socketron {
 			/// <summary>Whole default "Window" menu (Minimize, Close, etc.).</summary>
 			public const string windowMenu = "windowMenu";
 
-			// macOS
 
-			/// <summary>Map to the orderFrontStandardAboutPanel action.</summary>
+			/// <summary>*macOS* Map to the orderFrontStandardAboutPanel action.</summary>
 			public const string about = "about";
 
-			/// <summary>Map to the hide action.</summary>
+			/// <summary>*macOS* Map to the hide action.</summary>
 			public const string hide = "hide";
 
-			/// <summary>Map to the hideOtherApplications action.</summary>
+			/// <summary>*macOS* Map to the hideOtherApplications action.</summary>
 			public const string hideOthers = "hideOthers";
 
-			/// <summary>Map to the unhideAllApplications action.</summary>
+			/// <summary>*macOS* Map to the unhideAllApplications action.</summary>
 			public const string unhide = "unhide";
 
-			/// <summary>Map to the startSpeaking action.</summary>
+			/// <summary>*macOS* Map to the startSpeaking action.</summary>
 			public const string startSpeaking = "startSpeaking";
 
-			/// <summary>Map to the stopSpeaking action.</summary>
+			/// <summary>*macOS* Map to the stopSpeaking action.</summary>
 			public const string stopSpeaking = "stopSpeaking";
 
-			/// <summary>Map to the arrangeInFront action.</summary>
+			/// <summary>*macOS* Map to the arrangeInFront action.</summary>
 			public const string front = "front";
 
-			/// <summary>Map to the performZoom action.</summary>
+			/// <summary>*macOS* Map to the performZoom action.</summary>
 			public const string zoom = "zoom";
 
-			/// <summary>Map to the toggleTabBar action.</summary>
+			/// <summary>*macOS* Map to the toggleTabBar action.</summary>
 			public const string toggleTabBar = "toggleTabBar";
 
-			/// <summary>Map to the selectNextTab action.</summary>
+			/// <summary>*macOS* Map to the selectNextTab action.</summary>
 			public const string selectNextTab = "selectNextTab";
 
-			/// <summary>Map to the selectPreviousTab action.</summary>
+			/// <summary>*macOS* Map to the selectPreviousTab action.</summary>
 			public const string selectPreviousTab = "selectPreviousTab";
 
-			/// <summary>Map to the mergeAllWindows action.</summary>
+			/// <summary>*macOS* Map to the mergeAllWindows action.</summary>
 			public const string mergeAllWindows = "mergeAllWindows";
 
-			/// <summary>Map to the moveTabToNewWindow action.</summary>
+			/// <summary>*macOS* Map to the moveTabToNewWindow action.</summary>
 			public const string moveTabToNewWindow = "moveTabToNewWindow";
 
-			/// <summary>The submenu is a "Window" menu.</summary>
+			/// <summary>*macOS* The submenu is a "Window" menu.</summary>
 			public const string window = "window";
 
-			/// <summary>The submenu is a "Help" menu.</summary>
+			/// <summary>*macOS* The submenu is a "Help" menu.</summary>
 			public const string help = "help";
 
-			/// <summary>The submenu is a "Services" menu.</summary>
+			/// <summary>*macOS* The submenu is a "Services" menu.</summary>
 			public const string services = "services";
 
-			/// <summary>The submenu is an "Open Recent" menu.</summary>
+			/// <summary>*macOS* The submenu is an "Open Recent" menu.</summary>
 			public const string recentDocuments = "recentDocuments";
 
-			/// <summary>Map to the clearRecentDocuments action.</summary>
+			/// <summary>*macOS* Map to the clearRecentDocuments action.</summary>
 			public const string clearRecentDocuments = "clearRecentDocuments";
 		}
 
-		public MenuItem() {
+		public MenuItem(Socketron socketron) {
+			_socketron = socketron;
 		}
 
-		public bool enabled;
-		public bool visible;
-		public bool @checked;
-		public string label;
-		public Action click;
+		public int id;
+
+		public bool enabled {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"return item.enabled;"
+					),
+					Script.GetObject(id)
+				);
+				return _ExecuteJavaScriptBlocking<bool>(script);
+			}
+			set {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"item.enabled = {1};"
+					),
+					Script.GetObject(id),
+					value.Escape()
+				);
+				_ExecuteJavaScript(script);
+			}
+		}
+
+		public bool visible {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"return item.visible;"
+					),
+					Script.GetObject(id)
+				);
+				return _ExecuteJavaScriptBlocking<bool>(script);
+			}
+			set {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"item.visible = {1};"
+					),
+					Script.GetObject(id),
+					value.Escape()
+				);
+				_ExecuteJavaScript(script);
+			}
+		}
+
+		public bool @checked {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"return item.checked;"
+					),
+					Script.GetObject(id)
+				);
+				return _ExecuteJavaScriptBlocking<bool>(script);
+			}
+			set {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"item.checked = {1};"
+					),
+					Script.GetObject(id),
+					value.Escape()
+				);
+				_ExecuteJavaScript(script);
+			}
+		}
+
+		public string label {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"return item.label;"
+					),
+					Script.GetObject(id)
+				);
+				return _ExecuteJavaScriptBlocking<string>(script);
+			}
+			set {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"item.label = {1};"
+					),
+					Script.GetObject(id),
+					value.Escape()
+				);
+				_ExecuteJavaScript(script);
+			}
+		}
+
+		public Callback click {
+			set {
+				_callbackList.Add(_callbackListId, value);
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var item = {0};",
+						"var listener = () => {{",
+							"emit('__event',{1},{2});",
+						"}};",
+						"this._addClientEventListener({1},{2},listener);",
+						"item.click = listener;"
+					),
+					Script.GetObject(id),
+					Name.Escape(),
+					_callbackListId
+				);
+				_callbackListId++;
+				_ExecuteJavaScript(script);
+			}
+		}
 	}
 }

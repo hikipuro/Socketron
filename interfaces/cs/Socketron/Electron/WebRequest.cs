@@ -5,7 +5,13 @@ namespace Socketron {
 	/// Intercept and modify the contents of a request at various stages of its lifetime.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class WebRequest {
+	public class WebRequest : ElectronBase {
+		public int id;
+
+		public WebRequest(Socketron socketron) {
+			_socketron = socketron;
+		}
+
 		public void OnBeforeRequest() {
 			throw new NotImplementedException();
 		}

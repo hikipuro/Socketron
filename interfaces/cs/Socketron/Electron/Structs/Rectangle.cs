@@ -1,8 +1,20 @@
 ﻿namespace Socketron {
 	public class Rectangle {
+		/// <summary>
+		/// The x coordinate of the origin of the rectangle (must be an integer).
+		/// </summary>
 		public int x;
+		/// <summary>
+		/// The y coordinate of the origin of the rectangle (must be an integer).
+		/// </summary>
 		public int y;
+		/// <summary>
+		/// The width of the rectangle (must be an integer).
+		/// </summary>
 		public int width;
+		/// <summary>
+		/// The height of the rectangle (must be an integer).
+		/// </summary>
 		public int height;
 
 		public static Rectangle FromObject(object obj) {
@@ -22,6 +34,10 @@
 			return JSON.Parse<Rectangle>(text);
 		}
 
+		/// <summary>
+		/// Create JSON text.
+		/// </summary>
+		/// <returns></returns>
 		public string Stringify() {
 			return JSON.Stringify(this);
 		}

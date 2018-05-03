@@ -14,10 +14,10 @@
 			}
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var menu = this._objRefs[{0}];",
+					"var menu = {0};",
 					"electron.Menu.setApplicationMenu(menu);"
 				),
-				menu.ID
+				Script.GetObject(menu.ID)
 			);
 			_ExecuteJavaScript(script);
 		}

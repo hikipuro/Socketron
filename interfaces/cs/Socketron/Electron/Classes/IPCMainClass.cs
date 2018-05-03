@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Socketron {
 	/// <summary>
@@ -6,24 +7,92 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	public class IPCMainClass : ElectronBase {
+		public const string Name = "ipcMain";
+
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
 		public IPCMainClass(Socketron socketron) {
 			_socketron = socketron;
 		}
 
-		public void On() {
-			throw new NotImplementedException();
+		public void On(string channel, Callback listener) {
+			if (listener == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, listener);
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var listener = () => {{",
+						"emit('__event',{0},{1});",
+					"}};",
+					"this._addClientEventListener({0},{1},listener);",
+					"electron.ipcMain.on({2}, listener);"
+				),
+				Name.Escape(),
+				_callbackListId,
+				channel.Escape()
+			);
+			_callbackListId++;
+			_ExecuteJavaScript(script);
 		}
 
-		public void Once() {
-			throw new NotImplementedException();
+		public void Once(string channel, Callback listener) {
+			if (listener == null) {
+				return;
+			}
+			_callbackList.Add(_callbackListId, listener);
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var listener = () => {{",
+						"emit('__event',{0},{1});",
+					"}};",
+					"this._addClientEventListener({0},{1},listener);",
+					"electron.ipcMain.once({2}, listener);"
+				),
+				Name.Escape(),
+				_callbackListId,
+				channel.Escape()
+			);
+			_callbackListId++;
+			_ExecuteJavaScript(script);
 		}
 
-		public void RemoveListener() {
-			throw new NotImplementedException();
+		public void RemoveListener(string channel, Callback listener) {
+			var item = _callbackList.FirstOrDefault(x => x.Value == listener);
+			if (item.Equals(default(KeyValuePair<ushort, Callback>))) {
+				return;
+			}
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var listener = this._getClientEventListener({0},{1});",
+					"electron.ipcMain.removeListener({2},listener);"
+				),
+				Name.Escape(),
+				item.Key,
+				channel.Escape()
+			);
+			_ExecuteJavaScript(script);
+			_callbackList.Remove(item.Key);
 		}
 
-		public void RemoveAllListeners() {
-			throw new NotImplementedException();
+		public void RemoveAllListeners(string channel = null) {
+			string script = string.Empty;
+			if (channel == null) {
+				script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"electron.ipcMain.removeAllListeners();"
+					)
+				);
+			} else {
+				script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"electron.ipcMain.removeAllListeners({0});"
+					),
+					channel
+				);
+			}
+			_ExecuteJavaScript(script);
 		}
 	}
 }
