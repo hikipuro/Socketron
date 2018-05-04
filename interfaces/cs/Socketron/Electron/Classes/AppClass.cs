@@ -1,17 +1,39 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Socketron {
 	/// <summary>
 	/// Control your application's event lifecycle.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class AppClass : ElectronBase {
-		public AppCommandLine commandLine;
-		/// <summary>*macOS*</summary>
-		public AppDock dock;
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class AppClass : NodeBase {
+		public const string Name = "AppClass";
 
-		public class AppCommandLine : ElectronBase {
-			public AppCommandLine(Socketron socketron) {
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
+		public CommandLine commandLine;
+		/// <summary>*macOS*</summary>
+		public Dock dock;
+
+		public AppClass(Socketron socketron) {
+			_socketron = socketron;
+			commandLine = new CommandLine(socketron);
+			dock = new Dock(socketron);
+		}
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
+		}
+
+		public class CommandLine : NodeBase {
+			public CommandLine(Socketron socketron) {
 				_socketron = socketron;
 			}
 
@@ -24,7 +46,7 @@ namespace Socketron {
 			/// </summary>
 			/// <param name="switch">A command-line switch.</param>
 			/// <param name="value"> A value for the given switch.</param>
-			public void AppendSwitch(string @switch, string value = null) {
+			public void appendSwitch(string @switch, string value = null) {
 				string script = string.Empty;
 				if (value == null) {
 					script = ScriptBuilder.Build(
@@ -52,7 +74,7 @@ namespace Socketron {
 			/// </para>
 			/// </summary>
 			/// <param name="value">The argument to append to the command line.</param>
-			public void AppendArgument(string value) {
+			public void appendArgument(string value) {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.commandLine.appendArgument({0});"
@@ -63,8 +85,8 @@ namespace Socketron {
 			}
 		}
 
-		public class AppDock : ElectronBase {
-			public AppDock(Socketron socketron) {
+		public class Dock : NodeBase {
+			public Dock(Socketron socketron) {
 				_socketron = socketron;
 			}
 
@@ -85,7 +107,7 @@ namespace Socketron {
 			/// Can be critical or informational.
 			/// The default is informational.
 			/// </param>
-			public void Bounce(string type = null) {
+			public void bounce(string type = null) {
 				string script = string.Empty;
 				if (type == null) {
 					script = ScriptBuilder.Build(
@@ -109,7 +131,7 @@ namespace Socketron {
 			/// Cancel the bounce of id.
 			/// </summary>
 			/// <param name="id"></param>
-			public void CancelBounce(int id) {
+			public void cancelBounce(int id) {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.dock.cancelBounce({0});"
@@ -124,7 +146,7 @@ namespace Socketron {
 			/// Bounces the Downloads stack if the filePath is inside the Downloads folder.
 			/// </summary>
 			/// <param name="filePath"></param>
-			public void DownloadFinished(string filePath) {
+			public void downloadFinished(string filePath) {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.dock.downloadFinished({0});"
@@ -139,7 +161,7 @@ namespace Socketron {
 			/// Sets the string to be displayed in the dock’s badging area.
 			/// </summary>
 			/// <param name="text"></param>
-			public void SetBadge(string text) {
+			public void setBadge(string text) {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.dock.setBadge({0});"
@@ -154,20 +176,20 @@ namespace Socketron {
 			/// Returns String - The badge string of the dock.
 			/// </summary>
 			/// <returns></returns>
-			public string GetBadge() {
+			public string getBadge() {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"return electron.app.dock.getBadge();"
 					)
 				);
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 
 			/// <summary>
 			/// *macOS*
 			/// Hides the dock icon.
 			/// </summary>
-			public void Hide() {
+			public void hide() {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.dock.hide();"
@@ -180,7 +202,7 @@ namespace Socketron {
 			/// *macOS*
 			/// Shows the dock icon.
 			/// </summary>
-			public void Show() {
+			public void show() {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"electron.app.dock.show();"
@@ -198,13 +220,13 @@ namespace Socketron {
 			/// </para>
 			/// </summary>
 			/// <returns></returns>
-			public bool IsVisible() {
+			public bool isVisible() {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"return electron.app.dock.isVisible();"
 					)
 				);
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 
 			/// <summary>
@@ -212,7 +234,7 @@ namespace Socketron {
 			/// Sets the application's dock menu.
 			/// </summary>
 			/// <param name="menu"></param>
-			public void SetMenu(Menu menu) {
+			public void setMenu(Menu menu) {
 				if (menu == null) {
 					return;
 				}
@@ -221,7 +243,7 @@ namespace Socketron {
 						"var menu = {0};",
 						"electron.app.dock.setMenu(menu);"
 					),
-					Script.GetObject(menu.ID)
+					Script.GetObject(menu.id)
 				);
 				_ExecuteJavaScript(script);
 			}
@@ -231,7 +253,7 @@ namespace Socketron {
 			/// Sets the image associated with this dock icon.
 			/// </summary>
 			/// <param name="image"></param>
-			public void SetIcon(NativeImage image) {
+			public void setIcon(NativeImage image) {
 				if (image == null) {
 					return;
 				}
@@ -240,16 +262,10 @@ namespace Socketron {
 						"var image = {0};",
 						"electron.app.dock.setIcon(image);"
 					),
-					Script.GetObject(image.ID)
+					Script.GetObject(image.id)
 				);
 				_ExecuteJavaScript(script);
 			}
-		}
-
-		public AppClass(Socketron socketron) {
-			_socketron = socketron;
-			commandLine = new AppCommandLine(socketron);
-			dock = new AppDock(socketron);
 		}
 
 		/// <summary>
@@ -265,7 +281,7 @@ namespace Socketron {
 		/// in the beforeunload event handler.
 		/// </para>
 		/// </summary>
-		public void Quit() {
+		public void quit() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.quit();"
@@ -275,14 +291,15 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// Exits immediately with exitCode. exitCode defaults to 0.
+		/// Exits immediately with exitCode.
+		/// exitCode defaults to 0.
 		/// <para>
 		/// All windows will be closed immediately without asking user 
 		/// and the before-quit and will-quit events will not be emitted.
 		/// </para>
 		/// </summary>
-		/// <param name="exitCode"></param>
-		public void Exit(int exitCode = 0) {
+		/// <param name="exitCode">(optional)</param>
+		public void exit(int exitCode = 0) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.exit({0});"
@@ -295,8 +312,8 @@ namespace Socketron {
 		/// <summary>
 		/// Relaunches the app when current instance exits.
 		/// </summary>
-		/// <param name="options"></param>
-		public void Relaunch(JsonObject options = null) {
+		/// <param name="options">(optional)</param>
+		public void relaunch(JsonObject options = null) {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
@@ -319,17 +336,17 @@ namespace Socketron {
 		/// Returns Boolean - true if Electron has finished initializing, false otherwise.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsReady() {
+		public bool isReady() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.isReady();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/*
-		public bool WhenReady() {
+		public bool whenReady() {
 			// TODO: implement this
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -345,7 +362,7 @@ namespace Socketron {
 		/// On macOS, makes the application the active app.
 		/// On Windows, focuses on the application's first window.
 		/// </summary>
-		public void Focus() {
+		public void focus() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.focus();"
@@ -358,7 +375,7 @@ namespace Socketron {
 		/// *macOS*
 		/// Hides all application windows without minimizing them.
 		/// </summary>
-		public void Hide() {
+		public void hide() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.hide();"
@@ -371,7 +388,7 @@ namespace Socketron {
 		/// *macOS*
 		/// Shows application windows after they were hidden. Does not automatically focus them.
 		/// </summary>
-		public void Show() {
+		public void show() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.show();"
@@ -384,13 +401,13 @@ namespace Socketron {
 		/// Returns String - The current application directory.
 		/// </summary>
 		/// <returns></returns>
-		public string GetAppPath() {
+		public string getAppPath() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getAppPath();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -399,21 +416,54 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		public string GetPath(string name) {
+		public string getPath(string name) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getPath({0});"
 				),
 				name.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
-		/*
-		public void GetFileIcon(string path, JsonObject options, Callback callback) {
-			// TODO: implement this
+		/// <summary>
+		/// Fetches a path's associated icon.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="callback"></param>
+		public void getFileIcon(string path, Action<string, NativeImage> callback) {
+			if (callback == null) {
+				return;
+			}
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					callback?.Invoke("error", null);
+					return;
+				}
+				NativeImage image = new NativeImage(_socketron, (int)argsList[1]);
+				callback?.Invoke(argsList[0] as string, image);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (err, icon) => {{",
+						"var id = 0;",
+						"if (icon != null) {{",
+							"id = this._addObjectReference(icon);",
+						"}}",
+						"emit('__event',{0},{1},err,id);",
+					"}};",
+					"return electron.app.getFileIcon({2},callback);"
+				),
+				Name.Escape(),
+				_callbackListId,
+				path.Escape()
+			);
+			_callbackListId++;
+			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Overrides the path to a special directory or file associated with name.
@@ -425,7 +475,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="path"></param>
-		public void SetPath(string name, string path) {
+		public void setPath(string name, string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setPath({0},{1});"
@@ -444,13 +494,13 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <returns></returns>
-		public string GetVersion() {
+		public string getVersion() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getVersion();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -458,20 +508,20 @@ namespace Socketron {
 		/// which is the name in the application's package.json file.
 		/// </summary>
 		/// <returns></returns>
-		public string GetName() {
+		public string getName() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getName();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
 		/// Overrides the current application's name.
 		/// </summary>
 		/// <param name="name"></param>
-		public void SetName(string name) {
+		public void setName(string name) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setName({0});"
@@ -491,13 +541,13 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <returns></returns>
-		public string GetLocale() {
+		public string getLocale() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getLocale();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -510,7 +560,7 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="path"></param>
-		public void AddRecentDocument(string path) {
+		public void addRecentDocument(string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.addRecentDocument({0});"
@@ -524,7 +574,7 @@ namespace Socketron {
 		/// *macOS Windows*
 		/// Clears the recent documents list.
 		/// </summary>
-		public void ClearRecentDocuments() {
+		public void clearRecentDocuments() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.clearRecentDocuments();"
@@ -543,7 +593,7 @@ namespace Socketron {
 		/// </param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <param name="args">*Windows* Defaults to an empty array</param>
-		public void SetAsDefaultProtocolClient(string protocol, string path = null, string[] args = null) {
+		public void setAsDefaultProtocolClient(string protocol, string path = null, string[] args = null) {
 			string option = string.Empty;
 			if (path == null) {
 				option = protocol.Escape();
@@ -571,67 +621,215 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		/*
-		public void RemoveAsDefaultProtocolClient(string protocol, string path = null, string[] args = null) {
-			// TODO: implement this
-			_Exec("removeAsDefaultProtocolClient", protocol, path, args);
+		/// <summary>
+		/// Returns Boolean - Whether the call succeeded.
+		/// <para>
+		/// This method checks if the current executable
+		/// as the default handler for a protocol (aka URI scheme).
+		/// If so, it will remove the app as the default handler.
+		/// </para>
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <returns></returns>
+		public bool removeAsDefaultProtocolClient(string protocol) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.removeAsDefaultProtocolClient({0});"
+				),
+				protocol.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
 		}
-		//*/
 
-		/*
-		public void IsDefaultProtocolClient(string protocol, string path = null, string[] args = null) {
-			// TODO: implement this
-			_Exec("isDefaultProtocolClient", protocol, path, args);
+		/// <summary>
+		/// Returns Boolean - Whether the call succeeded.
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="path">*Windows* Defaults to process.execPath</param>
+		/// <returns></returns>
+		public bool removeAsDefaultProtocolClient(string protocol, string path) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.removeAsDefaultProtocolClient({0},{1});"
+				),
+				protocol.Escape(),
+				path.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
 		}
-		//*/
+
+		/// <summary>
+		/// Returns Boolean - Whether the call succeeded.
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="path">*Windows* Defaults to process.execPath</param>
+		/// <param name="args">*Windows* Defaults to an empty array</param>
+		/// <returns></returns>
+		public bool removeAsDefaultProtocolClient(string protocol, string path, string[] args) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.removeAsDefaultProtocolClient({0},{1},{2});"
+				),
+				protocol.Escape(),
+				path.Escape(),
+				args.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
+
+		/// <summary>
+		/// This method checks if the current executable
+		/// is the default handler for a protocol (aka URI scheme).
+		/// If so, it will return true. Otherwise, it will return false.
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <returns></returns>
+		public bool isDefaultProtocolClient(string protocol) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.isDefaultProtocolClient({0});"
+				),
+				protocol.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
+
+		/// <summary>
+		/// This method checks if the current executable
+		/// is the default handler for a protocol (aka URI scheme).
+		/// If so, it will return true. Otherwise, it will return false.
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="path">*Windows* Defaults to process.execPath</param>
+		/// <returns></returns>
+		public bool isDefaultProtocolClient(string protocol, string path) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.isDefaultProtocolClient({0},{1});"
+				),
+				protocol.Escape(),
+				path.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
+
+		/// <summary>
+		/// This method checks if the current executable
+		/// is the default handler for a protocol (aka URI scheme).
+		/// If so, it will return true. Otherwise, it will return false.
+		/// </summary>
+		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="path">*Windows* Defaults to process.execPath</param>
+		/// <param name="args">*Windows* Defaults to an empty array</param>
+		/// <returns></returns>
+		public bool isDefaultProtocolClient(string protocol, string path, string[] args) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.isDefaultProtocolClient({0},{1},{2});"
+				),
+				protocol.Escape(),
+				path.Escape(),
+				args.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
 
 		/// <summary>
 		/// *Windows*
+		/// Adds tasks to the Tasks category of the JumpList on Windows.
+		/// <para>
+		/// Note: If you'd like to customize the Jump List
+		/// even more use app.setJumpList(categories) instead.
+		/// </para>
 		/// </summary>
-		/// <param name="tasks"></param>
-		/*
-		public void SetUserTasks(Task[] tasks) {
-			// TODO: implement this
-			_Exec("setUserTasks");
+		/// <param name="tasks">Array of Task objects.</param>
+		/// <returns>Whether the call succeeded.</returns>
+		public bool setUserTasks(TaskObject[] tasks) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return electron.app.setUserTasks({0});"
+				),
+				JSON.Stringify(tasks)
+			);
+			return _ExecuteBlocking<bool>(script);
 		}
-		//*/
 
 		/// <summary>
 		/// *Windows*
 		/// Returns Object:
 		/// </summary>
 		/// <returns></returns>
-		public JsonObject GetJumpListSettings() {
+		public JsonObject getJumpListSettings() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getJumpListSettings();"
 				)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 
 		}
-
-		// *Windows*
-		/*
-		public void SetJumpList() {
-			// TODO: implement this
-			_Exec("setJumpList");
+		
+		/// <summary>
+		/// *Windows*
+		/// Sets or removes a custom Jump List for the application.
+		/// </summary>
+		/// <param name="categories"></param>
+		public void setJumpList(JumpListCategory[] categories) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"electron.app.setJumpList({0});"
+				),
+				JSON.Stringify(categories)
+			);
+			_ExecuteJavaScript(script);
 		}
-		//*/
 
-		/*
-		public void MakeSingleInstance() {
-			// TODO: implement this
-			_Exec("makeSingleInstance");
+		/// <summary>
+		/// This method makes your application a Single Instance Application
+		/// - instead of allowing multiple instances of your app to run,
+		/// this will ensure that only a single instance of your app is running,
+		/// and other instances signal this instance and exit.
+		/// </summary>
+		/// <param name="callback"></param>
+		/// <returns></returns>
+		public bool makeSingleInstance(Action<string[], string> callback) {
+			if (callback == null) {
+				return false;
+			}
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				string[] commandLine = null;
+				string workingDirectory = argsList[1] as string;
+				if (argsList[0] != null) {
+					commandLine = (argsList[0] as object[]).Cast<string>().ToArray();
+				}
+				callback?.Invoke(commandLine, workingDirectory);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (argv, workingDirectory) => {{",
+						"emit('__event',{0},{1},argv,workingDirectory);",
+					"}};",
+					"return electron.app.makeSingleInstance(callback);"
+				),
+				Name.Escape(),
+				_callbackListId
+			);
+			_callbackListId++;
+			return _ExecuteBlocking<bool>(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Releases all locks that were created by makeSingleInstance.
 		/// This will allow multiple instances of the application to once again run side by side.
 		/// </summary>
-		public void ReleaseSingleInstance() {
+		public void releaseSingleInstance() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.releaseSingleInstance();"
@@ -648,7 +846,7 @@ namespace Socketron {
 		/// <param name="type"></param>
 		/// <param name="userInfo"></param>
 		/// <param name="webpageURL"></param>
-		public void SetUserActivity(string type, JsonObject userInfo, string webpageURL = null) {
+		public void setUserActivity(string type, JsonObject userInfo, string webpageURL = null) {
 			string option = string.Empty;
 			if (webpageURL == null) {
 				option = ScriptBuilder.Params(
@@ -676,20 +874,20 @@ namespace Socketron {
 		/// Returns String - The type of the currently running activity.
 		/// </summary>
 		/// <returns></returns>
-		public string GetCurrentActivityType() {
+		public string getCurrentActivityType() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getCurrentActivityType();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
 		/// *macOS*
 		/// Invalidates the current Handoff user activity.
 		/// </summary>
-		public void InvalidateCurrentActivity() {
+		public void invalidateCurrentActivity() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.invalidateCurrentActivity();"
@@ -705,7 +903,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <param name="userInfo"></param>
-		public void UpdateCurrentActivity(string type, JsonObject userInfo) {
+		public void updateCurrentActivity(string type, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.updateCurrentActivity({0},{1});"
@@ -721,7 +919,7 @@ namespace Socketron {
 		/// Changes the Application User Model ID to id.
 		/// </summary>
 		/// <param name="id"></param>
-		public void SetAppUserModelId(string id) {
+		public void setAppUserModelId(string id) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setAppUserModelId({0});"
@@ -731,12 +929,47 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		/*
-		public void ImportCertificate(JsonObject options, Callback callback) {
-			// TODO: implement this
-			_Exec("importCertificate", options);
+		/// <summary>
+		/// *Linux*
+		/// Imports the certificate in pkcs12 format into the platform certificate store.
+		/// callback is called with the result of import operation,
+		/// a value of 0 indicates success while any other value indicates failure
+		/// according to chromium net_error_list.
+		/// </summary>
+		/// <param name="options">
+		/// "certificate" String - Path for the pkcs12 file.
+		/// "password" String - Passphrase for the certificate.
+		/// </param>
+		/// <param name="callback">
+		/// "result" Integer - Result of import.
+		/// </param>
+		public void importCertificate(JsonObject options, Action<int> callback) {
+			if (callback == null) {
+				return;
+			}
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				callback?.Invoke((int)argsList[0]);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (result) => {{",
+						"emit('__event',{0},{1},result);",
+					"}};",
+					"return electron.app.importCertificate({2},callback);"
+				),
+				Name.Escape(),
+				_callbackListId,
+				options.Stringify()
+			);
+			_callbackListId++;
+			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Disables hardware acceleration for current app.
@@ -744,7 +977,7 @@ namespace Socketron {
 		/// This method can only be called before app is ready.
 		/// </para>
 		/// </summary>
-		public void DisableHardwareAcceleration() {
+		public void disableHardwareAcceleration() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.disableHardwareAcceleration();"
@@ -761,7 +994,7 @@ namespace Socketron {
 		/// This method can only be called before app is ready.
 		/// </para>
 		/// </summary>
-		public void DisableDomainBlockingFor3DAPIs() {
+		public void disableDomainBlockingFor3DAPIs() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.disableDomainBlockingFor3DAPIs();"
@@ -776,13 +1009,13 @@ namespace Socketron {
 		/// of all the processes associated with the app.
 		/// </summary>
 		/// <returns></returns>
-		public List<ProcessMetric> GetAppMetrics() {
+		public List<ProcessMetric> getAppMetrics() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getAppMetrics();"
 				)
 			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			List<ProcessMetric> metricList = new List<ProcessMetric>();
 			foreach (object item in result) {
 				ProcessMetric metric = ProcessMetric.FromObject(item);
@@ -795,13 +1028,13 @@ namespace Socketron {
 		/// Returns GPUFeatureStatus - The Graphics Feature Status from chrome://gpu/.
 		/// </summary>
 		/// <returns></returns>
-		public GPUFeatureStatus GetGPUFeatureStatus() {
+		public GPUFeatureStatus getGPUFeatureStatus() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getGPUFeatureStatus();"
 				)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return GPUFeatureStatus.FromObject(result);
 		}
 
@@ -811,14 +1044,14 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		public bool SetBadgeCount(int count) {
+		public bool setBadgeCount(int count) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.setBadgeCount({0});"
 				),
 				count
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -826,13 +1059,13 @@ namespace Socketron {
 		/// Returns Integer - The current value displayed in the counter badge.
 		/// </summary>
 		/// <returns></returns>
-		public int GetBadgeCount() {
+		public int getBadgeCount() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.getBadgeCount();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -840,21 +1073,23 @@ namespace Socketron {
 		/// Returns Boolean - Whether the current desktop environment is Unity launcher.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsUnityRunning() {
+		public bool isUnityRunning() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.isUnityRunning();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// *macOS Windows*
+		/// If you provided path and args options to app.setLoginItemSettings
+		/// then you need to pass the same arguments here for openAtLogin to be set correctly.
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public JsonObject GetLoginItemSettings(JsonObject options = null) {
+		public JsonObject getLoginItemSettings(JsonObject options = null) {
 			string script = string.Empty;
 			if (options == null) {
 				ScriptBuilder.Build(
@@ -870,15 +1105,16 @@ namespace Socketron {
 					options.Stringify()
 				);
 			}
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
 		/// <summary>
 		/// *macOS Windows*
+		/// Set the app's login item settings.
 		/// </summary>
 		/// <param name="settings"></param>
-		public void SetLoginItemSettings(JsonObject settings) {
+		public void setLoginItemSettings(JsonObject settings) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setLoginItemSettings({0});"
@@ -898,20 +1134,22 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <returns></returns>
-		public bool IsAccessibilitySupportEnabled() {
+		public bool isAccessibilitySupportEnabled() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.isAccessibilitySupportEnabled();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// *macOS Windows*
+		/// Manually enables Chrome's accessibility support,
+		/// allowing to expose accessibility switch to users in application settings. 
 		/// </summary>
 		/// <param name="enabled"></param>
-		public void SetAccessibilitySupportEnabled(bool enabled) {
+		public void setAccessibilitySupportEnabled(bool enabled) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setAccessibilitySupportEnabled({0});"
@@ -923,9 +1161,11 @@ namespace Socketron {
 
 		/// <summary>
 		/// *macOS*
+		/// Set the about panel options. This will override the values
+		/// defined in the app's .plist file. See the Apple docs for more details.
 		/// </summary>
 		/// <param name="options"></param>
-		public void SetAboutPanelOptions(JsonObject options) {
+		public void setAboutPanelOptions(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.setAboutPanelOptions({0});"
@@ -936,10 +1176,12 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// *macOS*
+		/// *macOS (mas)*
+		/// Returns Function - This function must be called once you have finished
+		/// accessing the security scoped file. 
 		/// </summary>
 		/// <param name="bookmarkData"></param>
-		public void StartAccessingSecurityScopedResource(string bookmarkData) {
+		public void startAccessingSecurityScopedResource(string bookmarkData) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.startAccessingSecurityScopedResource({0});"
@@ -954,7 +1196,7 @@ namespace Socketron {
 		/// Enables mixed sandbox mode on the app.
 		/// This method can only be called before app is ready.
 		/// </summary>
-		public void EnableMixedSandbox() {
+		public void enableMixedSandbox() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.app.enableMixedSandbox();"
@@ -965,29 +1207,33 @@ namespace Socketron {
 
 		/// <summary>
 		/// *macOS*
+		/// Returns Boolean - Whether the application is currently running
+		/// from the systems Application folder.
+		/// Use in combination with app.moveToApplicationsFolder()
 		/// </summary>
 		/// <returns></returns>
-		public bool IsInApplicationsFolder() {
+		public bool isInApplicationsFolder() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.isInApplicationsFolder();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// *macOS*
+		/// Returns Boolean - Whether the move was successful.
+		/// Please note that if the move is successful your application will quit and relaunch.
 		/// </summary>
 		/// <returns></returns>
-		public bool MoveToApplicationsFolder() {
+		public bool moveToApplicationsFolder() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.app.moveToApplicationsFolder();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
-
 	}
 }

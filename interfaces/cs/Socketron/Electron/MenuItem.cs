@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Add items to native application menus and context menus.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class MenuItem : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class MenuItem : NodeBase {
 		public const string Name = "MenuItem";
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -215,7 +217,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
@@ -239,7 +241,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
@@ -263,7 +265,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
@@ -287,7 +289,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(

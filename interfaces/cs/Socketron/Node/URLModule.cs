@@ -2,7 +2,7 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class URLModule : ElectronBase {
+	public class URLModule : NodeBase {
 		public int id;
 
 		public URLModule(Socketron socketron) {
@@ -18,7 +18,7 @@ namespace Socketron {
 				"url".Escape(),
 				Script.AddObject("module")
 			);
-			id = _ExecuteJavaScriptBlocking<int>(script);
+			id = _ExecuteBlocking<int>(script);
 		}
 
 	}

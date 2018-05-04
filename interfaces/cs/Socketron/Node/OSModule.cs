@@ -2,7 +2,7 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class OSModule : ElectronBase {
+	public class OSModule : NodeBase {
 		public int id;
 
 		public OSModule(Socketron socketron) {
@@ -18,7 +18,7 @@ namespace Socketron {
 				"os".Escape(),
 				Script.AddObject("module")
 			);
-			id = _ExecuteJavaScriptBlocking<int>(script);
+			id = _ExecuteBlocking<int>(script);
 		}
 
 		public string EOL {
@@ -30,7 +30,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -42,7 +42,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public JsonObject constants {
@@ -54,7 +54,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -67,7 +67,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<object[]>(script);
+			return _ExecuteBlocking<object[]>(script);
 		}
 
 		public string endianness() {
@@ -78,7 +78,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public long freemem() {
@@ -89,7 +89,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<long>(script);
+			return _ExecuteBlocking<long>(script);
 		}
 
 		public string homedir() {
@@ -100,7 +100,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string hostname() {
@@ -111,7 +111,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public object[] loadavg() {
@@ -122,7 +122,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<object[]>(script);
+			return _ExecuteBlocking<object[]>(script);
 		}
 
 		public JsonObject networkInterfaces() {
@@ -133,7 +133,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -145,7 +145,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string release() {
@@ -156,7 +156,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string tmpdir() {
@@ -167,7 +167,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public long totalmem() {
@@ -178,7 +178,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<long>(script);
+			return _ExecuteBlocking<long>(script);
 		}
 
 		public string type() {
@@ -189,7 +189,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public long uptime() {
@@ -200,7 +200,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<long>(script);
+			return _ExecuteBlocking<long>(script);
 		}
 
 		public JsonObject userInfo() {
@@ -211,7 +211,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -224,7 +224,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				options.Stringify()
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 	}

@@ -4,8 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NodeConsole : ElectronBase {
-		public NodeConsole(Socketron socketron) {
+	public class ConsoleModule : NodeBase {
+		public ConsoleModule(Socketron socketron) {
 			_socketron = socketron;
 		}
 
@@ -45,6 +45,17 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"console.log({0});",
+				_CreateParams(args)
+			);
+			_ExecuteJavaScript(script);
+		}
+
+		public void table(params object[] args) {
+			if (args == null) {
+				return;
+			}
+			string script = ScriptBuilder.Build(
+				"console.table({0});",
 				_CreateParams(args)
 			);
 			_ExecuteJavaScript(script);
@@ -95,13 +106,17 @@ namespace Socketron {
 					strings[i] = "null";
 					continue;
 				}
-				Type type = arg.GetType();
-				if (type == typeof(string)) {
+				if (arg is string) {
 					strings[i] = ((string)arg).Escape();
 					continue;
 				}
-				if (type == typeof(bool)) {
+				if (arg is bool) {
 					strings[i] = ((bool)arg).Escape();
+					continue;
+				}
+				if (arg is NodeBase) {
+					NodeBase obj = arg as NodeBase;
+					strings[i] = string.Format("this._objRefs[{0}]", obj.id);
 					continue;
 				}
 				strings[i] = arg.ToString();

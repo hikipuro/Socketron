@@ -7,14 +7,17 @@ namespace Socketron {
 	/// </summary>
 	public class PowerSaveBlocker {
 		public void Start() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void Stop() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void IsStarted() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

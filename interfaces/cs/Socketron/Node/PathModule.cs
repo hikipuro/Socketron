@@ -2,7 +2,7 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class PathModule : ElectronBase {
+	public class PathModule : NodeBase {
 		public int id;
 
 		public PathModule(Socketron socketron) {
@@ -18,7 +18,7 @@ namespace Socketron {
 				"path".Escape(),
 				Script.AddObject("module")
 			);
-			id = _ExecuteJavaScriptBlocking<int>(script);
+			id = _ExecuteBlocking<int>(script);
 		}
 
 		public string basename(string path) {
@@ -30,7 +30,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string basename(string path, string ext) {
@@ -43,7 +43,7 @@ namespace Socketron {
 				path.Escape(),
 				ext.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string delimiter {
@@ -55,7 +55,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -68,7 +68,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string extname(string path) {
@@ -80,7 +80,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string format(JsonObject pathObject) {
@@ -92,7 +92,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				pathObject.Stringify()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public bool isAbsolute(string path) {
@@ -104,7 +104,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		public string join(params string[] paths) {
@@ -116,7 +116,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				paths.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string normalize(string path) {
@@ -128,7 +128,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public JsonObject parse(string path) {
@@ -140,7 +140,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				path.Escape()
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -170,7 +170,7 @@ namespace Socketron {
 				from.Escape(),
 				to.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string resolve(params string[] paths) {
@@ -182,7 +182,7 @@ namespace Socketron {
 				Script.GetObject(id),
 				paths.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public string sep {
@@ -194,7 +194,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 

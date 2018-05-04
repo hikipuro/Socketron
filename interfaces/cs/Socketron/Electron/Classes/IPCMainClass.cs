@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Socketron {
@@ -6,7 +7,8 @@ namespace Socketron {
 	/// Communicate asynchronously from the main process to renderer processes.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class IPCMainClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class IPCMainClass : NodeBase {
 		public const string Name = "ipcMain";
 
 		static ushort _callbackListId = 0;
@@ -16,7 +18,7 @@ namespace Socketron {
 			_socketron = socketron;
 		}
 
-		public void On(string channel, Callback listener) {
+		public void on(string channel, Callback listener) {
 			if (listener == null) {
 				return;
 			}
@@ -37,7 +39,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void Once(string channel, Callback listener) {
+		public void once(string channel, Callback listener) {
 			if (listener == null) {
 				return;
 			}
@@ -58,7 +60,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void RemoveListener(string channel, Callback listener) {
+		public void removeListener(string channel, Callback listener) {
 			var item = _callbackList.FirstOrDefault(x => x.Value == listener);
 			if (item.Equals(default(KeyValuePair<ushort, Callback>))) {
 				return;
@@ -76,7 +78,7 @@ namespace Socketron {
 			_callbackList.Remove(item.Key);
 		}
 
-		public void RemoveAllListeners(string channel = null) {
+		public void removeAllListeners(string channel = null) {
 			string script = string.Empty;
 			if (channel == null) {
 				script = ScriptBuilder.Build(

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace Socketron {
@@ -12,7 +11,7 @@ namespace Socketron {
 		Command
 	}
 
-	internal class SocketronClient: EventEmitter {
+	internal class SocketClient: EventEmitter {
 		public Config Config = new Config();
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
@@ -22,7 +21,7 @@ namespace Socketron {
 		protected ManualResetEvent _readDone = new ManualResetEvent(false);
 		protected AsyncCallback _writeCallback;
 
-		public SocketronClient(Config config = null) {
+		public SocketClient(Config config = null) {
 			if (config != null) {
 				Config = config;
 			}
@@ -129,10 +128,10 @@ namespace Socketron {
 			_stream.WriteTimeout = Config.Timeout;
 
 			_readThread = new Thread(_Read) {
-				Name = "Socketron read thread"
+				Name = typeof(Socketron).Name + " read thread"
 			};
 			_readThread.Start();
-			EmitNewThread("connect");
+			Emit("connect");
 		}
 
 		protected void _OnRead(IAsyncResult result) {
@@ -218,7 +217,7 @@ namespace Socketron {
 				return;
 			}
 			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
-			EmitNewThread("debug", string.Format(format, args));
+			Emit("debug", string.Format(format, args));
 		}
 	}
 }

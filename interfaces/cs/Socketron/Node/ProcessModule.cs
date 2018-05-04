@@ -9,8 +9,8 @@ namespace Socketron {
 	/// As a global, it is always available to Node.js applications without using require().
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ProcessClass : ElectronBase {
-		public ProcessClass(Socketron socketron) {
+	public class ProcessModule : NodeBase {
+		public ProcessModule(Socketron socketron) {
 			_socketron = socketron;
 		}
 
@@ -19,7 +19,7 @@ namespace Socketron {
 		}
 
 		public T ExecuteJavaScriptBlocking<T>(string script) {
-			return _ExecuteJavaScriptBlocking<T>(script);
+			return _ExecuteBlocking<T>(script);
 		}
 
 		public void abort() {
@@ -30,14 +30,14 @@ namespace Socketron {
 		public string arch {
 			get {
 				string script = "return process.arch;";
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
 		public string[] argv {
 			get {
 				string script = "return process.argv;";
-				object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+				object[] result = _ExecuteBlocking<object[]>(script);
 				return result.Cast<string>().ToArray();
 			}
 		}
@@ -45,14 +45,14 @@ namespace Socketron {
 		public string argv0 {
 			get {
 				string script = "return process.argv0;";
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
 		public JsonObject channel {
 			get {
 				string script = "return process.channel;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -68,7 +68,7 @@ namespace Socketron {
 		public JsonObject config {
 			get {
 				string script = "return process.config;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -76,7 +76,7 @@ namespace Socketron {
 		public bool connected {
 			get {
 				string script = "return process.connected;";
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 		}
 
@@ -84,26 +84,26 @@ namespace Socketron {
 			object result = null;
 			if (previousValue == null) {
 				string script = "return process.cpuUsage();";
-				result = _ExecuteJavaScriptBlocking<object>(script);
+				result = _ExecuteBlocking<object>(script);
 			} else {
 				string script = ScriptBuilder.Build(
 					"return process.cpuUsage({0});",
 					previousValue.Stringify()
 				);
-				result = _ExecuteJavaScriptBlocking<object>(script);
+				result = _ExecuteBlocking<object>(script);
 			}
 			return new JsonObject(result);
 		}
 
 		public string cwd() {
 			string script = "return process.cwd();";
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public int debugPort {
 			get {
 				string script = "return process.debugPort;";
-				return _ExecuteJavaScriptBlocking<int>(script);
+				return _ExecuteBlocking<int>(script);
 			}
 		}
 
@@ -136,7 +136,7 @@ namespace Socketron {
 		public JsonObject env {
 			get {
 				string script = "return process.env;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -144,7 +144,7 @@ namespace Socketron {
 		public string[] execArgv {
 			get {
 				string script = "return process.execArgv;";
-				object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+				object[] result = _ExecuteBlocking<object[]>(script);
 				return result.Cast<string>().ToArray();
 			}
 		}
@@ -152,7 +152,7 @@ namespace Socketron {
 		public string execPath {
 			get {
 				string script = "return process.execPath;";
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -172,46 +172,46 @@ namespace Socketron {
 		public int exitCode {
 			get {
 				string script = "return process.exitCode;";
-				return _ExecuteJavaScriptBlocking<int>(script);
+				return _ExecuteBlocking<int>(script);
 			}
 		}
 
 		public int getegid() {
 			string script = "return process.getegid();";
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public JsonObject geteuid() {
 			string script = "return process.geteuid();";
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
 		public JsonObject getgid() {
 			string script = "return process.getgid();";
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
 		public int[] getgroups() {
 			string script = "return process.execArgv;";
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			return result.Cast<int>().ToArray();
 		}
 
 		public int getuid() {
 			string script = "return process.getuid();";
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public bool hasUncaughtExceptionCaptureCallback() {
 			string script = "return process.hasUncaughtExceptionCaptureCallback();";
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		public int[] hrtime() {
 			string script = "return process.hrtime();";
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			return result.Cast<int>().ToArray();
 		}
 
@@ -235,14 +235,14 @@ namespace Socketron {
 		public JsonObject mainModule {
 			get {
 				string script = "return process.mainModule;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
 
 		public JsonObject memoryUsage() {
 			string script = "return process.memoryUsage();";
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -253,35 +253,35 @@ namespace Socketron {
 		public bool noDeprecation {
 			get {
 				string script = "return process.noDeprecation;";
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 		}
 
 		public int pid {
 			get {
 				string script = "return process.pid;";
-				return _ExecuteJavaScriptBlocking<int>(script);
+				return _ExecuteBlocking<int>(script);
 			}
 		}
 
 		public string platform {
 			get {
 				string script = "return process.platform;";
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
 		public int ppid {
 			get {
 				string script = "return process.ppid;";
-				return _ExecuteJavaScriptBlocking<int>(script);
+				return _ExecuteBlocking<int>(script);
 			}
 		}
 
 		public JsonObject release {
 			get {
 				string script = "return process.release;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -355,27 +355,27 @@ namespace Socketron {
 		public bool throwDeprecation {
 			get {
 				string script = "return process.throwDeprecation;";
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 		}
 
 		public string title {
 			get {
 				string script = "return process.title;";
-				return _ExecuteJavaScriptBlocking<string>(script);
+				return _ExecuteBlocking<string>(script);
 			}
 		}
 
 		public bool traceDeprecation {
 			get {
 				string script = "return process.traceDeprecation;";
-				return _ExecuteJavaScriptBlocking<bool>(script);
+				return _ExecuteBlocking<bool>(script);
 			}
 		}
 
 		public int umask() {
 			string script = "return process.umask();";
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public int umask(int mask) {
@@ -383,23 +383,23 @@ namespace Socketron {
 				"return process.umask({0});",
 				mask
 			);
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public int uptime() {
 			string script = "return process.uptime();";
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public string version() {
 			string script = "return process.version();";
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		public JsonObject versions {
 			get {
 				string script = "return process.versions;";
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = _ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}

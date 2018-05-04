@@ -3,7 +3,7 @@
 	/// Add items to native application menus and context menus.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class MenuItemClass : ElectronBase {
+	public class MenuItemClass : NodeBase {
 		public MenuItemClass(Socketron socketron) {
 			_socketron = socketron;
 		}
@@ -20,7 +20,7 @@
 				options.Stringify(),
 				Script.AddObject("item")
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			return new MenuItem(_socketron) {
 				id = result
 			};

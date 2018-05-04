@@ -1,24 +1,34 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
-	public class AutoUpdaterClass : ElectronBase {
+	/// <summary>
+	/// Enable apps to automatically update themselves.
+	/// <para>Process: Main</para>
+	/// </summary>
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class AutoUpdaterClass : NodeBase {
 		public AutoUpdaterClass(Socketron socketron) {
 			_socketron = socketron;
 		}
 
-		public void SetFeedURL(JsonObject options) {
+		public void setFeedURL(JsonObject options) {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public string GetFeedURL(JsonObject options) {
+		public string getFeedURL(JsonObject options) {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void CheckForUpdates() {
+		public void checkForUpdates() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void QuitAndInstall() {
+		public void quitAndInstall() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

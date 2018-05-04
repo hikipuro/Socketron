@@ -17,6 +17,21 @@
 		/// </summary>
 		public int height;
 
+		public Rectangle() {
+		}
+
+		public Rectangle(int x, int y, int width, int height) {
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+		}
+
+		public Rectangle(int width, int height) {
+			this.width = width;
+			this.height = height;
+		}
+
 		public static Rectangle FromObject(object obj) {
 			if (obj == null) {
 				return null;

@@ -7,7 +7,7 @@
 		/// <summary>
 		/// Data to be uploaded.
 		/// </summary>
-		public Buffer bytes;
+		public LocalBuffer bytes;
 
 		public static UploadRawData Parse(string text) {
 			return JSON.Parse<UploadRawData>(text);

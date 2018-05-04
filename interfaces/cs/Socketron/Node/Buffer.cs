@@ -1,131 +1,869 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
-	public class Buffer {
-		protected MemoryStream _data;
-
-		public Buffer() {
-			_data = new MemoryStream();
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class Buffer : NodeBase, IDisposable {
+		public class Encodings {
+			public const string ascii = "ascii";
+			public const string utf8 = "utf8";
+			public const string utf16le = "utf16le";
+			public const string ucs2 = "ucs2";
+			public const string base64 = "base64";
+			public const string latin1 = "latin1";
+			public const string binary = "binary";
+			public const string hex = "hex";
 		}
 
-		public static Buffer FromJson(JsonObject json) {
-			if (json == null) {
-				return null;
+		public class constants {
+			public static long MAX_LENGTH {
+				get {
+					string script = "return this.require('buffer').constants.MAX_LENGTH;";
+					return Socketron.ExecuteBlocking<long>(script);
+				}
 			}
-			if (json["type"] as string != "Buffer") {
-				return null;
+			public static long MAX_STRING_LENGTH {
+				get {
+					string script = "return this.require('buffer').constants.MAX_STRING_LENGTH;";
+					return Socketron.ExecuteBlocking<long>(script);
+				}
 			}
-			object[] data = json["data"] as object[];
-			Buffer buffer = new Buffer();
-			foreach (object item in data) {
-				buffer.WriteUInt8((byte)(int)item);
+		}
+
+		public Buffer(Socketron socketron) {
+			_socketron = socketron;
+		}
+
+		public Buffer(Socketron socketron, int id) {
+			_socketron = socketron;
+			this.id = id;
+		}
+
+		public byte this[int index] {
+			get {
+				string script = ScriptBuilder.Build(
+					"return {0}[{1}];",
+					Script.GetObject(id),
+					index
+				);
+				return _ExecuteBlocking<byte>(script);
 			}
-			return buffer;
-		}
-
-		public byte this[uint i] {
-			get { return _data.GetBuffer()[i]; }
-		}
-
-		public int Length {
-			get { return (int)_data.Length; }
-		}
-
-		public void Write(byte[] bytes) {
-			_data.Write(bytes, 0, bytes.Length);
-		}
-
-		public void Write(byte[] bytes, int offset, int length) {
-			_data.Write(bytes, offset, length);
-		}
-
-		public void Write(Buffer buffer) {
-			byte[] bytes = buffer._data.GetBuffer();
-			_data.Write(bytes, 0, bytes.Length);
-		}
-
-		public void Write(string str, Encoding encoding = null) {
-			if (encoding == null) {
-				encoding = Encoding.UTF8;
+			set {
+				string script = ScriptBuilder.Build(
+					"{0}[{1}] = {2};",
+					Script.GetObject(id),
+					index,
+					value
+				);
+				_ExecuteJavaScript(script);
 			}
-			byte[] bytes = encoding.GetBytes(str);
-			Write(bytes, 0, bytes.Length);
 		}
 
-		public void WriteUInt8(byte value) {
-			_data.WriteByte(value);
-		}
-
-		public void WriteUInt16LE(ushort value) {
-			_data.WriteByte((byte)(value & 0xFF));
-			_data.WriteByte((byte)(value >> 8 & 0xFF));
-		}
-
-		public void WriteUInt32LE(uint value) {
-			_data.WriteByte((byte)(value & 0xFF));
-			_data.WriteByte((byte)(value >> 8 & 0xFF));
-			_data.WriteByte((byte)(value >> 16 & 0xFF));
-			_data.WriteByte((byte)(value >> 24 & 0xFF));
-		}
-
-		public byte ReadUInt8(uint offset) {
-			return _data.GetBuffer()[offset];
-		}
-
-		public ushort ReadUInt16LE(uint offset) {
-			byte[] buffer = _data.GetBuffer();
-			ushort result = buffer[offset];
-			result |= (ushort)(buffer[offset + 1] << 8);
-			return result;
-		}
-
-		public uint ReadUInt32LE(uint offset) {
-			byte[] buffer = _data.GetBuffer();
-			uint result = buffer[offset];
-			result |= (uint)(buffer[offset + 1] << 8);
-			result |= (uint)(buffer[offset + 2] << 16);
-			result |= (uint)(buffer[offset + 3] << 24);
-			return result;
-		}
-
-		public Buffer Slice(uint offset) {
-			uint length = (uint)_data.Length - offset;
-			byte[] data = new byte[length];
-			long position = _data.Position;
-			_data.Position = offset;
-			_data.Read(data, 0, (int)length);
-			_data.Position = position;
-
-			Buffer buffer = new Buffer();
-			buffer.Write(data);
-			return buffer;
-		}
-
-		public byte[] ToByteArray() {
-			byte[] bytes = new byte[Length];
-			long position = _data.Position;
-			_data.Position = 0;
-			_data.Read(bytes, 0, Length);
-			_data.Position = position;
-			return bytes;
-		}
-
-		public string ToString(Encoding encoding, int start, int end) {
-			return encoding.GetString(
-				_data.GetBuffer(), start, end - start
+		public static Buffer alloc(long size) {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.alloc({0});",
+					"return {1};"
+				),
+				size,
+				Script.AddObject("buf")
 			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
 		}
 
-		public string Stringify() {
-			byte[] bytes = ToByteArray();
-			JsonObject json = new JsonObject() {
-				["type"] = "Buffer",
-				["data"] = new List<byte>(bytes)
-			};
-			return json.Stringify();
+		public static Buffer alloc(long size, string fill, string encoding = "utf8") {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.alloc({0},{1},{2});",
+					"return {3};"
+				),
+				size,
+				fill.Escape(),
+				encoding.Escape(),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer allocUnsafe(long size) {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.allocUnsafe({0});",
+					"return {1};"
+				),
+				size,
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer allocUnsafeSlow(long size) {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.allocUnsafeSlow({0});",
+					"return {1};"
+				),
+				size,
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static long byteLength(string value, string encoding = "utf8") {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return Buffer.byteLength({0});"
+				),
+				value.Escape(),
+				encoding
+			);
+			return Socketron.ExecuteBlocking<long>(script);
+		}
+
+		public static long byteLength(Buffer value) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return Buffer.byteLength({0});"
+				),
+				Script.GetObject(value.id)
+			);
+			return Socketron.ExecuteBlocking<long>(script);
+		}
+
+		public static long compare(Buffer buf1, Buffer buf2) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return Buffer.compare({0},{1});"
+				),
+				Script.GetObject(buf1.id),
+				Script.GetObject(buf2.id)
+			);
+			return Socketron.ExecuteBlocking<long>(script);
+		}
+
+		public static Buffer concat(params Buffer[] list) {
+			if (list == null) {
+				return null;
+			}
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.concat([{0}]);",
+					"return {1};"
+				),
+				Script.GetObjectList(list),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer from(params object[] array) {
+			if (array == null) {
+				return null;
+			}
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.from([{0}]);",
+					"return {1};"
+				),
+				Script.GetObjectList(array),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer from(Buffer buffer) {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.from({0});",
+					"return {1};"
+				),
+				Script.GetObject(buffer.id),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer from(string str, string encoding = "utf8") {
+			Socketron client = Socketron.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.from({0},{1});",
+					"return {2};"
+				),
+				str.Escape(),
+				encoding.Escape(),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static bool isBuffer(NodeBase obj) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return Buffer.isBuffer({0});"
+				),
+				Script.GetObject(obj.id)
+			);
+			return Socketron.ExecuteBlocking<bool>(script);
+		}
+
+		public static bool isEncoding(string encoding) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return Buffer.isEncoding({0});"
+				),
+				encoding.Escape()
+			);
+			return Socketron.ExecuteBlocking<bool>(script);
+		}
+
+		public static int poolSize {
+			get {
+				string script = "return Buffer.poolSize;";
+				return Socketron.ExecuteBlocking<int>(script);
+			}
+		}
+
+		/*
+		public Buffer buffer {
+			get {
+				// TODO: implement this
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var b = {0}.buffer;",
+						"return {1};"
+					),
+					Script.GetObject(id),
+					Script.AddObject("b")
+				);
+				int result = _ExecuteJavaScriptBlocking<int>(script);
+				return new Buffer(_socketron, result);
+			}
+		}
+		//*/
+
+		public int compare(Buffer target) {
+			string script = ScriptBuilder.Build(
+				"return {0}.compare({1});",
+				Script.GetObject(id),
+				Script.GetObject(target.id)
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int copy(Buffer target) {
+			string script = ScriptBuilder.Build(
+				"return {0}.copy({1});",
+				Script.GetObject(id),
+				Script.GetObject(target.id)
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public void entries() {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public bool equals(Buffer otherBuffer) {
+			string script = ScriptBuilder.Build(
+				"return {0}.equals({1});",
+				Script.GetObject(id),
+				Script.GetObject(otherBuffer.id)
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
+
+		public Buffer fill(string value) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.fill({1});",
+					"return {2};"
+				),
+				Script.GetObject(id),
+				value.Escape(),
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public bool includes(string value) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.includes({1});"
+				),
+				Script.GetObject(id),
+				value.Escape()
+			);
+			return _ExecuteBlocking<bool>(script);
+		}
+
+		public int indexOf(string value) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.indexOf({1});"
+				),
+				Script.GetObject(id),
+				value.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public void keys() {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public int lastIndexOf(string value) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.lastIndexOf({1});"
+				),
+				Script.GetObject(id),
+				value.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int length {
+			get {
+				string script = ScriptBuilder.Build(
+					"return {0}.length;",
+					Script.GetObject(id)
+				);
+				return _ExecuteBlocking<int>(script);
+			}
+		}
+
+		public Buffer parent {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var b = {0}.parent;",
+						"return {1};"
+					),
+					Script.GetObject(id),
+					Script.AddObject("b")
+				);
+				int result = _ExecuteBlocking<int>(script);
+				return new Buffer(_socketron, result);
+			}
+		}
+
+		public double readDoubleBE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readDoubleBE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<double>(script);
+		}
+
+		public double readDoubleLE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readDoubleLE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<double>(script);
+		}
+
+		public float readFloatBE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readFloatBE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<float>(script);
+		}
+
+		public float readFloatLE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readFloatLE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<float>(script);
+		}
+
+		public sbyte readInt8(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readFloatLE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<sbyte>(script);
+		}
+
+		public short readInt16BE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readInt16BE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<short>(script);
+		}
+
+		public short readInt16LE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readInt16LE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<short>(script);
+		}
+
+		public int readInt32BE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readInt32BE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int readInt32LE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readInt32LE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public long readIntBE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readIntBE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<long>(script);
+		}
+
+		public long readIntLE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readIntLE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<long>(script);
+		}
+
+		public byte readUInt8(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUInt8({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<byte>(script);
+		}
+
+		public ushort readUInt16BE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUInt16BE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<ushort>(script);
+		}
+
+		public ushort readUInt16LE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUInt16LE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<ushort>(script);
+		}
+
+		public uint readUInt32BE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUInt32BE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<uint>(script);
+		}
+
+		public uint readUInt32LE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUInt32LE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<uint>(script);
+		}
+
+		public ulong readUIntBE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUIntBE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<ulong>(script);
+		}
+
+		public ulong readUIntLE(int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.readUIntLE({1},{2});",
+				Script.GetObject(id),
+				offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<ulong>(script);
+		}
+
+		public Buffer slice() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.slice();",
+					"return {1};"
+				),
+				Script.GetObject(id),
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public Buffer slice(int start) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.slice({1});",
+					"return {2};"
+				),
+				Script.GetObject(id),
+				start,
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public Buffer slice(int start, int end) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.slice({1},{2});",
+					"return {3};"
+				),
+				Script.GetObject(id),
+				start,
+				end,
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public Buffer swap16() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.swap16();",
+					"return {1};"
+				),
+				Script.GetObject(id),
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public Buffer swap32() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.swap32();",
+					"return {1};"
+				),
+				Script.GetObject(id),
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public Buffer swap64() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var b = {0}.swap64();",
+					"return {1};"
+				),
+				Script.GetObject(id),
+				Script.AddObject("b")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Buffer(_socketron, result);
+		}
+
+		public JsonObject toJSON() {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.toJSON();"
+				),
+				Script.GetObject(id)
+			);
+			object result = _ExecuteBlocking<object>(script);
+			return new JsonObject(result);
+		}
+
+		public string toString(string encoding = "utf8", int start = 0) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.toString({1},{2});"
+				),
+				Script.GetObject(id),
+				encoding.Escape(),
+				start
+			);
+			return _ExecuteBlocking<string>(script);
+		}
+
+		public string toString(string encoding, int start, int end) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.toString({1},{2});"
+				),
+				Script.GetObject(id),
+				encoding.Escape(),
+				start,
+				end
+			);
+			return _ExecuteBlocking<string>(script);
+		}
+
+		public void values() {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public int write(string str, int offset = 0) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.write({1},{2});"
+				),
+				Script.GetObject(id),
+				str.Escape(),
+				offset
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int write(string str, int offset, int length, string encoding = "utf8") {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.write({1},{2},{3},{4});"
+				),
+				Script.GetObject(id),
+				str.Escape(),
+				offset,
+				length,
+				encoding.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeDoubleBE(double value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeDoubleBE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeDoubleLE(double value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeDoubleLE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeFloatBE(float value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeFloatBE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeFloatLE(float value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeFloatLE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeInt8(int value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeInt8({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeInt16BE(int value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeInt16BE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeInt16LE(int value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeInt16LE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeInt32BE(int value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeInt32BE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeInt32LE(int value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeInt32LE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeIntBE(long value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeIntBE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeIntLE(long value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeIntLE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUInt8(uint value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUInt8({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUInt16BE(uint value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUInt16BE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUInt16LE(uint value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUInt16LE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUInt32BE(uint value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUInt32BE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUInt32LE(uint value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUInt32LE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUIntBE(ulong value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUIntBE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public int writeUIntLE(ulong value, int offset, bool noAssert = false) {
+			string script = ScriptBuilder.Build(
+				"return {0}.writeUIntLE({1},{2},{3});",
+				Script.GetObject(id),
+				value, offset, noAssert.Escape()
+			);
+			return _ExecuteBlocking<int>(script);
+		}
+
+		public static int INSPECT_MAX_BYTES {
+			get {
+				string script = "return this.require('buffer').INSPECT_MAX_BYTES;";
+				return Socketron.ExecuteBlocking<int>(script);
+			}
+		}
+
+		public static int kMaxLength {
+			get {
+				string script = "return this.require('buffer').kMaxLength;";
+				return Socketron.ExecuteBlocking<int>(script);
+			}
+		}
+
+		public static Buffer transcode(Buffer source, string fromEnc, string toEnc) {
+			if (source == null) {
+				return null;
+			}
+			string script = ScriptBuilder.Build(
+				"return this.require('buffer').transcode({0},{1},{2});",
+				Script.GetObject(source.id),
+				fromEnc.Escape(),
+				toEnc.Escape()
+			);
+			int result = Socketron.ExecuteBlocking<int>(script);
+			return new Buffer(Socketron.GetCurrent(), result);
 		}
 	}
 }

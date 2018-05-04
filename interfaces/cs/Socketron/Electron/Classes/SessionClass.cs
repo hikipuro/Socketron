@@ -6,7 +6,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class SessionClass : ElectronBase {
+	public class SessionClass : NodeBase {
 		public SessionClass(Socketron socketron) {
 			_socketron = socketron;
 		}
@@ -20,7 +20,7 @@ namespace Socketron {
 					),
 					Script.AddObject("session")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new Session(_socketron) {
 					id = result
 				};
@@ -49,7 +49,7 @@ namespace Socketron {
 					Script.AddObject("session")
 				);
 			}
-			int result = _ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			return new Session(_socketron) {
 				id = result
 			};

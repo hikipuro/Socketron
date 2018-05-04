@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Create tray, dock, and application icons using PNG or JPG files.
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
-	public class NativeImage : ElectronBase, IDisposable {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class NativeImage : NodeBase, IDisposable {
 		public const string Name = "NativeImage";
-		public int ID;
 
 		public class Options {
 			public double scaleFactor;
@@ -35,12 +36,17 @@ namespace Socketron {
 			_socketron = socketron;
 		}
 
+		public NativeImage(Socketron socketron, int id) {
+			_socketron = socketron;
+			this.id = id;
+		}
+
 		public void Dispose() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"this._removeObjectReference({0});"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -50,7 +56,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer ToPNG(Options options = null) {
+		public LocalBuffer toPNG(Options options = null) {
 			string option = string.Empty;
 			if (options != null) {
 				option = options.Stringify();
@@ -63,12 +69,11 @@ namespace Socketron {
 					"}}",
 					"return image.toPNG({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				option
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			object result = _ExecuteBlocking<object>(script);
+			return LocalBuffer.FromObject(result);
 		}
 
 		/// <summary>
@@ -76,7 +81,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="quality"></param>
 		/// <returns></returns>
-		public Buffer ToJPEG(int quality) {
+		public LocalBuffer toJPEG(int quality) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -85,12 +90,11 @@ namespace Socketron {
 					"}}",
 					"return image.toJPEG({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				quality
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(_socketron, script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			object result = _ExecuteBlocking<object>(script);
+			return LocalBuffer.FromObject(result);
 		}
 
 		/// <summary>
@@ -98,7 +102,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer ToBitmap(Options options = null) {
+		public LocalBuffer toBitmap(Options options = null) {
 			string option = string.Empty;
 			if (options != null) {
 				option = options.Stringify();
@@ -111,19 +115,18 @@ namespace Socketron {
 					"}}",
 					"return image.toBitmap({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				option
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			object result = _ExecuteBlocking<object>(script);
+			return LocalBuffer.FromObject(result);
 		}
 
 		/// <summary>
 		/// Returns String - The data URL of the image.
 		/// </summary>
 		/// <returns></returns>
-		public string ToDataURL() {
+		public string toDataURL() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -132,9 +135,9 @@ namespace Socketron {
 					"}}",
 					"return image.toDataURL();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -142,7 +145,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer GetBitmap(Options options) {
+		public LocalBuffer getBitmap(Options options) {
 			string option = string.Empty;
 			if (options != null) {
 				option = options.Stringify();
@@ -155,20 +158,20 @@ namespace Socketron {
 					"}}",
 					"return image.getBitmap({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				option
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			object result = _ExecuteBlocking<object>(script);
+			return LocalBuffer.FromObject(result);
 		}
 
 		/// <summary>
-		/// *macOS* Returns Buffer - A Buffer that stores C pointer to underlying
-		/// native handle of the image. On macOS, a pointer to NSImage instance would be returned.
+		/// *macOS*
+		/// Returns Buffer - A Buffer that stores C pointer to underlying native handle of the image.
+		/// On macOS, a pointer to NSImage instance would be returned.
 		/// </summary>
 		/// <returns></returns>
-		public Buffer GetNativeHandle() {
+		public LocalBuffer getNativeHandle() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -177,18 +180,17 @@ namespace Socketron {
 					"}}",
 					"return image.getNativeHandle();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
-			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			object result = _ExecuteBlocking<object>(script);
+			return LocalBuffer.FromObject(result);
 		}
 
 		/// <summary>
 		/// Returns Boolean - Whether the image is empty.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsEmpty() {
+		public bool isEmpty() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -197,16 +199,16 @@ namespace Socketron {
 					"}}",
 					"return image.isEmpty();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Returns Size.
 		/// </summary>
 		/// <returns></returns>
-		public Size GetSize() {
+		public Size getSize() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -215,9 +217,9 @@ namespace Socketron {
 					"}}",
 					"return image.getSize();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return Size.FromObject(result);
 		}
 
@@ -225,7 +227,7 @@ namespace Socketron {
 		/// Marks the image as a template image.
 		/// </summary>
 		/// <param name="option"></param>
-		public void SetTemplateImage(bool option) {
+		public void setTemplateImage(bool option) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -234,7 +236,7 @@ namespace Socketron {
 					"}}",
 					"return image.setTemplateImage({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				option.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -244,7 +246,7 @@ namespace Socketron {
 		/// Returns Boolean - Whether the image is a template image.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsTemplateImage() {
+		public bool isTemplateImage() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -253,9 +255,9 @@ namespace Socketron {
 					"}}",
 					"return image.isTemplateImage();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -263,7 +265,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="rect"></param>
 		/// <returns></returns>
-		public NativeImage Crop(Rectangle rect) {
+		public NativeImage crop(Rectangle rect) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -273,14 +275,11 @@ namespace Socketron {
 					"image = image.crop({1});",
 					"return this._addObjectReference(image);"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				rect.Stringify()
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				ID = result
-			};
-			return image;
+			int result = _ExecuteBlocking<int>(script);
+			return new NativeImage(_socketron, result);
 		}
 
 		/// <summary>
@@ -292,7 +291,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public NativeImage Resize(JsonObject options) {
+		public NativeImage resize(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -302,21 +301,18 @@ namespace Socketron {
 					"image = image.resize({1});",
 					"return this._addObjectReference(image);"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				options.Stringify()
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				ID = result
-			};
-			return image;
+			int result = _ExecuteBlocking<int>(script);
+			return new NativeImage(_socketron, result);
 		}
 
 		/// <summary>
 		/// Returns Float - The image's aspect ratio.
 		/// </summary>
 		/// <returns></returns>
-		public double GetAspectRatio() {
+		public double getAspectRatio() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -325,9 +321,9 @@ namespace Socketron {
 					"}}",
 					"return image.getAspectRatio();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<double>(script);
+			return _ExecuteBlocking<double>(script);
 		}
 
 		/// <summary>
@@ -336,7 +332,7 @@ namespace Socketron {
 		/// This can be called on empty images.
 		/// </summary>
 		/// <param name="options"></param>
-		public void AddRepresentation(JsonObject options) {
+		public void addRepresentation(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = {0};",
@@ -345,7 +341,7 @@ namespace Socketron {
 					"}}",
 					"image.addRepresentation({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);

@@ -51,7 +51,7 @@ namespace Socketron {
 			return base.Stringify();
 		}
 
-		public Buffer ToBuffer(DataType type, Encoding encoding = null) {
+		public LocalBuffer ToBuffer(DataType type, Encoding encoding = null) {
 			if (encoding == null) {
 				encoding = Encoding.UTF8;
 			}
@@ -60,7 +60,7 @@ namespace Socketron {
 			if (size > ushort.MaxValue) {
 				return null;
 			}
-			Buffer buffer = new Buffer();
+			LocalBuffer buffer = new LocalBuffer();
 			buffer.WriteUInt8((byte)type);
 			buffer.WriteUInt16LE((ushort)size);
 			buffer.Write(json, encoding);

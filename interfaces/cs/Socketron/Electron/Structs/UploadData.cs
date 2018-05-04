@@ -3,7 +3,7 @@
 		/// <summary>
 		/// Content being sent.
 		/// </summary>
-		public Buffer bytes;
+		public LocalBuffer bytes;
 		/// <summary>
 		/// Path of file being uploaded.
 		/// </summary>

@@ -500,17 +500,7 @@ class SocketronNode {
 			}
 		});
 		this._addIpcEvent("event", (e, clientId, eventName, args) => {
-			const client = this._server.findClientById(clientId);
-			if (client == null) {
-				return;
-			}
-			let data = new SocketronData({
-				status: "ok",
-				func: "event",
-				args: {}
-			});
-			data.args[eventName] = args;
-			client.writeTextData(data);
+			this.emitToClient(clientId, eventName, args);
 		});
 		this._addIpcEvent("quit", (e) => {
 			this.quit();
@@ -655,22 +645,20 @@ class CommandProcessorRenderer extends EventEmitter {
 			return;
 		}
 		//console.log(script);
-
 		const clientId = this._clientId;
-		const funcs = [
-			"var socketron = this.socketron;",
-			"var electron = this.electron;",
-			"var emit = function (eventName, ...args) {",
-				"socketron.emitToClient(",
-					"'" + clientId + "',",
-					"eventName, args",
-				");",
-			"};"
-		];
-		script = funcs.join("") + script;
-		//eval(script);
-		
-		return Function(script).apply(this);
+		const emit = (eventName, ...args) => {
+			this.socketron.emitToClient(clientId, eventName, args);
+		};
+		const func = Function(
+			"electron",
+			"emit",
+			 script
+		);
+		const result = func.call(this,
+			this.electron,
+			emit
+		);
+		return result;
 	}
 
 	insertJavaScript(url) {

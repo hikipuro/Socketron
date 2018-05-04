@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Render and control web pages.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class WebContents : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class WebContents : NodeBase {
 		// TODO: add instance properties
 		public const string Name = "webContents";
-		public int ID = 0;
 		protected BrowserWindow _window;
 
 		static ushort _callbackListId = 0;
@@ -62,10 +63,12 @@ namespace Socketron {
 		}
 
 		public WebContents(Socketron socketron) {
+			_disposeManually = true;
 			_socketron = socketron;
 		}
 
 		public WebContents(Socketron socketron, BrowserWindow browserWindow) {
+			_disposeManually = true;
 			_socketron = socketron;
 			_window = browserWindow;
 		}
@@ -85,10 +88,10 @@ namespace Socketron {
 						"var session = contents.session;",
 						"return {1};"
 					),
-					ID,
+					id,
 					Script.AddObject("session")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new Session(_socketron) {
 					id = result
 				};
@@ -103,12 +106,12 @@ namespace Socketron {
 						"var hostWebContents = contents.hostWebContents;",
 						"return {1};"
 					),
-					ID,
+					id,
 					Script.AddObject("hostWebContents")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new WebContents(_socketron) {
-					ID = result
+					id = result
 				};
 			}
 		}
@@ -121,12 +124,12 @@ namespace Socketron {
 						"var devToolsWebContents = contents.devToolsWebContents;",
 						"return {1};"
 					),
-					ID,
+					id,
 					Script.AddObject("devToolsWebContents")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new WebContents(_socketron) {
-					ID = result
+					id = result
 				};
 			}
 		}
@@ -139,17 +142,17 @@ namespace Socketron {
 						"var debugger = contents.debugger;",
 						"return {1};"
 					),
-					ID,
+					id,
 					Script.AddObject("debugger")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new Debugger(_socketron) {
 					id = result
 				};
 			}
 		}
 
-		public void On(string eventName, Callback callback) {
+		public void on(string eventName, Callback callback) {
 			if (callback == null) {
 				return;
 			}
@@ -164,7 +167,7 @@ namespace Socketron {
 					"contents.on({4}, listener);"
 				),
 				Name,
-				ID,
+				id,
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -173,7 +176,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void Once(string eventName, Callback callback) {
+		public void once(string eventName, Callback callback) {
 			if (callback == null) {
 				return;
 			}
@@ -189,7 +192,7 @@ namespace Socketron {
 					"contents.once({4}, listener);"
 				),
 				Name,
-				ID,
+				id,
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -205,7 +208,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="url"></param>
 		/// <param name="options"></param>
-		public void LoadURL(string url, JsonObject options = null) {
+		public void loadURL(string url, JsonObject options = null) {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
@@ -213,7 +216,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.loadURL({1});"
 					),
-					ID,
+					id,
 					url.Escape()
 				);
 			} else {
@@ -222,7 +225,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.loadURL({1},{2});"
 					),
-					ID,
+					id,
 					url.Escape(),
 					options.Stringify()
 				);
@@ -235,13 +238,13 @@ namespace Socketron {
 		/// to an HTML file relative to the root of your application.
 		/// </summary>
 		/// <param name="filePath"></param>
-		public void LoadFile(string filePath) {
+		public void loadFile(string filePath) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.loadFile({1});"
 				),
-				ID,
+				id,
 				filePath.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -252,13 +255,13 @@ namespace Socketron {
 		/// The will-download event of session will be triggered.
 		/// </summary>
 		/// <param name="url"></param>
-		public void DownloadURL(string url) {
+		public void downloadURL(string url) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.downloadURL({1});"
 				),
-				ID,
+				id,
 				url.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -268,57 +271,57 @@ namespace Socketron {
 		/// Returns String - The URL of the current web page.
 		/// </summary>
 		/// <returns></returns>
-		public string GetURL() {
+		public string getURL() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getURL();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
 		/// Returns String - The title of the current web page.
 		/// </summary>
 		/// <returns></returns>
-		public string GetTitle() {
+		public string getTitle() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getTitle();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
 		/// Returns Boolean - Whether the web page is destroyed.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsDestroyed() {
+		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDestroyed();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Focuses the web page.
 		/// </summary>
-		public void Focus() {
+		public void focus() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.focus();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -327,30 +330,30 @@ namespace Socketron {
 		/// Returns Boolean - Whether the web page is focused.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsFocused() {
+		public bool isFocused() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isFocused();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Returns Boolean - Whether web page is still loading resources.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsLoading() {
+		public bool isLoading() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isLoading();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -358,15 +361,15 @@ namespace Socketron {
 		/// (and not just iframes or frames within it) is still loading.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsLoadingMainFrame() {
+		public bool isLoadingMainFrame() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isLoadingMainFrame();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -374,27 +377,27 @@ namespace Socketron {
 		/// a first-response from the main resource of the page.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsWaitingForResponse() {
+		public bool isWaitingForResponse() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isWaitingForResponse();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Stops any pending navigation.
 		/// </summary>
-		public void Stop() {
+		public void stop() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.stop();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -402,13 +405,13 @@ namespace Socketron {
 		/// <summary>
 		/// Reloads the current web page.
 		/// </summary>
-		public void Reload() {
+		public void reload() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.reload();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -416,13 +419,13 @@ namespace Socketron {
 		/// <summary>
 		/// Reloads current page and ignores cache.
 		/// </summary>
-		public void ReloadIgnoringCache() {
+		public void reloadIgnoringCache() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.reloadIgnoringCache();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -431,30 +434,30 @@ namespace Socketron {
 		/// Returns Boolean - Whether the browser can go back to previous web page.
 		/// </summary>
 		/// <returns></returns>
-		public bool CanGoBack() {
+		public bool canGoBack() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoBack();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Returns Boolean - Whether the browser can go forward to next web page.
 		/// </summary>
 		/// <returns></returns>
-		public bool CanGoForward() {
+		public bool canGoForward() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoForward();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -462,28 +465,28 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="offset"></param>
 		/// <returns></returns>
-		public bool CanGoToOffset(int offset) {
+		public bool canGoToOffset(int offset) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoToOffset({1});"
 				),
-				ID,
+				id,
 				offset
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Clears the navigation history.
 		/// </summary>
-		public void ClearHistory() {
+		public void clearHistory() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.clearHistory();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -491,13 +494,13 @@ namespace Socketron {
 		/// <summary>
 		/// Makes the browser go back a web page.
 		/// </summary>
-		public void GoBack() {
+		public void goBack() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goBack();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -505,13 +508,13 @@ namespace Socketron {
 		/// <summary>
 		/// Makes the browser go forward a web page.
 		/// </summary>
-		public void GoForward() {
+		public void goForward() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goForward();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -520,13 +523,13 @@ namespace Socketron {
 		/// Navigates browser to the specified absolute web page index.
 		/// </summary>
 		/// <param name="index"></param>
-		public void GoToIndex(int index) {
+		public void goToIndex(int index) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goToIndex({1});"
 				),
-				ID,
+				id,
 				index
 			);
 			_ExecuteJavaScript(script);
@@ -536,13 +539,13 @@ namespace Socketron {
 		/// Navigates to the specified offset from the "current entry".
 		/// </summary>
 		/// <param name="offset"></param>
-		public void GoToOffset(int offset) {
+		public void goToOffset(int offset) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goToOffset({1});"
 				),
-				ID,
+				id,
 				offset
 			);
 			_ExecuteJavaScript(script);
@@ -552,28 +555,28 @@ namespace Socketron {
 		/// Returns Boolean - Whether the renderer process has crashed.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsCrashed() {
+		public bool isCrashed() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isCrashed();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Overrides the user agent for this web page.
 		/// </summary>
 		/// <param name="userAgent"></param>
-		public void SetUserAgent(string userAgent) {
+		public void setUserAgent(string userAgent) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setUserAgent({1});"
 				),
-				ID,
+				id,
 				userAgent.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -583,28 +586,28 @@ namespace Socketron {
 		/// Returns String - The user agent for this web page.
 		/// </summary>
 		/// <returns></returns>
-		public string GetUserAgent() {
+		public string getUserAgent() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getUserAgent();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
 		/// Injects CSS into the current web page.
 		/// </summary>
 		/// <param name="css"></param>
-		public void InsertCSS(string css) {
+		public void insertCSS(string css) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.insertCSS({1});"
 				),
-				ID,
+				id,
 				css.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -614,7 +617,7 @@ namespace Socketron {
 		/// 
 		/// </summary>
 		/// <param name="code"></param>
-		public void ExecuteJavaScript(string code) {
+		public void executeJavaScript(string code) {
 			if (code == null) {
 				return;
 			}
@@ -623,7 +626,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.executeJavaScript({1});"
 				),
-				ID,
+				id,
 				code.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -634,13 +637,13 @@ namespace Socketron {
 		/// Ignore application menu shortcuts while this web contents is focused.
 		/// </summary>
 		/// <param name="ignore"></param>
-		public void SetIgnoreMenuShortcuts(bool ignore) {
+		public void setIgnoreMenuShortcuts(bool ignore) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setIgnoreMenuShortcuts({1});"
 				),
-				ID,
+				id,
 				ignore.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -650,13 +653,13 @@ namespace Socketron {
 		/// Mute the audio on the current web page.
 		/// </summary>
 		/// <param name="muted"></param>
-		public void SetAudioMuted(bool muted) {
+		public void setAudioMuted(bool muted) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setAudioMuted({1});"
 				),
-				ID,
+				id,
 				muted.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -666,15 +669,15 @@ namespace Socketron {
 		/// Returns Boolean - Whether this page has been muted.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsAudioMuted() {
+		public bool isAudioMuted() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isAudioMuted();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -682,13 +685,13 @@ namespace Socketron {
 		/// Zoom factor is zoom percent divided by 100, so 300% = 3.0.
 		/// </summary>
 		/// <param name="factor"></param>
-		public void SetZoomFactor(double factor) {
+		public void setZoomFactor(double factor) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setZoomFactor({1});"
 				),
-				ID,
+				id,
 				factor
 			);
 			_ExecuteJavaScript(script);
@@ -700,7 +703,7 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		/*
-		public double GetZoomFactor() {
+		public double getZoomFactor() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -719,13 +722,13 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="level"></param>
-		public void SetZoomLevel(double level) {
+		public void setZoomLevel(double level) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setZoomLevel({1});"
 				),
-				ID,
+				id,
 				level
 			);
 			_ExecuteJavaScript(script);
@@ -736,7 +739,7 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		/*
-		public double GetZoomLevel() {
+		public double getZoomLevel() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -751,13 +754,13 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="minimumLevel"></param>
 		/// <param name="maximumLevel"></param>
-		public void SetVisualZoomLevelLimits(double minimumLevel, double maximumLevel) {
+		public void setVisualZoomLevelLimits(double minimumLevel, double maximumLevel) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setVisualZoomLevelLimits({1},{2});"
 				),
-				ID,
+				id,
 				minimumLevel,
 				maximumLevel
 			);
@@ -769,13 +772,13 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="minimumLevel"></param>
 		/// <param name="maximumLevel"></param>
-		public void SetLayoutZoomLevelLimits(double minimumLevel, double maximumLevel) {
+		public void setLayoutZoomLevelLimits(double minimumLevel, double maximumLevel) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setLayoutZoomLevelLimits({1},{2});"
 				),
-				ID,
+				id,
 				minimumLevel,
 				maximumLevel
 			);
@@ -785,13 +788,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command undo in web page.
 		/// </summary>
-		public void Undo() {
+		public void undo() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.undo();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -799,13 +802,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command redo in web page.
 		/// </summary>
-		public void Redo() {
+		public void redo() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.redo();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -813,13 +816,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command cut in web page.
 		/// </summary>
-		public void Cut() {
+		public void cut() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.cut();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -827,13 +830,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command copy in web page.
 		/// </summary>
-		public void Copy() {
+		public void copy() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.copy();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -843,13 +846,13 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="x"></param>
 		/// <param name="y"></param>
-		public void CopyImageAt(int x, int y) {
+		public void copyImageAt(int x, int y) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.copyImageAt({1},{2});"
 				),
-				ID, x, y
+				id, x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -857,13 +860,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command paste in web page.
 		/// </summary>
-		public void Paste() {
+		public void paste() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.paste();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -871,13 +874,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command pasteAndMatchStyle in web page.
 		/// </summary>
-		public void PasteAndMatchStyle() {
+		public void pasteAndMatchStyle() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.pasteAndMatchStyle();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -885,13 +888,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command delete in web page.
 		/// </summary>
-		public void Delete() {
+		public void delete() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.delete();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -899,13 +902,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command selectAll in web page.
 		/// </summary>
-		public void SelectAll() {
+		public void selectAll() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.selectAll();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -913,13 +916,13 @@ namespace Socketron {
 		/// <summary>
 		/// Executes the editing command unselect in web page.
 		/// </summary>
-		public void Unselect() {
+		public void unselect() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.unselect();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -928,13 +931,13 @@ namespace Socketron {
 		/// Executes the editing command replace in web page.
 		/// </summary>
 		/// <param name="text"></param>
-		public void Replace(string text) {
+		public void replace(string text) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.replace({1});"
 				),
-				ID,
+				id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -944,13 +947,13 @@ namespace Socketron {
 		/// Executes the editing command replaceMisspelling in web page.
 		/// </summary>
 		/// <param name="text"></param>
-		public void ReplaceMisspelling(string text) {
+		public void replaceMisspelling(string text) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.replaceMisspelling({1});"
 				),
-				ID,
+				id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -960,13 +963,13 @@ namespace Socketron {
 		/// Inserts text to the focused element.
 		/// </summary>
 		/// <param name="text"></param>
-		public void InsertText(string text) {
+		public void insertText(string text) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.insertText({1});"
 				),
-				ID,
+				id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -981,7 +984,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="options"></param>
-		public void FindInPage(string text, JsonObject options = null) {
+		public void findInPage(string text, JsonObject options = null) {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
@@ -989,7 +992,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.findInPage({1});"
 					),
-					ID,
+					id,
 					text.Escape()
 				);
 			} else {
@@ -998,7 +1001,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.findInPage({1},{2});"
 					),
-					ID,
+					id,
 					text.Escape(),
 					options.Stringify()
 				);
@@ -1012,7 +1015,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="action"></param>
 		/*
-		public void StopFindInPage(string action) {
+		public void stopFindInPage(string action) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1023,7 +1026,7 @@ namespace Socketron {
 		//*/
 
 		/*
-		public void CapturePage(string text) {
+		public void capturePage(string text) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1038,7 +1041,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="text"></param>
 		/*
-		public void HasServiceWorker(string text) {
+		public void hasServiceWorker(string text) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1054,7 +1057,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="text"></param>
 		/*
-		public void UnregisterServiceWorker(string text) {
+		public void unregisterServiceWorker(string text) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1068,7 +1071,7 @@ namespace Socketron {
 		/// Get the system printer list.
 		/// </summary>
 		/*
-		public void GetPrinters() {
+		public void getPrinters() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1084,7 +1087,7 @@ namespace Socketron {
 		/// default printer if deviceName is empty and the default settings for printing.
 		/// </summary>
 		/*
-		public void Print() {
+		public void print() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1098,7 +1101,7 @@ namespace Socketron {
 		/// Prints window's web page as PDF with Chromium's preview printing custom settings.
 		/// </summary>
 		/*
-		public void PrintToPDF() {
+		public void printToPDF() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1122,13 +1125,13 @@ namespace Socketron {
 		/// </code>
 		/// </example>
 		/// <param name="path"></param>
-		public void AddWorkSpace(string path) {
+		public void addWorkSpace(string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.addWorkSpace({1});"
 				),
-				ID,
+				id,
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1138,13 +1141,13 @@ namespace Socketron {
 		/// Removes the specified path from DevTools workspace.
 		/// </summary>
 		/// <param name="path"></param>
-		public void RemoveWorkSpace(string path) {
+		public void removeWorkSpace(string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.removeWorkSpace({1});"
 				),
-				ID,
+				id,
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1155,7 +1158,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="devToolsWebContents"></param>
 		/*
-		public void SetDevToolsWebContents(string devToolsWebContents) {
+		public void setDevToolsWebContents(string devToolsWebContents) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1173,7 +1176,7 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="options"></param>
-		public void OpenDevTools(JsonObject options = null) {
+		public void openDevTools(JsonObject options = null) {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
@@ -1181,7 +1184,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.openDevTools();"
 					),
-					ID
+					id
 				);
 			} else {
 				script = ScriptBuilder.Build(
@@ -1189,7 +1192,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.openDevTools({1});"
 					),
-					ID,
+					id,
 					options.Stringify()
 				);
 			}
@@ -1199,13 +1202,13 @@ namespace Socketron {
 		/// <summary>
 		/// Closes the devtools.
 		/// </summary>
-		public void CloseDevTools() {
+		public void closeDevTools() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.closeDevTools();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1214,42 +1217,42 @@ namespace Socketron {
 		/// Returns Boolean - Whether the devtools is opened.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsDevToolsOpened() {
+		public bool isDevToolsOpened() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDevToolsOpened();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Returns Boolean - Whether the devtools view is focused.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsDevToolsFocused() {
+		public bool isDevToolsFocused() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDevToolsFocused();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Toggles the developer tools.
 		/// </summary>
-		public void ToggleDevTools() {
+		public void toggleDevTools() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.toggleDevTools();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1259,13 +1262,13 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="x"></param>
 		/// <param name="y"></param>
-		public void InspectElement(int x, int y) {
+		public void inspectElement(int x, int y) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.inspectElement({1},{2});"
 				),
-				ID, x, y
+				id, x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1273,13 +1276,13 @@ namespace Socketron {
 		/// <summary>
 		/// Opens the developer tools for the service worker context.
 		/// </summary>
-		public void InspectServiceWorker() {
+		public void inspectServiceWorker() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.inspectServiceWorker();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1293,7 +1296,7 @@ namespace Socketron {
 		/// <param name="channel"></param>
 		/// <param name="args"></param>
 		/*
-		public void Send(string channel, params object[] args) {
+		public void send(string channel, params object[] args) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1307,13 +1310,13 @@ namespace Socketron {
 		/// Enable device emulation with the given parameters.
 		/// </summary>
 		/// <param name="parameters"></param>
-		public void EnableDeviceEmulation(JsonObject parameters) {
+		public void enableDeviceEmulation(JsonObject parameters) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.enableDeviceEmulation({1});"
 				),
-				ID,
+				id,
 				parameters.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1322,13 +1325,13 @@ namespace Socketron {
 		/// <summary>
 		/// Disable device emulation enabled by webContents.enableDeviceEmulation.
 		/// </summary>
-		public void DisableDeviceEmulation() {
+		public void disableDeviceEmulation() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.disableDeviceEmulation();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1340,13 +1343,13 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="event"></param>
-		public void SendInputEvent(JsonObject @event) {
+		public void sendInputEvent(JsonObject @event) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.sendInputEvent({1});"
 				),
-				ID,
+				id,
 				@event.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1358,7 +1361,7 @@ namespace Socketron {
 		/// when there is a presentation event.
 		/// </summary>
 		/*
-		public void BeginFrameSubscription(string channel) {
+		public void beginFrameSubscription(string channel) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1371,19 +1374,19 @@ namespace Socketron {
 		/// <summary>
 		/// End subscribing for frame presentation events.
 		/// </summary>
-		public void EndFrameSubscription() {
+		public void endFrameSubscription() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.endFrameSubscription();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
 
 		/*
-		public void StartDrag() {
+		public void startDrag() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1394,7 +1397,7 @@ namespace Socketron {
 		//*/
 
 		/*
-		public void SavePage(string fullPath, string saveType, string callback) {
+		public void savePage(string fullPath, string saveType, string callback) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1408,13 +1411,13 @@ namespace Socketron {
 		/// *macOS* 
 		/// Shows pop-up dictionary that searches the selected word on the page.
 		/// </summary>
-		public void ShowDefinitionForSelection() {
+		public void showDefinitionForSelection() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.showDefinitionForSelection();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1424,7 +1427,7 @@ namespace Socketron {
 		/// This is only supported for &lt;webview&gt; guest contents.
 		/// </summary>
 		/*
-		public void SetSize() {
+		public void setSize() {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1438,27 +1441,27 @@ namespace Socketron {
 		/// Returns Boolean - Indicates whether offscreen rendering is enabled.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsOffscreen() {
+		public bool isOffscreen() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isOffscreen();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// If offscreen rendering is enabled and not painting, start painting.
 		/// </summary>
-		public void StartPainting() {
+		public void startPainting() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.startPainting();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1466,13 +1469,13 @@ namespace Socketron {
 		/// <summary>
 		/// If offscreen rendering is enabled and painting, stop painting.
 		/// </summary>
-		public void StopPainting() {
+		public void stopPainting() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.stopPainting();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1481,15 +1484,15 @@ namespace Socketron {
 		/// Returns Boolean - If offscreen rendering is enabled returns whether it is currently painting.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsPainting() {
+		public bool isPainting() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isPainting();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -1497,13 +1500,13 @@ namespace Socketron {
 		/// Only values between 1 and 60 are accepted.
 		/// </summary>
 		/// <param name="fps"></param>
-		public void SetFrameRate(int fps) {
+		public void setFrameRate(int fps) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setFrameRate({1});"
 				),
-				ID,
+				id,
 				fps
 			);
 			_ExecuteJavaScript(script);
@@ -1513,15 +1516,15 @@ namespace Socketron {
 		/// Returns Integer - If offscreen rendering is enabled returns the current frame rate.
 		/// </summary>
 		/// <returns></returns>
-		public int GetFrameRate() {
+		public int getFrameRate() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getFrameRate();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -1531,13 +1534,13 @@ namespace Socketron {
 		/// and generates a new one through the 'paint' event.
 		/// </para>
 		/// </summary>
-		public void Invalidate() {
+		public void invalidate() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.invalidate();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1546,15 +1549,15 @@ namespace Socketron {
 		/// Returns String - Returns the WebRTC IP Handling Policy.
 		/// </summary>
 		/// <returns></returns>
-		public string GetWebRTCIPHandlingPolicy() {
+		public string getWebRTCIPHandlingPolicy() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getWebRTCIPHandlingPolicy();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -1562,13 +1565,13 @@ namespace Socketron {
 		/// which IPs are exposed via WebRTC. See BrowserLeaks for more details.
 		/// </summary>
 		/// <param name="policy"></param>
-		public void SetWebRTCIPHandlingPolicy(string policy) {
+		public void setWebRTCIPHandlingPolicy(string policy) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setWebRTCIPHandlingPolicy({1});"
 				),
-				ID,
+				id,
 				policy.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1578,15 +1581,15 @@ namespace Socketron {
 		/// Returns Integer - The operating system pid of the associated renderer process.
 		/// </summary>
 		/// <returns></returns>
-		public int GetOSProcessId() {
+		public int getOSProcessId() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getOSProcessId();"
 				),
-				ID
+				id
 			);
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 	}
 }

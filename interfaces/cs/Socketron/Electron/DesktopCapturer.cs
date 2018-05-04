@@ -9,6 +9,7 @@ namespace Socketron {
 	/// </summary>
 	class DesktopCapturer {
 		public void GetSources() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Socketron {
@@ -7,15 +8,15 @@ namespace Socketron {
 	/// Create and control views.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class BrowserView {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class BrowserView : NodeBase {
 		public const string Name = "BrowserView";
-		public int ID = 0;
-		protected Socketron _socketron;
 
 		/// <summary>
 		/// *Experimental*
 		/// </summary>
 		public BrowserView() {
+			_disposeManually = true;
 		}
 
 		/// <summary>
@@ -26,7 +27,16 @@ namespace Socketron {
 			_socketron = socketron;
 		}
 
-		public static List<BrowserView> GetAllViews(Socketron socketron) {
+		/// <summary>
+		/// *Experimental*
+		/// </summary>
+		/// <param name="socketron"></param>
+		public BrowserView(Socketron socketron, int id) {
+			_socketron = socketron;
+			this.id = id;
+		}
+
+		public static List<BrowserView> getAllViews(Socketron socketron) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var result = [];",
@@ -41,16 +51,13 @@ namespace Socketron {
 			List<BrowserView> views = new List<BrowserView>();
 			foreach (object item in result) {
 				int id = (int)item;
-				BrowserView view = new BrowserView() {
-					ID = id,
-					_socketron = socketron
-				};
+				BrowserView view = new BrowserView(socketron, id);
 				views.Add(view);
 			}
 			return views;
 		}
 
-		public static BrowserView FromWebContents(Socketron socketron, WebContents webContents) {
+		public static BrowserView fromWebContents(Socketron socketron, WebContents webContents) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var contents = electron.webContents.fromId({0});",
@@ -60,17 +67,14 @@ namespace Socketron {
 					"}}",
 					"return view.id;"
 				),
-				webContents.ID
+				webContents.id
 			);
 			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			BrowserView view = new BrowserView() {
-				ID = result,
-				_socketron = socketron
-			};
+			BrowserView view = new BrowserView(socketron, result);
 			return view;
 		}
 
-		public static BrowserView FromId(Socketron socketron, int id) {
+		public static BrowserView fromId(Socketron socketron, int id) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
@@ -82,31 +86,28 @@ namespace Socketron {
 				id
 			);
 			int result = _ExecuteJavaScriptBlocking<int>(socketron, script);
-			BrowserView view = new BrowserView() {
-				ID = result,
-				_socketron = socketron
-			};
+			BrowserView view = new BrowserView(socketron, result);
 			return view;
 		}
 
-		public void Destroy() {
+		public void destroy() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
 					"view.destroy();"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(_socketron, script, null, null);
 		}
 
-		public bool IsDestroyed() {
+		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
 					"return view.isDestroyed();"
 				),
-				ID
+				id
 			);
 			return _ExecuteJavaScriptBlocking<bool>(_socketron, script);
 		}
@@ -116,13 +117,13 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="width"></param>
 		/// <param name="height"></param>
-		public void SetAutoResize(bool width, bool height) {
+		public void setAutoResize(bool width, bool height) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
 					"view.setAutoResize({{width:{1},height:{2}}});"
 				),
-				ID,
+				id,
 				width.Escape(),
 				height.Escape()
 			);
@@ -133,13 +134,13 @@ namespace Socketron {
 		/// *Experimental*
 		/// </summary>
 		/// <param name="bounds"></param>
-		public void SetBounds(Rectangle bounds) {
+		public void setBounds(Rectangle bounds) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
 					"view.setBounds({1});"
 				),
-				ID,
+				id,
 				bounds.Stringify()
 			);
 			_ExecuteJavaScript(_socketron, script, null, null);
@@ -149,51 +150,16 @@ namespace Socketron {
 		/// *Experimental*
 		/// </summary>
 		/// <param name="color"></param>
-		public void SetBackgroundColor(string color) {
+		public void setBackgroundColor(string color) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = electron.BrowserView.fromId({0});",
 					"view.setBackgroundColor({1});"
 				),
-				ID,
+				id,
 				color
 			);
 			_ExecuteJavaScript(_socketron, script, null, null);
-		}
-
-		protected static void _ExecuteJavaScript(Socketron socketron, string script, Callback success, Callback error) {
-			socketron.Main.ExecuteJavaScript(script, success, error);
-		}
-
-		protected static T _ExecuteJavaScriptBlocking<T>(Socketron socketron, string script) {
-			bool done = false;
-			T value = default(T);
-
-			_ExecuteJavaScript(socketron, script, (result) => {
-				if (result == null) {
-					done = true;
-					return;
-				}
-				if (typeof(T) == typeof(double)) {
-					//Console.WriteLine(result.GetType());
-					if (result.GetType() == typeof(int)) {
-						result = (double)(int)result;
-					} else if (result.GetType() == typeof(Decimal)) {
-						result = (double)(Decimal)result;
-					}
-				}
-				value = (T)result;
-				done = true;
-			}, (result) => {
-				Console.Error.WriteLine("error: BrowserView._ExecuteJavaScriptBlocking");
-				throw new InvalidOperationException(result as string);
-				//done = true;
-			});
-
-			while (!done) {
-				Thread.Sleep(TimeSpan.FromTicks(1));
-			}
-			return value;
 		}
 	}
 }

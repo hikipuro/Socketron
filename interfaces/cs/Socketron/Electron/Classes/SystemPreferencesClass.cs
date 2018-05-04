@@ -1,9 +1,12 @@
-﻿namespace Socketron {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron {
 	/// <summary>
 	/// Get system preferences.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class SystemPreferencesClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class SystemPreferencesClass : NodeBase {
 		public SystemPreferencesClass(Socketron socketron) {
 			_socketron = socketron;
 		}
@@ -13,13 +16,13 @@
 		/// Returns Boolean - Whether the system is in Dark Mode.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsDarkMode() {
+		public bool isDarkMode() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.isDarkMode();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -27,13 +30,13 @@
 		/// Returns Boolean - Whether the Swipe between pages setting is on.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsSwipeTrackingFromScrollEventsEnabled() {
+		public bool isSwipeTrackingFromScrollEventsEnabled() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.isSwipeTrackingFromScrollEventsEnabled();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -44,7 +47,7 @@
 		/// </summary>
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
-		public void PostNotification(string @event, JsonObject userInfo) {
+		public void postNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.postNotification({0},{1});"
@@ -63,7 +66,7 @@
 		/// </summary>
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
-		public void PostLocalNotification(string @event, JsonObject userInfo) {
+		public void postLocalNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.postLocalNotification({0},{1});"
@@ -82,7 +85,7 @@
 		/// </summary>
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
-		public void PostWorkspaceNotification(string @event, JsonObject userInfo) {
+		public void postWorkspaceNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.postWorkspaceNotification({0},{1});"
@@ -94,21 +97,21 @@
 		}
 
 		/*
-		public void SubscribeNotification() {
+		public void subscribeNotification() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 		//*/
 
 		/*
-		public void SubscribeLocalNotification() {
+		public void subscribeLocalNotification() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 		//*/
 
 		/*
-		public void SubscribeWorkspaceNotification() {
+		public void subscribeWorkspaceNotification() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
@@ -119,7 +122,7 @@
 		/// Removes the subscriber with id.
 		/// </summary>
 		/// <param name="id"></param>
-		public void UnsubscribeNotification(int id) {
+		public void unsubscribeNotification(int id) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.unsubscribeNotification({0});"
@@ -135,7 +138,7 @@
 		/// but removes the subscriber from NSNotificationCenter.
 		/// </summary>
 		/// <param name="id"></param>
-		public void UnsubscribeLocalNotification(int id) {
+		public void unsubscribeLocalNotification(int id) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.unsubscribeLocalNotification({0});"
@@ -151,7 +154,7 @@
 		/// but removes the subscriber from NSWorkspace.sharedWorkspace.notificationCenter.
 		/// </summary>
 		/// <param name="id"></param>
-		public void UnsubscribeWorkspaceNotification(int id) {
+		public void unsubscribeWorkspaceNotification(int id) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.unsubscribeWorkspaceNotification({0});"
@@ -166,7 +169,7 @@
 		/// Add the specified defaults to your application's NSUserDefaults.
 		/// </summary>
 		/// <param name="defaults"></param>
-		public void RegisterDefaults(JsonObject defaults) {
+		public void registerDefaults(JsonObject defaults) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.registerDefaults({0});"
@@ -183,7 +186,7 @@
 		/// <param name="key"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public object GetUserDefault(string key, string type) {
+		public object getUserDefault(string key, string type) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.getUserDefault({0},{1});"
@@ -191,7 +194,7 @@
 				key.Escape(),
 				type.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<object>(script);
+			return _ExecuteBlocking<object>(script);
 		}
 
 		/// <summary>
@@ -201,7 +204,7 @@
 		/// <param name="key"></param>
 		/// <param name="type"></param>
 		/// <param name="value"></param>
-		public void SetUserDefault(string key, string type, string value) {
+		public void setUserDefault(string key, string type, string value) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.setUserDefault({0},{1},{2});"
@@ -220,7 +223,7 @@
 		/// or global value of a key previously set with setUserDefault.
 		/// </summary>
 		/// <param name="key"></param>
-		public void RemoveUserDefault(string key) {
+		public void removeUserDefault(string key) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.systemPreferences.removeUserDefault({0});"
@@ -235,13 +238,13 @@
 		/// Returns Boolean - true if DWM composition (Aero Glass) is enabled, and false otherwise.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsAeroGlassEnabled() {
+		public bool isAeroGlassEnabled() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.isAeroGlassEnabled();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -249,13 +252,13 @@
 		/// Returns String - The users current system wide accent color preference in RGBA hexadecimal form.
 		/// </summary>
 		/// <returns></returns>
-		public string GetAccentColor() {
+		public string getAccentColor() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.getAccentColor();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -265,14 +268,14 @@
 		/// </summary>
 		/// <param name="color">SystemPreferences.WindowsColors</param>
 		/// <returns></returns>
-		public string GetColor(string color) {
+		public string getColor(string color) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.getColor({0});"
 				),
 				color.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -281,13 +284,13 @@
 		/// such as a high contrast theme, is active, false otherwise.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsInvertedColorScheme() {
+		public bool isInvertedColorScheme() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.systemPreferences.isInvertedColorScheme();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 	}
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Socketron {
 	public class Packet {
-		public Buffer Data = null;
+		public LocalBuffer Data = null;
 		public DataType DataType = DataType.Text;
 		public uint DataLength = 0;
 		public uint DataOffset = 0;
@@ -13,7 +13,7 @@ namespace Socketron {
 		public Encoding Encoding = Encoding.UTF8;
 
 		public Packet() {
-			Data = new Buffer();
+			Data = new LocalBuffer();
 		}
 
 		public string GetStringData() {

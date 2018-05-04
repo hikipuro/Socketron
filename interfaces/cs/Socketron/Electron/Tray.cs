@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Socketron {
@@ -6,9 +7,9 @@ namespace Socketron {
 	/// Add icons and context menus to the system's notification area.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Tray : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class Tray : NodeBase {
 		public const string Name = "Tray";
-		public int ID;
 
 		public class Events {
 			public const string Click = "click";
@@ -49,15 +50,15 @@ namespace Socketron {
 		/// <summary>
 		/// Destroys the tray icon immediately.
 		/// </summary>
-		public void Destroy() {
+		public void destroy() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.destroy();",
 					"{1};"
 				),
-				Script.GetObject(ID),
-				Script.RemoveObject(ID)
+				Script.GetObject(id),
+				Script.RemoveObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -66,7 +67,7 @@ namespace Socketron {
 		/// Sets the image associated with this tray icon.
 		/// </summary>
 		/// <param name="image"></param>
-		public void SetImage(NativeImage image) {
+		public void setImage(NativeImage image) {
 			if (image == null) {
 				return;
 			}
@@ -76,8 +77,8 @@ namespace Socketron {
 					"var tray = {1};",
 					"tray.setImage(image);"
 				),
-				Script.GetObject(image.ID),
-				Script.GetObject(ID)
+				Script.GetObject(image.id),
+				Script.GetObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -86,13 +87,13 @@ namespace Socketron {
 		/// Sets the image associated with this tray icon.
 		/// </summary>
 		/// <param name="image"></param>
-		public void SetImage(string image) {
+		public void setImage(string image) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.setImage({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				image.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -103,7 +104,7 @@ namespace Socketron {
 		/// Sets the image associated with this tray icon when pressed on macOS.
 		/// </summary>
 		/// <param name="image"></param>
-		public void SetPressedImage(NativeImage image) {
+		public void setPressedImage(NativeImage image) {
 			if (image == null) {
 				return;
 			}
@@ -113,8 +114,8 @@ namespace Socketron {
 					"var tray = {1};",
 					"tray.setPressedImage(image);"
 				),
-				Script.GetObject(image.ID),
-				Script.GetObject(ID)
+				Script.GetObject(image.id),
+				Script.GetObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -123,13 +124,13 @@ namespace Socketron {
 		/// Sets the hover text for this tray icon.
 		/// </summary>
 		/// <param name="toolTip"></param>
-		public void SetToolTip(string toolTip) {
+		public void setToolTip(string toolTip) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.setToolTip({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				toolTip.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -140,13 +141,13 @@ namespace Socketron {
 		/// Sets the title displayed aside of the tray icon in the status bar (Support ANSI colors).
 		/// </summary>
 		/// <param name="title"></param>
-		public void SetTitle(string title) {
+		public void setTitle(string title) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.setToolTip({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				title.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -157,13 +158,13 @@ namespace Socketron {
 		/// Sets when the tray's icon background becomes highlighted (in blue).
 		/// </summary>
 		/// <param name="mode"></param>
-		public void SetHighlightMode(string mode) {
+		public void setHighlightMode(string mode) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.setHighlightMode({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				mode.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -174,13 +175,13 @@ namespace Socketron {
 		/// Displays a tray balloon.
 		/// </summary>
 		/// <param name="mode"></param>
-		public void DisplayBalloon(JsonObject options) {
+		public void displayBalloon(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.displayBalloon({1});"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -194,13 +195,13 @@ namespace Socketron {
 		/// The position is only available on Windows, and it is (0, 0) by default.
 		/// </para>
 		/// </summary>
-		public void PopUpContextMenu() {
+		public void popUpContextMenu() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"tray.popUpContextMenu();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -214,7 +215,7 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="menu"></param>
-		public void PopUpContextMenu(Menu menu) {
+		public void popUpContextMenu(Menu menu) {
 			if (menu == null) {
 				return;
 			}
@@ -224,8 +225,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.popUpContextMenu(menu);"
 				),
-				Script.GetObject(ID),
-				Script.GetObject(menu.ID)
+				Script.GetObject(id),
+				Script.GetObject(menu.id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -240,7 +241,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="menu"></param>
 		/// <param name="position"></param>
-		public void PopUpContextMenu(Menu menu, Point position) {
+		public void popUpContextMenu(Menu menu, Point position) {
 			if (menu == null) {
 				return;
 			}
@@ -250,8 +251,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.popUpContextMenu(menu, {2});"
 				),
-				Script.GetObject(ID),
-				Script.GetObject(menu.ID),
+				Script.GetObject(id),
+				Script.GetObject(menu.id),
 				position.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -261,7 +262,7 @@ namespace Socketron {
 		/// Sets the context menu for this icon.
 		/// </summary>
 		/// <param name="menu"></param>
-		public void SetContextMenu(Menu menu) {
+		public void setContextMenu(Menu menu) {
 			if (menu == null) {
 				return;
 			}
@@ -271,8 +272,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.setContextMenu(menu);"
 				),
-				Script.GetObject(ID),
-				Script.GetObject(menu.ID)
+				Script.GetObject(id),
+				Script.GetObject(menu.id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -282,15 +283,15 @@ namespace Socketron {
 		/// The bounds of this tray icon as Object.
 		/// </summary>
 		/// <returns></returns>
-		public Rectangle GetBounds() {
+		public Rectangle getBounds() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"return tray.getBounds();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return Rectangle.FromObject(result);
 		}
 
@@ -298,15 +299,15 @@ namespace Socketron {
 		/// Returns Boolean - Whether the tray icon is destroyed.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsDestroyed() {
+		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var tray = {0};",
 					"return tray.isDestroyed();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 	}
 }

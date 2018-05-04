@@ -7,18 +7,22 @@ namespace Socketron {
 	/// </summary>
 	class Remote {
 		public void Require() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void GetCurrentWindow() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void GetCurrentWebContents() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void GetGlobal() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

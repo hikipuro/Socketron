@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Text;
 using Socketron;
 
 namespace SocketronTest {
@@ -60,6 +60,17 @@ namespace SocketronTest {
 			//string script = "console.log('Test: ' + process.type);";
 			//socketron.Main.ExecuteJavaScript(script);
 
+			var paths = electron.dialog.showOpenDialog(new Dialog.OpenDialogOptions {
+				properties = new[] {
+					Dialog.Properties.openFile
+				}
+			}, (a, b) => {
+				Console.WriteLine("showOpenDialog: {0}, {1}", JSON.Stringify(a), JSON.Stringify(b));
+			});
+			//foreach (var path in paths) {
+			//	Console.WriteLine("OpenDialog: {0}", path);
+			//}
+			//*/
 			/*
 			socketron.Main.ExecuteJavaScript(new[] {
 				"var browserWindow = new electron.BrowserWindow({",
@@ -83,14 +94,27 @@ namespace SocketronTest {
 			*/
 			//electron.App.Quit();
 
+			/*
+			fs.require();
+			Console.WriteLine("fs.existsSync: " + fs.existsSync(""));
+
 			os.require();
 			Console.WriteLine("os.EOL: " + os.EOL);
 
+			electron.app.getFileIcon(
+				null,
+				(error, image2) => {
+					LocalBuffer buffer = image2.toPNG();
+					buffer.Save("image2.png");
+				}
+			);
+			return;
+			//*/
+
+			/*
 			path.require();
 			Console.WriteLine("path.delimiter: " + path.delimiter);
 			Console.WriteLine("path.join: " + path.join("a", "b", "ddd"));
-			Console.WriteLine("path.win32: " + path.posix);
-
 			console.clear();
 			console.count();
 			console.time();
@@ -115,7 +139,7 @@ namespace SocketronTest {
 				Console.WriteLine("Timeout test *****");
 			}, 12000);
 			return;
-
+			//*/
 
 			//var aa = new BrowserWindow.Options();
 			//aa.type = BrowserWindow.Types.
@@ -132,16 +156,22 @@ namespace SocketronTest {
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 			
-			window.LoadURL("file:///src/html/index.html");
+			window.loadURL("file:///src/html/index.html");
 
-			window.Once("ready-to-show", (args) => {
+			window.once("ready-to-show", (args) => {
 				Console.WriteLine("ready-to-show: {0}", args);
-				window.Show();
+				window.show();
+
+				setTimeout(() => {
+					window.capturePage(new Rectangle(100, 80), (image3) => {
+						image3.toPNG().Save("image3.png");
+					});
+				}, 500);
 			});
-			window.On("close", (args) => {
+			window.on("close", (args) => {
 				Console.WriteLine("close: {0}", args);
 			});
-			window.webContents.On("did-navigate", (args) => {
+			window.webContents.on("did-navigate", (args) => {
 				object[] list = args as object[];
 				Console.WriteLine("did-navigate");
 				if (list != null) {
@@ -184,7 +214,7 @@ namespace SocketronTest {
 			var menuItemOptions = Socketron.MenuItem.Options.ParseArray(string.Join("", template));
 			menuItemOptions[0].submenu[0].@checked = true;
 			//Console.WriteLine(JSON.Stringify(menuItemOptions, true));
-			Socketron.Menu menu = electron.Menu.BuildFromTemplate(menuItemOptions);
+			Socketron.Menu menu = electron.Menu.buildFromTemplate(menuItemOptions);
 			return;
 
 			/*
@@ -202,9 +232,9 @@ namespace SocketronTest {
 			};
 			Menu menu = Menu.BuildFromTemplate(socketron, string.Join("", template));
 			//*/
-			electron.Menu.SetApplicationMenu(menu);
+			electron.Menu.setApplicationMenu(menu);
 
-			int timer = setTimeout((args) => {
+			int timer = setTimeout(() => {
 				Console.WriteLine("setTimeout test");
 			}, 3000);
 			//Node.ClearTimeout(socketron, timer);
@@ -212,25 +242,15 @@ namespace SocketronTest {
 
 			return;
 
-			var windows = electron.BrowserWindow.GetAllWindows();
+			var windows = electron.BrowserWindow.getAllWindows();
 			foreach (var w in windows) {
-				Console.WriteLine("window.id: {0}", w.ID);
-				Console.WriteLine("window.getTitle: {0}", w.GetTitle());
+				Console.WriteLine("window.id: {0}", w.id);
+				Console.WriteLine("window.getTitle: {0}", w.getTitle());
 			}
 
-			electron.clipboard.WriteText("aaa test");
-			Console.WriteLine("Clipboard.ReadText: {0}", electron.clipboard.ReadText());
+			electron.clipboard.writeText("aaa test");
+			Console.WriteLine("Clipboard.ReadText: {0}", electron.clipboard.readText());
 
-			/*
-			var paths = Dialog.ShowOpenDialog(socketron, new Dialog.OpenDialogOptions {
-				properties = new[] {
-					Dialog.Properties.openFile
-				}
-			});
-			foreach (var path in paths) {
-				Console.WriteLine("OpenDialog: {0}", path);
-			}
-			//*/
 
 			/*
 			GlobalShortcut.Register(socketron, Accelerator.CmdOrCtrl + "+A", (args) => {
@@ -238,16 +258,16 @@ namespace SocketronTest {
 				GlobalShortcut.Unregister(socketron, Accelerator.CmdOrCtrl + "+A");
 			});
 			//*/
-			Console.WriteLine("GetCursorScreenPoint: {0}", electron.screen.GetCursorScreenPoint().Stringify());
+			Console.WriteLine("GetCursorScreenPoint: {0}", electron.screen.getCursorScreenPoint().Stringify());
 			//Console.WriteLine("GetMenuBarHeight: {0}", Screen.GetMenuBarHeight(socketron));
-			Console.WriteLine("GetPrimaryDisplay: {0}", electron.screen.GetPrimaryDisplay().Stringify());
+			Console.WriteLine("GetPrimaryDisplay: {0}", electron.screen.getPrimaryDisplay().Stringify());
 
-			var displayList = electron.screen.GetAllDisplays();
+			var displayList = electron.screen.getAllDisplays();
 			foreach (var display in displayList) {
 				Console.WriteLine("GetAllDisplays: {0}", display.Stringify());
 			}
-			Console.WriteLine("GetDisplayNearestPoint: {0}", electron.screen.GetDisplayNearestPoint(new Point() { x = -10, y = 0 }).Stringify());
-			Console.WriteLine("GetDisplayMatching: {0}", electron.screen.GetDisplayMatching(new Rectangle() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayNearestPoint: {0}", electron.screen.getDisplayNearestPoint(new Point() { x = -10, y = 0 }).Stringify());
+			Console.WriteLine("GetDisplayMatching: {0}", electron.screen.getDisplayMatching(new Rectangle() { x = -10, y = 0 }).Stringify());
 
 			//Shell.ShowItemInFolder(socketron, "c:/");
 			//Shell.OpenExternal(socketron, "http://google.com");
@@ -255,89 +275,103 @@ namespace SocketronTest {
 
 			return;
 
-			Console.WriteLine("IsRegistered: " + electron.globalShortcut.IsRegistered(Accelerator.CmdOrCtrl + "+A"));
+			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
 			
-			Console.WriteLine("Notification.IsSupported: " + electron.Notification.IsSupported());
+			Console.WriteLine("Notification.IsSupported: " + electron.Notification.isSupported());
 			var notification = electron.Notification.Create(new Notification.Options {
 				title = "Title",
 				body = "Body"
 			});
-			notification.On("show", (args) => {
+			notification.on("show", (args) => {
 				Console.WriteLine("Notification show event");
 			});
-			notification.Show();
+			notification.show();
 
-			var image = electron.nativeImage.CreateEmpty();
-			Console.WriteLine("image.IsEmpty: {0}", image.IsEmpty());
-			Console.WriteLine("image.GetSize: {0}", image.GetSize());
-			Console.WriteLine("image.GetAspectRatio: {0}", image.GetAspectRatio());
-			Console.WriteLine("image.ToDataURL: {0}", image.ToDataURL());
-			image.ToPNG();
+			var image = electron.nativeImage.createEmpty();
+			Console.WriteLine("image.IsEmpty: {0}", image.isEmpty());
+			Console.WriteLine("image.GetSize: {0}", image.getSize());
+			Console.WriteLine("image.GetAspectRatio: {0}", image.getAspectRatio());
+			Console.WriteLine("image.ToDataURL: {0}", image.toDataURL());
+			image.toPNG();
 
 			return;
 
 			//window.SetFullScreen(true);
 			stopwatch.Reset();
 			stopwatch.Start();
-			string title = window.GetTitle();
+			string title = window.getTitle();
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 			Console.WriteLine("test 1: " + title);
 
 			//window.LoadURL("http://google.com");
 
-			Console.WriteLine("GetOSProcessId: " + window.webContents.GetOSProcessId());
+			Console.WriteLine("GetOSProcessId: " + window.webContents.getOSProcessId());
 
-			window.LoadURL("file:///src/html/index.html");
-			window.Show();
-			window.webContents.OpenDevTools();
+			window.loadURL("file:///src/html/index.html");
+			window.show();
+			window.webContents.openDevTools();
 
-			window.webContents.SetIgnoreMenuShortcuts(true);
+			window.webContents.setIgnoreMenuShortcuts(true);
 
 			//Thread.Sleep(1000);
-			window.webContents.ExecuteJavaScript("document.write('test')");
+			window.webContents.executeJavaScript("document.write('test')");
 			Console.WriteLine("Test");
 
 			return;
 
 			stopwatch.Reset();
 			stopwatch.Start();
-			title = window.GetTitle();
+			title = window.getTitle();
 			stopwatch.Stop();
 			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 
-			window.webContents.OpenDevTools();
-			Console.WriteLine("IsDevToolsOpened: {0}", window.webContents.IsDevToolsOpened());
+			window.webContents.openDevTools();
+			Console.WriteLine("IsDevToolsOpened: {0}", window.webContents.isDevToolsOpened());
 
 			_socketron.On("BrowserWindow.close", (result) => {
 				Console.WriteLine("Test close");
 			});
 
-			Size size = window.GetSize();
+			Size size = window.getSize();
 			Console.WriteLine("GetSize: {0}", size.Stringify());
 
-			ulong handle1 = window.GetNativeWindowHandle();
+			ulong handle1 = window.getNativeWindowHandle();
 			Console.WriteLine("GetNativeWindowHandle: " + handle1);
 
-			window.SetOpacity(0.755);
-			double opacity = window.GetOpacity();
+			window.setOpacity(0.755);
+			double opacity = window.getOpacity();
 			Console.WriteLine("GetOpacity: " + opacity);
 
-			bool b1 = window.IsFocused();
+			bool b1 = window.isFocused();
 			Console.WriteLine("test 1: " + b1);
-
-			Rectangle rect1 = window.GetContentBounds();
+			
+			Rectangle rect1 = window.getContentBounds();
 			string text = rect1.Stringify();
 			Console.WriteLine("test 1: " + text);
 			Rectangle rect2 = Rectangle.Parse(text);
 			Console.WriteLine("test 1: {0}, {1}, {2}, {3}", rect2.x, rect2.y, rect2.width, rect2.height);
 
 			//window.SetEnabled(false);
-			window.SetSize(200, 150);
-			Rectangle rect = window.GetContentBounds();
+			window.setSize(200, 150);
+			Rectangle rect = window.getContentBounds();
 			Console.WriteLine("GetContentBounds: {0}, {1}", rect.x, rect.y);
-			ulong handle = window.GetNativeWindowHandle();
+			ulong handle = window.getNativeWindowHandle();
 			Console.WriteLine("GetNativeWindowHandle: {0}", handle);
+		}
+
+		public Socketron.Buffer Test2() {
+			var buf1 = Socketron.Buffer.alloc(3, "abcde");
+			var buf2 = Socketron.Buffer.alloc(5, "fghijk");
+			var buffer = Socketron.Buffer.allocUnsafeSlow(5);
+			//buf1[1] = 11;
+			console.log(buf1.toJSON().Stringify());
+			console.log(buf1.toString());
+			//console.log(Socketron.Buffer.isBuffer(buf1), Socketron.Buffer.concat(buf1, buf2), buffer, Socketron.Buffer.byteLength("abcdあ"));
+
+			var buf3 = LocalBuffer.FromRemote(buf1);
+			Console.WriteLine(buf3.Stringify());
+			return buffer;
 		}
 
 		public void Run() {
@@ -379,7 +413,10 @@ namespace SocketronTest {
 			});
 			//*/
 
-			Test();
+			//Test();
+			//for (var i = 0; i < 10000; i++) {
+				Test2();
+			//}
 			return;
 			/*socketron.Renderer.GetUserAgent((data) => {
 				Console.WriteLine("UserAgent: {0}", data);

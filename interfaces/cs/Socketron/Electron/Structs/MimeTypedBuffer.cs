@@ -7,7 +7,7 @@
 		/// <summary>
 		/// The actual Buffer content.
 		/// </summary>
-		public Buffer data;
+		public LocalBuffer data;
 
 		public static MimeTypedBuffer Parse(string text) {
 			return JSON.Parse<MimeTypedBuffer>(text);

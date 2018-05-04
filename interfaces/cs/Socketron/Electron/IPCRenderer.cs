@@ -10,34 +10,42 @@ namespace Socketron {
 	/// </summary>
 	class IPCRenderer {
 		public void On() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void Once() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void RemoveListener() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void RemoveAllListeners() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void Send() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void SendSync() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void SendTo() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void SendToHost() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

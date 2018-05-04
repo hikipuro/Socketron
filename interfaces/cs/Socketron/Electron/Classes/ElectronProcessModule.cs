@@ -6,13 +6,13 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public static class ElectronProcessClass {
-		public static bool isDefaultApp(this ProcessClass process) {
+	public static class ElectronProcessModule {
+		public static bool isDefaultApp(this ProcessModule process) {
 			string script = "return process.defaultApp;";
 			return process.ExecuteJavaScriptBlocking<bool>(script);
 		}
 
-		public static bool isMas(this ProcessClass process) {
+		public static bool isMas(this ProcessModule process) {
 			string script = ScriptBuilder.Script(
 				"if (!process.mas) {",
 					"return false;",
@@ -22,7 +22,7 @@ namespace Socketron {
 			return process.ExecuteJavaScriptBlocking<bool>(script);
 		}
 
-		public static bool isNoAsar(this ProcessClass process) {
+		public static bool isNoAsar(this ProcessModule process) {
 			string script = ScriptBuilder.Script(
 				"if (!process.noAsar) {",
 					"return false;",
@@ -32,12 +32,12 @@ namespace Socketron {
 			return process.ExecuteJavaScriptBlocking<bool>(script);
 		}
 
-		public static string getResourcesPath(this ProcessClass process) {
+		public static string getResourcesPath(this ProcessModule process) {
 			string script = "return process.resourcesPath;";
 			return process.ExecuteJavaScriptBlocking<string>(script);
 		}
 
-		public static bool isTraceProcessWarnings(this ProcessClass process) {
+		public static bool isTraceProcessWarnings(this ProcessModule process) {
 			string script = ScriptBuilder.Script(
 				"if (!process.traceProcessWarnings) {",
 					"return false;",
@@ -47,22 +47,22 @@ namespace Socketron {
 			return process.ExecuteJavaScriptBlocking<bool>(script);
 		}
 
-		public static string getType(this ProcessClass process) {
+		public static string getType(this ProcessModule process) {
 			string script = "return process.type;";
 			return process.ExecuteJavaScriptBlocking<string>(script);
 		}
 
-		public static string getVersionsChrome(this ProcessClass process) {
+		public static string getVersionsChrome(this ProcessModule process) {
 			string script = "return process.versions.chrome;";
 			return process.ExecuteJavaScriptBlocking<string>(script);
 		}
 
-		public static string getVersionsElectron(this ProcessClass process) {
+		public static string getVersionsElectron(this ProcessModule process) {
 			string script = "return process.versions.electron;";
 			return process.ExecuteJavaScriptBlocking<string>(script);
 		}
 
-		public static bool isWindowsStore(this ProcessClass process) {
+		public static bool isWindowsStore(this ProcessModule process) {
 			string script = ScriptBuilder.Script(
 				"if (!process.windowsStore) {",
 					"return false;",
@@ -76,7 +76,7 @@ namespace Socketron {
 		/// Causes the main thread of the current process crash.
 		/// </summary>
 		/// <param name="process"></param>
-		public static void crash(this ProcessClass process) {
+		public static void crash(this ProcessModule process) {
 			string script = "process.crash();";
 			process.ExecuteJavaScript(script);
 		}
@@ -86,7 +86,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static CPUUsage getCPUUsage(this ProcessClass process) {
+		public static CPUUsage getCPUUsage(this ProcessModule process) {
 			string script = "return process.getCPUUsage();";
 			object result = process.ExecuteJavaScriptBlocking<object>(script);
 			return CPUUsage.FromObject(result);
@@ -97,7 +97,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static IOCounters getIOCounters(this ProcessClass process) {
+		public static IOCounters getIOCounters(this ProcessModule process) {
 			string script = "return process.getIOCounters();";
 			object result = process.ExecuteJavaScriptBlocking<object>(script);
 			return IOCounters.FromObject(result);
@@ -109,7 +109,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static MemoryInfo getProcessMemoryInfo(this ProcessClass process) {
+		public static MemoryInfo getProcessMemoryInfo(this ProcessModule process) {
 			string script = "return process.getProcessMemoryInfo();";
 			object result = process.ExecuteJavaScriptBlocking<object>(script);
 			return MemoryInfo.FromObject(result);
@@ -121,7 +121,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static JsonObject getSystemMemoryInfo(this ProcessClass process) {
+		public static JsonObject getSystemMemoryInfo(this ProcessModule process) {
 			string script = "return process.getSystemMemoryInfo();";
 			object result = process.ExecuteJavaScriptBlocking<object>(script);
 			return new JsonObject(result);
@@ -131,7 +131,7 @@ namespace Socketron {
 		/// Causes the main thread of the current process hang.
 		/// </summary>
 		/// <param name="process"></param>
-		public static void hang(this ProcessClass process) {
+		public static void hang(this ProcessModule process) {
 			string script = "process.hang();";
 			process.ExecuteJavaScript(script);
 		}
@@ -143,7 +143,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <param name="maxDescriptors"></param>
-		public static void setFdLimit(this ProcessClass process, int maxDescriptors) {
+		public static void setFdLimit(this ProcessModule process, int maxDescriptors) {
 			string script = ScriptBuilder.Build(
 				"process.setFdLimit({0});",
 				maxDescriptors

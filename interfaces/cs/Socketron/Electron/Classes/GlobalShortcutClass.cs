@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Detect keyboard events when the application does not have keyboard focus.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class GlobalShortcutClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class GlobalShortcutClass : NodeBase {
 		public const string Name = "GlobalShortcut";
 
 		static ushort _callbackListId = 0;
@@ -28,7 +30,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="accelerator"></param>
 		/// <param name="callback"></param>
-		public void Register(string accelerator, Callback callback) {
+		public void register(string accelerator, Callback callback) {
 			if (callback == null) {
 				return;
 			}
@@ -54,21 +56,21 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="accelerator"></param>
 		/// <returns></returns>
-		public bool IsRegistered(string accelerator) {
+		public bool isRegistered(string accelerator) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.globalShortcut.isRegistered({0});"
 				),
 				accelerator.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Unregisters the global shortcut of accelerator.
 		/// </summary>
 		/// <param name="accelerator"></param>
-		public void Unregister(string accelerator) {
+		public void unregister(string accelerator) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.globalShortcut.unregister({0});"
@@ -81,7 +83,7 @@ namespace Socketron {
 		/// <summary>
 		/// Unregisters all of the global shortcuts.
 		/// </summary>
-		public void UnregisterAll() {
+		public void unregisterAll() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.globalShortcut.unregisterAll();"

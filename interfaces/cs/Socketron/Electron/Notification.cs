@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Create OS desktop notifications.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Notification : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class Notification : NodeBase {
 		public const string Name = "Notification";
-		public int ID;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -99,12 +100,12 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"this._removeObjectReference({0});"
 				),
-				ID
+				id
 			);
 			_ExecuteJavaScript(_socketron, script, null, null);
 		}
 
-		public void On(string eventName, Callback callback) {
+		public void on(string eventName, Callback callback) {
 			if (callback == null) {
 				return;
 			}
@@ -121,7 +122,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.on({3}, listener);"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -130,7 +131,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void Once(string eventName, Callback callback) {
+		public void once(string eventName, Callback callback) {
 			if (callback == null) {
 				return;
 			}
@@ -148,7 +149,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.once({3}, listener);"
 				),
-				Script.GetObject(ID),
+				Script.GetObject(id),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -168,7 +169,7 @@ namespace Socketron {
 		/// and create a new one with identical properties.
 		/// </para>
 		/// </summary>
-		public void Show() {
+		public void show() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var notification = {0};",
@@ -177,7 +178,7 @@ namespace Socketron {
 					"}}",
 					"notification.show();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -185,7 +186,7 @@ namespace Socketron {
 		/// <summary>
 		/// Dismisses the notification.
 		/// </summary>
-		public void Close() {
+		public void close() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var notification = {0};",
@@ -194,7 +195,7 @@ namespace Socketron {
 					"}}",
 					"notification.close();"
 				),
-				Script.GetObject(ID)
+				Script.GetObject(id)
 			);
 			_ExecuteJavaScript(script);
 		}

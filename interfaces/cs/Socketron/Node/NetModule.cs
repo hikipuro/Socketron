@@ -2,8 +2,8 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NetClass : ElectronBase {
-		public NetClass(Socketron socketron) {
+	public class NetModule : NodeBase {
+		public NetModule(Socketron socketron) {
 			_socketron = socketron;
 		}
 

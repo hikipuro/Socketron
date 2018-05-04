@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Perform copy and paste operations on the system clipboard.
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
-	public class ClipboardClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class ClipboardClass : NodeBase {
 		public const string Name = "Clipboard";
 
 		public ClipboardClass(Socketron socketron) {
@@ -17,7 +19,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public string ReadText(string type = null) {
+		public string readText(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -28,7 +30,7 @@ namespace Socketron {
 				),
 				option
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -36,7 +38,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="type"></param>
-		public void WriteText(string text, string type = null) {
+		public void writeText(string text, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(
@@ -60,7 +62,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public string ReadHTML(string type = null) {
+		public string readHTML(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -71,7 +73,7 @@ namespace Socketron {
 				),
 				option
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -79,7 +81,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="markup"></param>
 		/// <param name="type"></param>
-		public void WriteHTML(string markup, string type = null) {
+		public void writeHTML(string markup, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(
@@ -103,7 +105,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public NativeImage ReadImage(string type = null) {
+		public NativeImage readImage(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -115,9 +117,9 @@ namespace Socketron {
 				),
 				option
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			return new NativeImage(_socketron) {
-				ID = result
+				id = result
 			};
 		}
 
@@ -126,7 +128,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="image"></param>
 		/// <param name="type"></param>
-		public void WriteImage(NativeImage image, string type = null) {
+		public void writeImage(NativeImage image, string type = null) {
 			string script = string.Empty;
 			if (type != null) {
 				script = ScriptBuilder.Build(
@@ -134,7 +136,7 @@ namespace Socketron {
 						"var image = {0};",
 						"electron.clipboard.writeImage(image,{1});"
 					),
-					Script.GetObject(image.ID),
+					Script.GetObject(image.id),
 					type.Escape()
 				);
 			} else {
@@ -143,7 +145,7 @@ namespace Socketron {
 						"var image = {0};",
 						"electron.clipboard.writeImage(image);"
 					),
-					Script.GetObject(image.ID)
+					Script.GetObject(image.id)
 				);
 			}
 			_ExecuteJavaScript(script);
@@ -154,7 +156,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public string ReadRTF(string type = null) {
+		public string readRTF(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -165,7 +167,7 @@ namespace Socketron {
 				),
 				option
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -173,7 +175,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="type"></param>
-		public void WriteRTF(string text, string type = null) {
+		public void writeRTF(string text, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(
@@ -193,24 +195,26 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// *macOS Windows* Returns an Object containing title and url keys
+		/// *macOS Windows*
+		/// Returns an Object containing title and url keys
 		/// representing the bookmark in the clipboard.
 		/// The title and url values will be empty strings when the bookmark is unavailable.
 		/// </summary>
 		/// <returns></returns>
-		public JsonObject ReadBookmark() {
+		public JsonObject readBookmark() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.clipboard.readBookmark({0});"
 				)
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 		//*/
 
 		/// <summary>
-		/// *macOS Windows* Writes the title and url into the clipboard as a bookmark.
+		/// *macOS Windows*
+		/// Writes the title and url into the clipboard as a bookmark.
 		/// <para>
 		/// Note: Most apps on Windows don't support pasting bookmarks into them
 		/// so you can use clipboard.write to write both a bookmark and fallback text to the clipboard.
@@ -227,7 +231,7 @@ namespace Socketron {
 		/// <param name="title"></param>
 		/// <param name="url"></param>
 		/// <param name="type"></param>
-		public void WriteBookmark(string title, string url, string type = null) {
+		public void writeBookmark(string title, string url, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(
@@ -247,20 +251,21 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// *macOS* Returns String - The text on the find pasteboard.
+		/// *macOS*
+		/// Returns String - The text on the find pasteboard.
 		/// <para>
 		/// This method uses synchronous IPC when called from the renderer process.
 		/// The cached value is reread from the find pasteboard whenever the application is activated.
 		/// </para>
 		/// </summary>
 		/// <returns></returns>
-		public string ReadFindText() {
+		public string readFindText() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.clipboard.readFindText();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -270,7 +275,7 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		/// <param name="text"></param>
-		public void WriteFindText(string text) {
+		public void writeFindText(string text) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.clipboard.writeFindText({0});"
@@ -284,7 +289,7 @@ namespace Socketron {
 		/// Clears the clipboard content.
 		/// </summary>
 		/// <param name="type"></param>
-		public void Clear(string type = null) {
+		public void clear(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -303,7 +308,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public List<string> AvailableFormats(string type = null) {
+		public List<string> availableFormats(string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = type.Escape();
@@ -314,7 +319,7 @@ namespace Socketron {
 				),
 				option
 			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			List<string> formats = new List<string>();
 			foreach (object item in result) {
 				string format = item as string;
@@ -327,12 +332,13 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// *Experimental* Returns Boolean - Whether the clipboard supports the specified format.
+		/// *Experimental*
+		/// Returns Boolean - Whether the clipboard supports the specified format.
 		/// </summary>
 		/// <param name="format"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public bool Has(string format, string type = null) {
+		public bool has(string format, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(
@@ -348,48 +354,51 @@ namespace Socketron {
 				),
 				option
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
-		/// *Experimental* Returns String - Reads format type from the clipboard.
+		/// *Experimental*
+		/// Returns String - Reads format type from the clipboard.
 		/// </summary>
 		/// <param name="format"></param>
 		/// <returns></returns>
-		public string Read(string format) {
+		public string read(string format) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.clipboard.read({0});"
 				),
 				format.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
-		/// *Experimental* Returns Buffer - Reads format type from the clipboard.
+		/// *Experimental*
+		/// Returns Buffer - Reads format type from the clipboard.
 		/// </summary>
 		/// <param name="format"></param>
 		/// <returns></returns>
-		public Buffer ReadBuffer(string format) {
+		public LocalBuffer readBuffer(string format) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.clipboard.readBuffer({0});"
 				),
 				format.Escape()
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
-			return Buffer.FromJson(json);
+			return LocalBuffer.FromJson(json);
 		}
 
 		/// <summary>
-		/// *Experimental* Writes the buffer into the clipboard as format.
+		/// *Experimental*
+		/// Writes the buffer into the clipboard as format.
 		/// </summary>
 		/// <param name="format"></param>
 		/// <param name="buffer"></param>
 		/// <param name="type"></param>
-		public void WriteBuffer(string format, Buffer buffer, string type = null) {
+		public void writeBuffer(string format, LocalBuffer buffer, string type = null) {
 			string script = string.Empty;
 			if (type != null) {
 				script = ScriptBuilder.Build(
@@ -431,7 +440,7 @@ namespace Socketron {
 		/// clipboard.write({text: 'test', html: '&lt;b&gt;test&lt;/b&gt;'})
 		/// </code>
 		/// </example>
-		public void Write(JsonObject data, string type = null) {
+		public void write(JsonObject data, string type = null) {
 			string option = string.Empty;
 			if (type != null) {
 				option = ScriptBuilder.Params(

@@ -3,7 +3,7 @@
 	/// Add icons and context menus to the system's notification area.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class TrayClass : ElectronBase {
+	public class TrayClass : NodeBase {
 		public TrayClass(Socketron socketron) {
 			_socketron = socketron;
 		}
@@ -18,11 +18,11 @@
 					"var tray = new electron.Tray(image);",
 					"return " + Script.AddObject("tray") + ";"
 				),
-				Script.GetObject(image.ID)
+				Script.GetObject(image.id)
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			Tray tray = new Tray(_socketron) {
-				ID = result
+				id = result
 			};
 			return tray;
 		}
@@ -38,9 +38,9 @@
 				),
 				image.Escape()
 			);
-			int result = _ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			Tray tray = new Tray(_socketron) {
-				ID = result
+				id = result
 			};
 			return tray;
 		}

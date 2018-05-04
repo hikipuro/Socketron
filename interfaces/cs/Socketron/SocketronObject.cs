@@ -1,5 +1,5 @@
 ﻿namespace Socketron {
-	public class SocketronObject : Node {
+	public class SocketronObject : NodeJS {
 		protected Electron electron;
 
 		public override void Init(Socketron socketron) {

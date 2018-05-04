@@ -1,5 +1,5 @@
 ﻿namespace Socketron {
-	static class ValueExtension {
+	static class JsonValueExtension {
 		public static string Escape(this string value) {
 			if (value == null) {
 				return "null";

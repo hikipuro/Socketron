@@ -27,6 +27,9 @@ namespace SocketronTest {
 			test = new TestJQuery();
 			test.Log += (text) => {
 				//*
+				if (IsDisposed) {
+					return;
+				}
 				textBox1.Invoke((MethodInvoker)(() => {
 					textBox1.AppendText(text + Environment.NewLine);
 				}));

@@ -1,9 +1,12 @@
-﻿namespace Socketron {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron {
 	/// <summary>
 	/// Manage files and URLs using their default applications.
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
-	public class ShellClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class ShellClass : NodeBase {
 		public ShellClass(Socketron socketron) {
 			_socketron = socketron;
 		}
@@ -13,14 +16,14 @@
 		/// </summary>
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully shown.</returns>
-		public bool ShowItemInFolder(string fullPath) {
+		public bool showItemInFolder(string fullPath) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.shell.showItemInFolder({0});"
 				),
 				fullPath.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -28,14 +31,14 @@
 		/// </summary>
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully opened.</returns>
-		public bool OpenItem(string fullPath) {
+		public bool openItem(string fullPath) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.shell.openItem({0});"
 				),
 				fullPath.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -47,7 +50,7 @@
 		/// Whether an application was available to open the URL.
 		/// If callback is specified, always returns true.
 		/// </returns>
-		public bool OpenExternal(string url) {
+		public bool openExternal(string url) {
 			// TODO: add options, callback
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -55,7 +58,7 @@
 				),
 				url.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -63,20 +66,20 @@
 		/// </summary>
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully moved to the trash.</returns>
-		public bool MoveItemToTrash(string fullPath) {
+		public bool moveItemToTrash(string fullPath) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.shell.moveItemToTrash({0});"
 				),
 				fullPath.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
 		/// Play the beep sound.
 		/// </summary>
-		public void Beep() {
+		public void beep() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.shell.beep();"
@@ -91,7 +94,7 @@
 		/// </summary>
 		/// <param name="shortcutPath"></param>
 		/// <returns>Whether the shortcut was created successfully.</returns>
-		public bool WriteShortcutLink(string shortcutPath) {
+		public bool writeShortcutLink(string shortcutPath) {
 			// TODO: add operation, options
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -99,7 +102,7 @@
 				),
 				shortcutPath.Escape()
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return _ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -109,14 +112,14 @@
 		/// </summary>
 		/// <param name="shortcutPath"></param>
 		/// <returns></returns>
-		public ShortcutDetails ReadShortcutLink(string shortcutPath) {
+		public ShortcutDetails readShortcutLink(string shortcutPath) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return electron.shell.readShortcutLink({0});"
 				),
 				shortcutPath.Escape()
 			);
-			object result = _ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return ShortcutDetails.FromObject(result);
 		}
 	}

@@ -5,42 +5,48 @@ namespace Socketron {
 	/// Intercept and modify the contents of a request at various stages of its lifetime.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class WebRequest : ElectronBase {
-		public int id;
-
+	public class WebRequest : NodeBase {
 		public WebRequest(Socketron socketron) {
 			_socketron = socketron;
 		}
 
 		public void OnBeforeRequest() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnBeforeSendHeaders() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnSendHeaders() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnHeadersReceived() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnResponseStarted() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnBeforeRedirect() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnCompleted() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void OnErrorOccurred() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}

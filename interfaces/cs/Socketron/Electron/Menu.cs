@@ -3,9 +3,8 @@
 	/// Create native application menus and context menus.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Menu : ElectronBase {
+	public class Menu : NodeBase {
 		public const string Name = "Menu";
-		public int ID;
 
 		public class Events {
 			public const string MenuWillShow = "menu-will-show";
@@ -26,18 +25,23 @@
 		//*/
 
 		public void ClosePopup() {
+			// TODO: implement this
 		}
 
 		public void Append() {
+			// TODO: implement this
 		}
 
 		public void GetMenuItemById() {
+			// TODO: implement this
 		}
 
 		public void Insert() {
+			// TODO: implement this
 		}
 
 		public void GetItems() {
+			// TODO: implement this
 		}
 	}
 }

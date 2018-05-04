@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Socketron {
@@ -6,15 +7,14 @@ namespace Socketron {
 	/// Manage browser sessions, cookies, cache, proxy settings, etc.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Session : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class Session : NodeBase {
 		/// <summary>
 		/// Session instance events.
 		/// </summary>
 		public class Events {
 			public const string WillDownload = "will-download";
 		}
-
-		public int id;
 
 		public Session(Socketron socketron) {
 			_socketron = socketron;
@@ -31,7 +31,7 @@ namespace Socketron {
 					Script.GetObject(id),
 					Script.AddObject("cookies")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new Cookies(_socketron) {
 					id = result
 				};
@@ -49,7 +49,7 @@ namespace Socketron {
 					Script.GetObject(id),
 					Script.AddObject("webRequest")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new WebRequest(_socketron) {
 					id = result
 				};
@@ -67,29 +67,32 @@ namespace Socketron {
 					Script.GetObject(id),
 					Script.AddObject("protocol")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = _ExecuteBlocking<int>(script);
 				return new Protocol(_socketron) {
 					id = result
 				};
 			}
 		}
 
-		public void GetCacheSize() {
+		public void getCacheSize() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void ClearCache() {
+		public void clearCache() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void ClearStorageData() {
+		public void clearStorageData() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		/// <summary>
 		/// Writes any unwritten DOMStorage data to disk.
 		/// </summary>
-		public void FlushStorageData() {
+		public void flushStorageData() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -100,11 +103,13 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void SetProxy() {
+		public void setProxy() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void ResolveProxy() {
+		public void resolveProxy() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
@@ -113,7 +118,7 @@ namespace Socketron {
 		/// By default, the download directory will be the Downloads under the respective app folder.
 		/// </summary>
 		/// <param name="path">The download location.</param>
-		public void SetDownloadPath(string path) {
+		public void setDownloadPath(string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -129,7 +134,7 @@ namespace Socketron {
 		/// Emulates network with the given configuration for the session.
 		/// </summary>
 		/// <param name="options"></param>
-		public void EnableNetworkEmulation(JsonObject options) {
+		public void enableNetworkEmulation(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -145,7 +150,7 @@ namespace Socketron {
 		/// Disables any network emulation already active for the session.
 		/// Resets to the original network configuration.
 		/// </summary>
-		public void DisableNetworkEmulation() {
+		public void disableNetworkEmulation() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -156,15 +161,18 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void SetCertificateVerifyProc() {
+		public void setCertificateVerifyProc() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void SetPermissionRequestHandler() {
+		public void setPermissionRequestHandler() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void ClearHostResolverCache() {
+		public void clearHostResolverCache() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
@@ -174,7 +182,7 @@ namespace Socketron {
 		/// <param name="domains">
 		/// A comma-separated list of servers for which integrated authentication is enabled.
 		/// </param>
-		public void AllowNTLMCredentialsForDomains(string domains) {
+		public void allowNTLMCredentialsForDomains(string domains) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -191,7 +199,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="userAgent"></param>
 		/// <param name="acceptLanguages"></param>
-		public void SetUserAgent(string userAgent, string acceptLanguages = null) {
+		public void setUserAgent(string userAgent, string acceptLanguages = null) {
 			string script = string.Empty;
 			if (acceptLanguages == null) {
 				script = ScriptBuilder.Build(
@@ -220,7 +228,7 @@ namespace Socketron {
 		/// Returns String - The user agent for this session.
 		/// </summary>
 		/// <returns></returns>
-		public string GetUserAgent() {
+		public string getUserAgent() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -228,10 +236,11 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
-		public void GetBlobData() {
+		public void getBlobData() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
@@ -239,7 +248,7 @@ namespace Socketron {
 		/// Allows resuming cancelled or interrupted downloads from previous Session.
 		/// </summary>
 		/// <param name="options"></param>
-		public void CreateInterruptedDownload(JsonObject options) {
+		public void createInterruptedDownload(JsonObject options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -251,7 +260,8 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public void ClearAuthCache() {
+		public void clearAuthCache() {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
@@ -260,7 +270,7 @@ namespace Socketron {
 		/// that are associated with this session just before normal preload scripts run.
 		/// </summary>
 		/// <param name="preloads">An array of absolute path to preload scripts</param>
-		public void SetPreloads(string[] preloads) {
+		public void setPreloads(string[] preloads) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -276,7 +286,7 @@ namespace Socketron {
 		/// Returns String[] an array of paths to preload scripts that have been registered.
 		/// </summary>
 		/// <returns></returns>
-		public string[] GetPreloads() {
+		public string[] getPreloads() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var session = {0};",
@@ -284,7 +294,7 @@ namespace Socketron {
 				),
 				Script.GetObject(id)
 			);
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			return result.Cast<string>().ToArray();
 		}
 	}

@@ -4,18 +4,19 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Node : ElectronBase {
-		public const string Name = "Node";
-		public NodeConsole console;
-		public ProcessClass process;
+	public class NodeJS : NodeBase {
+		public const string Name = "NodeJS";
+		public ConsoleModule console;
+		public ProcessModule process;
 		public OSModule os;
 		public PathModule path;
 		public URLModule url;
+		public FileSystemModule fs;
 
 		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Delegate> _callbackList = new Dictionary<ushort, Delegate>();
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
-		public static Delegate GetCallbackFromId(ushort id) {
+		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
 			}
@@ -23,11 +24,12 @@ namespace Socketron {
 		}
 
 		public virtual void Init(Socketron socketron) {
-			console = new NodeConsole(socketron);
-			process = new ProcessClass(socketron);
+			console = new ConsoleModule(socketron);
+			process = new ProcessModule(socketron);
 			os = new OSModule(socketron);
 			path = new PathModule(socketron);
 			url = new URLModule(socketron);
+			fs = new FileSystemModule(socketron);
 		}
 
 		/*
@@ -53,14 +55,18 @@ namespace Socketron {
 				module.Escape(),
 				Script.AddObject("module")
 			);
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
-		public int setTimeout(Callback callback, int delay) {
+		public int setTimeout(Action callback, int delay) {
 			if (callback == null) {
 				return -1;
 			}
-			_callbackList.Add(_callbackListId, callback);
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				callback?.Invoke();
+			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
@@ -78,7 +84,7 @@ namespace Socketron {
 				Script.RemoveObject("id")
 			);
 			_callbackListId++;
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public void clearTimeout(int timeoutObject) {
@@ -114,7 +120,7 @@ namespace Socketron {
 				Script.AddObject("timer")
 			);
 			_callbackListId++;
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public void clearInterval(int intervalObject) {
@@ -151,7 +157,7 @@ namespace Socketron {
 				Script.RemoveObject("id")
 			);
 			_callbackListId++;
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		public void clearImmediate(int immediate) {

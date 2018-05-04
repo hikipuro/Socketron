@@ -1,13 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Socketron {
 	/// <summary>
 	/// Display native system dialogs for opening and saving files, alerting, etc.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class DialogClass : ElectronBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class DialogClass : NodeBase {
+		public const string Name = "DialogClass";
+		static ushort _callbackListId = 0;
+		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+
 		public DialogClass(Socketron socketron) {
 			_socketron = socketron;
+		}
+
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
 		}
 
 		/// <summary>
@@ -17,8 +32,7 @@ namespace Socketron {
 		/// <param name="options"></param>
 		/// <param name="browserWindow"></param>
 		/// <returns></returns>
-		public List<string> ShowOpenDialog(Dialog.OpenDialogOptions options, BrowserWindow browserWindow = null) {
-			// TODO: add callback option
+		public List<string> showOpenDialog(Dialog.OpenDialogOptions options, BrowserWindow browserWindow = null) {
 			string script = string.Empty;
 			if (browserWindow != null) {
 				script = ScriptBuilder.Build(
@@ -26,7 +40,7 @@ namespace Socketron {
 						"var window = electron.BrowserWindow.fromId({0});",
 						"return electron.dialog.showOpenDialog(window,{1});"
 					),
-					browserWindow.ID,
+					browserWindow.id,
 					options.Stringify()
 				);
 			} else {
@@ -37,7 +51,7 @@ namespace Socketron {
 					options.Stringify()
 				);
 			}
-			object[] result = _ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			if (result == null) {
 				return null;
 			}
@@ -48,6 +62,64 @@ namespace Socketron {
 			return paths;
 		}
 
+		public List<string> showOpenDialog(
+			Dialog.OpenDialogOptions options,
+			Action<string[], string[]> callback,
+			BrowserWindow browserWindow = null)
+		{
+			if (callback == null) {
+				return null;
+			}
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				string[] filePaths = null;
+				string[] bookmarks = null;
+				if (argsList[0] != null) {
+					filePaths = (argsList[0] as object[]).Cast<string>().ToArray();
+				}
+				if (argsList[1] != null) {
+					bookmarks = (argsList[1] as object[]).Cast<string>().ToArray();
+				}
+				callback?.Invoke(filePaths, bookmarks);
+			});
+			string script = string.Empty;
+			if (browserWindow != null) {
+				script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var callback = (filePaths, bookmarks) => {{",
+							"emit('__event',{0},{1},filePaths,bookmarks);",
+						"}};",
+						"var window = electron.BrowserWindow.fromId({2});",
+						"return electron.dialog.showOpenDialog(window,{3},callback);"
+					),
+					Name.Escape(),
+					_callbackListId,
+					browserWindow.id,
+					options.Stringify()
+				);
+			} else {
+				script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var callback = (filePaths, bookmarks) => {{",
+							"emit('__event',{0},{1},filePaths,bookmarks);",
+						"}};",
+						"return electron.dialog.showOpenDialog({2},callback);"
+					),
+					Name.Escape(),
+					_callbackListId,
+					options.Stringify()
+				);
+			}
+			_callbackListId++;
+			_ExecuteJavaScript(script);
+			return null;
+		}
+
 		/// <summary>
 		/// Returns String, the path of the file chosen by the user,
 		/// if a callback is provided it returns undefined.
@@ -55,7 +127,7 @@ namespace Socketron {
 		/// <param name="options"></param>
 		/// <param name="browserWindow"></param>
 		/// <returns></returns>
-		public string ShowSaveDialog(Dialog.SaveDialogOptions options, BrowserWindow browserWindow = null) {
+		public string showSaveDialog(Dialog.SaveDialogOptions options, BrowserWindow browserWindow = null) {
 			// TODO: add callback option
 			string script = string.Empty;
 			if (browserWindow != null) {
@@ -64,7 +136,7 @@ namespace Socketron {
 						"var window = electron.BrowserWindow.fromId({0});",
 						"return electron.dialog.showSaveDialog(window,{1});"
 					),
-					browserWindow.ID,
+					browserWindow.id,
 					options.Stringify()
 				);
 			} else {
@@ -75,7 +147,7 @@ namespace Socketron {
 					options.Stringify()
 				);
 			}
-			return _ExecuteJavaScriptBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -85,7 +157,7 @@ namespace Socketron {
 		/// <param name="options"></param>
 		/// <param name="browserWindow"></param>
 		/// <returns></returns>
-		public int ShowMessageBox(Dialog.MessageBoxOptions options, BrowserWindow browserWindow = null) {
+		public int showMessageBox(Dialog.MessageBoxOptions options, BrowserWindow browserWindow = null) {
 			// TODO: add callback option
 			string script = string.Empty;
 			if (browserWindow != null) {
@@ -94,7 +166,7 @@ namespace Socketron {
 						"var window = electron.BrowserWindow.fromId({0});",
 						"return electron.dialog.showMessageBox(window,{1});"
 					),
-					browserWindow.ID,
+					browserWindow.id,
 					options.Stringify()
 				);
 			} else {
@@ -105,7 +177,7 @@ namespace Socketron {
 					options.Stringify()
 				);
 			}
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -113,7 +185,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="title">The title to display in the error box.</param>
 		/// <param name="content">The text content to display in the error box.</param>
-		public void ShowErrorBox(string title, string content) {
+		public void showErrorBox(string title, string content) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"electron.dialog.showErrorBox({0},{1});"
@@ -141,7 +213,7 @@ namespace Socketron {
 		/// <param name="options"></param>
 		/// <param name="browserWindow"></param>
 		/// <returns></returns>
-		public int ShowCertificateTrustDialog(Dialog.CertificateTrustDialogOptions options, BrowserWindow browserWindow = null) {
+		public int showCertificateTrustDialog(Dialog.CertificateTrustDialogOptions options, BrowserWindow browserWindow = null) {
 			// TODO: add callback option
 			string script = string.Empty;
 			if (browserWindow != null) {
@@ -150,7 +222,7 @@ namespace Socketron {
 						"var window = electron.BrowserWindow.fromId({0});",
 						"return electron.dialog.showCertificateTrustDialog(window,{1});"
 					),
-					browserWindow.ID,
+					browserWindow.id,
 					options.Stringify()
 				);
 			} else {
@@ -161,7 +233,7 @@ namespace Socketron {
 					options.Stringify()
 				);
 			}
-			return _ExecuteJavaScriptBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 	}
 }

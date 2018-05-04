@@ -38,6 +38,23 @@
 		/// </summary>
 		public Size workAreaSize;
 
+		public static Display FromObject(object obj) {
+			if (obj == null) {
+				return null;
+			}
+			JsonObject json = new JsonObject(obj);
+			return new Display() {
+				id = json.Int64("id"),
+				rotation = json.Double("rotation"),
+				scaleFactor = json.Double("scaleFactor"),
+				touchSupport = json.String("touchSupport"),
+				bounds = Rectangle.FromObject(json["bounds"]),
+				size = Size.FromObject(json["size"]),
+				workArea = Rectangle.FromObject(json["workArea"]),
+				workAreaSize = Size.FromObject(json["workAreaSize"])
+			};
+		}
+
 		public static Display Parse(string text) {
 			return JSON.Parse<Display>(text);
 		}

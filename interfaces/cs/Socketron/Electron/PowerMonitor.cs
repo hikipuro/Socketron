@@ -45,10 +45,12 @@ namespace Socketron {
 		}
 
 		public void QuerySystemIdleState(int idleThreshold, Callback callback) {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
 		public void QuerySystemIdleTime(Callback callback) {
+			// TODO: implement this
 			throw new NotImplementedException();
 		}
 	}
