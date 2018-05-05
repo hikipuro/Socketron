@@ -12,6 +12,11 @@ namespace Socketron {
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
@@ -239,6 +244,9 @@ namespace Socketron {
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			_client = client;
 			_id = result;
+		}
+
+		public MenuItem(string options) : this(Options.Parse(options)) {
 		}
 
 		/// <summary>

@@ -11,8 +11,6 @@ namespace Socketron {
 	public class WebContents : NodeModule {
 		// TODO: add instance properties
 		public const string Name = "webContents";
-		public int id;
-		protected BrowserWindow _window;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -67,27 +65,36 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public WebContents(SocketronClient client) {
+		/// <param name="id"></param>
+		public WebContents(SocketronClient client, int id) {
 			_disposeManually = true;
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="browserWindow"></param>
-		public WebContents(SocketronClient client, BrowserWindow browserWindow) {
-			_disposeManually = true;
-			_client = client;
-			_window = browserWindow;
-		}
-
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
 			}
 			return _callbackList[id];
+		}
+
+		public int id {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var contents = electron.webContents.fromId({0});",
+						"return contents.id;"
+					),
+					_id
+				);
+				return _ExecuteBlocking<int>(script);
+			}
 		}
 
 		public Session session {
@@ -102,9 +109,7 @@ namespace Socketron {
 					Script.AddObject("session")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Session(_client) {
-					_id = result
-				};
+				return new Session(_client, result);
 			}
 		}
 
@@ -120,9 +125,7 @@ namespace Socketron {
 					Script.AddObject("hostWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new WebContents(_client) {
-					_id = result
-				};
+				return new WebContents(_client, result);
 			}
 		}
 
@@ -138,9 +141,7 @@ namespace Socketron {
 					Script.AddObject("devToolsWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new WebContents(_client) {
-					_id = result
-				};
+				return new WebContents(_client, result);
 			}
 		}
 
@@ -156,9 +157,7 @@ namespace Socketron {
 					Script.AddObject("debugger")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Debugger(_client) {
-					_id = result
-				};
+				return new Debugger(_client, result);
 			}
 		}
 
@@ -1111,7 +1110,7 @@ namespace Socketron {
 		/// Prints window's web page as PDF with Chromium's preview printing custom settings.
 		/// </summary>
 		/*
-		public void printToPDF() {
+		public void printToPDF(JsonObject options, Action<Error, Buffer> callback) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",
@@ -1407,7 +1406,7 @@ namespace Socketron {
 		//*/
 
 		/*
-		public void savePage(string fullPath, string saveType, string callback) {
+		public void savePage(string fullPath, string saveType, Action<Error> callback) {
 			// TODO: implement this
 			string[] script = new[] {
 				"var contents = electron.webContents.fromId(" + ID + ");",

@@ -48,22 +48,36 @@ namespace SocketronTest {
 		}
 
 		void Test() {
-			//var os = require<OSModule>("os");
-			//Console.WriteLine(os.cpus().Stringify());
+			var os = require<NodeModules.OS>("os");
+			Console.WriteLine(os.cpus().Stringify());
 
-			//electron.app.on(App.Events.Ready, (args) => {
+			electron.protocol.uninterceptProtocol("a", (er) => {
+				Console.WriteLine("uninterceptProtocol: {0}", er.toString());
+			});
+
+			electron.contentTracing.getCategories((str) => {
+				Console.WriteLine("getCategories: {0}", str.Stringify());
+			});
+			electron.contentTracing.getTraceBufferUsage((a, b) => {
+				Console.WriteLine("getTraceBufferUsage: {0}, {1}", a, b);
+			});
+
+				//electron.app.on(App.Events.Ready, (args) => {
 				var image4 = NativeImage.createFromPath("a");
 				var appIcon = new Tray(image4);
 				var contextMenu = Menu.buildFromTemplate("[" +
 					"{label: 'Item1', type: 'radio'}," +
 					"{label: 'Item2', type: 'radio'}" +
 				"]");
+				contextMenu.items[0].@checked = false;
 				contextMenu.items[1].@checked = false;
 				contextMenu.items[0].click = (_) => {
 					Console.WriteLine("on click 0");
+					contextMenu.items[0].@checked = true;
 				};
 				contextMenu.items[1].click = (_) => {
 					Console.WriteLine("on click 1");
+					contextMenu.items[1].@checked = true;
 				};
 				appIcon.setContextMenu(contextMenu);
 			//});

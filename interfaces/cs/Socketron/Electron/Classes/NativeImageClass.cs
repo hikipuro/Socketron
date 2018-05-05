@@ -21,8 +21,9 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.nativeImage.createEmpty();",
-					"return this._addObjectReference(image);"
-				)
+					"return {0};"
+				),
+				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -39,9 +40,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.nativeImage.createFromPath({0});",
-					"return this._addObjectReference(image);"
+					"return {1};"
 				),
-				path.Escape()
+				path.Escape(),
+				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -57,9 +59,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.nativeImage.createFromBuffer({0});",
-					"return this._addObjectReference(image);"
+					"return {1};"
 				),
-				buffer.Stringify()
+				buffer.Stringify(),
+				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -74,9 +77,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.nativeImage.createFromDataURL({0});",
-					"return this._addObjectReference(image);"
+					"return {1};"
 				),
-				dataURL.Escape()
+				dataURL.Escape(),
+				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -94,9 +98,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.nativeImage.createFromNamedImage({0});",
-					"return this._addObjectReference(image);"
+					"return {1};"
 				),
-				imageName.Escape()
+				imageName.Escape(),
+				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);

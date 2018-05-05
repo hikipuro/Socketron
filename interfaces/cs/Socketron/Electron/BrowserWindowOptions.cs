@@ -223,6 +223,10 @@
 			/// </summary>
 			public WebPreferences webPreferences = new WebPreferences();
 
+			public static Options Parse(string text) {
+				return JSON.Parse<Options>(text);
+			}
+
 			/// <summary>
 			/// Create JSON text.
 			/// </summary>

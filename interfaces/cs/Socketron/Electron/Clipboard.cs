@@ -115,9 +115,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var image = electron.clipboard.readImage({0});",
-					"return this._addObjectReference(image);"
+					"return {1};"
 				),
-				option
+				option,
+				Script.AddObject("image")
 			);
 			int result = _ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);

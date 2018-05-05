@@ -20,8 +20,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Session(SocketronClient client) {
+		/// <param name="id"></param>
+		public Session(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		public Cookies cookies {

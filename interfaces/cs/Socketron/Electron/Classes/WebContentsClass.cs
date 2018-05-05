@@ -31,9 +31,7 @@ namespace Socketron {
 			List<WebContents> contentsList = new List<WebContents>();
 			foreach (object[] item in result) {
 				int id = (int)item[0];
-				WebContents contents = new WebContents(_client) {
-					_id = id
-				};
+				WebContents contents = new WebContents(_client, id);
 				contentsList.Add(contents);
 			}
 			return contentsList;
@@ -50,10 +48,7 @@ namespace Socketron {
 				)
 			);
 			int result = _ExecuteBlocking<int>(script);
-			WebContents contents = new WebContents(_client) {
-				_id = result
-			};
-			return contents;
+			return new WebContents(_client, result);
 		}
 
 		public WebContents fromId(int id) {
@@ -68,10 +63,7 @@ namespace Socketron {
 				id
 			);
 			int result = _ExecuteBlocking<int>(script);
-			WebContents contents = new WebContents(_client) {
-				_id = result
-			};
-			return contents;
+			return new WebContents(_client, result);
 		}
 	}
 }

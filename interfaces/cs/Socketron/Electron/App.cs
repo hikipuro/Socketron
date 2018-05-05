@@ -19,6 +19,11 @@ namespace Socketron {
 		/// <summary>*macOS*</summary>
 		public Dock dock;
 
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
@@ -493,6 +498,7 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var listener = () => {{",
+						"this._removeClientEventListener({0},{1});",
 						"emit('__event',{0},{1});",
 					"}};",
 					"this._addClientEventListener({0},{1},listener);",
@@ -669,7 +675,7 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="path"></param>
 		/// <param name="callback"></param>
-		public void getFileIcon(string path, Action<string, NativeImage> callback) {
+		public void getFileIcon(string path, Action<Error, NativeImage> callback) {
 			if (callback == null) {
 				return;
 			}
@@ -678,26 +684,75 @@ namespace Socketron {
 				_callbackList.Remove(callbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
-					callback?.Invoke("error", null);
+					callback?.Invoke(null, null);
 					return;
 				}
+				Error error = new Error(_client, (int)argsList[0]);
 				NativeImage image = new NativeImage(_client, (int)argsList[1]);
-				callback?.Invoke(argsList[0] as string, image);
+				callback?.Invoke(error, image);
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (err, icon) => {{",
-						"var id = 0;",
+						"var errId = {0};",
+						"var iconId = 0;",
 						"if (icon != null) {{",
-							"id = this._addObjectReference(icon);",
+							"iconId = {1};",
 						"}}",
-						"emit('__event',{0},{1},err,id);",
+						"emit('__event',{2},{3},errId,iconId);",
 					"}};",
-					"return electron.app.getFileIcon({2},callback);"
+					"return electron.app.getFileIcon({4},callback);"
 				),
+				Script.AddObject("err"),
+				Script.AddObject("icon"),
 				Name.Escape(),
 				_callbackListId,
 				path.Escape()
+			);
+			_callbackListId++;
+			_ExecuteJavaScript(script);
+		}
+
+		/// <summary>
+		/// Fetches a path's associated icon.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
+		public void getFileIcon(string path, JsonObject options, Action<Error, NativeImage> callback) {
+			if (callback == null) {
+				return;
+			}
+			ushort callbackId = _callbackListId;
+			_callbackList.Add(_callbackListId, (object args) => {
+				_callbackList.Remove(callbackId);
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					callback?.Invoke(null, null);
+					return;
+				}
+				Error error = new Error(_client, (int)argsList[0]);
+				NativeImage image = new NativeImage(_client, (int)argsList[1]);
+				callback?.Invoke(error, image);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (err, icon) => {{",
+						"var errId = {0};",
+						"var iconId = 0;",
+						"if (icon != null) {{",
+							"iconId = {1};",
+						"}}",
+						"emit('__event',{2},{3},errId,iconId);",
+					"}};",
+					"return electron.app.getFileIcon({4},{5},callback);"
+				),
+				Script.AddObject("err"),
+				Script.AddObject("icon"),
+				Name.Escape(),
+				_callbackListId,
+				path.Escape(),
+				options.Stringify()
 			);
 			_callbackListId++;
 			_ExecuteJavaScript(script);

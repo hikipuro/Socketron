@@ -51,8 +51,9 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var menu = electron.Menu.getApplicationMenu();",
-					"return this._addObjectReference(menu);"
-				)
+					"return {0};"
+				),
+				Script.AddObject("menu")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			if (result <= 0) {
@@ -99,9 +100,10 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var menu = electron.Menu.buildFromTemplate({0});",
-					"return this._addObjectReference(menu);"
+					"return {1};"
 				),
-				templateText
+				templateText,
+				Script.AddObject("menu")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			if (result <= 0) {

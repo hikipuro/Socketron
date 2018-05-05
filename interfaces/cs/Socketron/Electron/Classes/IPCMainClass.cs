@@ -9,7 +9,7 @@ namespace Socketron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class IPCMainClass : NodeModule {
-		public const string Name = "ipcMain";
+		public const string Name = "IPCMainClass";
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -20,6 +20,18 @@ namespace Socketron {
 		/// <param name="client"></param>
 		public IPCMainClass(SocketronClient client) {
 			_client = client;
+		}
+
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		public static Callback GetCallbackFromId(ushort id) {
+			if (!_callbackList.ContainsKey(id)) {
+				return null;
+			}
+			return _callbackList[id];
 		}
 
 		public void on(string channel, Callback listener) {
@@ -51,6 +63,7 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var listener = () => {{",
+						"this._removeClientEventListener({0},{1});",
 						"emit('__event',{0},{1});",
 					"}};",
 					"this._addClientEventListener({0},{1},listener);",

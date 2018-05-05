@@ -85,6 +85,7 @@
     <Compile Include="Electron\ElectronModule.cs" />
     <Compile Include="Electron\WebPreferences.cs" />
     <Compile Include="Node\Buffer.cs" />
+    <Compile Include="Node\Modules\Error.cs" />
     <Compile Include="Node\Modules\FileSystemModule.cs" />
     <Compile Include="Node\LocalBuffer.cs" />
     <Compile Include="Color.cs" />

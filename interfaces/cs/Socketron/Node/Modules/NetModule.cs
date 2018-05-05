@@ -1,14 +1,16 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
-	[type: SuppressMessage("Style", "IDE1006")]
-	public class NetModule : NodeModule {
-		public NetModule() {
-			_client = SocketronClient.GetCurrent();
-		}
+	public partial class NodeModules {
+		[type: SuppressMessage("Style", "IDE1006")]
+		public class Net : NodeModule {
+			public Net() {
+				_client = SocketronClient.GetCurrent();
+			}
 
-		public void createConnection() {
+			public void createConnection() {
 
+			}
 		}
 	}
 }

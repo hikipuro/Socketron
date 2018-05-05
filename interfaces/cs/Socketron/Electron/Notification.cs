@@ -75,6 +75,10 @@ namespace Socketron {
 			/// </summary>
 			public string closeButtonText;
 
+			public static Options Parse(string text) {
+				return JSON.Parse<Options>(text);
+			}
+
 			/// <summary>
 			/// Create JSON text.
 			/// </summary>
@@ -111,6 +115,18 @@ namespace Socketron {
 			_id = result;
 		}
 
+		/// <summary>
+		/// *Experimental* 
+		/// </summary>
+		/// <param name="options"></param>
+		public Notification(string options) : this(Options.Parse(options)) {
+		}
+
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;

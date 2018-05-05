@@ -14,6 +14,11 @@ namespace Socketron {
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
@@ -99,6 +104,10 @@ namespace Socketron {
 			/// </summary>
 			public bool? securityScopedBookmarks;
 
+			public static OpenDialogOptions Parse(string text) {
+				return JSON.Parse<OpenDialogOptions>(text);
+			}
+
 			/// <summary>
 			/// Create JSON text.
 			/// </summary>
@@ -144,6 +153,10 @@ namespace Socketron {
 			/// when packaged for the Mac App Store. 
 			/// </summary>
 			public bool? securityScopedBookmarks;
+
+			public static SaveDialogOptions Parse(string text) {
+				return JSON.Parse<SaveDialogOptions>(text);
+			}
 
 			/// <summary>
 			/// Create JSON text.
@@ -214,6 +227,10 @@ namespace Socketron {
 			/// </summary>
 			public bool? normalizeAccessKeys;
 
+			public static MessageBoxOptions Parse(string text) {
+				return JSON.Parse<MessageBoxOptions>(text);
+			}
+
 			/// <summary>
 			/// Create JSON text.
 			/// </summary>
@@ -235,6 +252,10 @@ namespace Socketron {
 			/// The message to display to the user.
 			/// </summary>
 			public string message;
+
+			public static CertificateTrustDialogOptions Parse(string text) {
+				return JSON.Parse<CertificateTrustDialogOptions>(text);
+			}
 
 			/// <summary>
 			/// Create JSON text.
@@ -406,9 +427,7 @@ namespace Socketron {
 		/// <param name="content">The text content to display in the error box.</param>
 		public void showErrorBox(string title, string content) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.dialog.showErrorBox({0},{1});"
-				),
+				"electron.dialog.showErrorBox({0},{1});",
 				title.Escape(),
 				content.Escape()
 			);
@@ -446,9 +465,7 @@ namespace Socketron {
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.dialog.showCertificateTrustDialog({0});"
-					),
+					"return electron.dialog.showCertificateTrustDialog({0});",
 					options.Stringify()
 				);
 			}

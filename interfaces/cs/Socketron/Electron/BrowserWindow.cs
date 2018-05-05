@@ -17,48 +17,151 @@ namespace Socketron {
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
 		/// <summary>
-		/// BrowserWindow event keys.
+		/// BrowserWindow instance events.
 		/// </summary>
 		public class Events {
+			/// <summary>
+			/// Emitted when the document changed its title,
+			/// calling event.preventDefault() will prevent
+			/// the native window's title from changing.
+			/// </summary>
 			public const string PageTitleUpdated = "page-title-updated";
+			/// <summary>
+			/// Emitted when the window is going to be closed.
+			/// It's emitted before the beforeunload and unload event of the DOM.
+			/// Calling event.preventDefault() will cancel the close.
+			/// </summary>
 			public const string Close = "close";
+			/// <summary>
+			/// Emitted when the window is closed.
+			/// After you have received this event you should remove the reference
+			/// to the window and avoid using it any more.
+			/// </summary>
 			public const string Closed = "closed";
-			/// <summary>*Windows*</summary>
+			/// <summary>
+			/// *Windows*
+			/// Emitted when window session is going to end due to force shutdown
+			/// or machine restart or session log off.
+			/// </summary>
 			public const string SessionEnd = "session-end";
+			/// <summary>
+			/// Emitted when the web page becomes unresponsive.
+			/// </summary>
 			public const string Unresponsive = "unresponsive";
+			/// <summary>
+			/// Emitted when the unresponsive web page becomes responsive again.
+			/// </summary>
 			public const string Responsive = "responsive";
+			/// <summary>
+			/// Emitted when the window loses focus.
+			/// </summary>
 			public const string Blur = "blur";
+			/// <summary>
+			/// Emitted when the window gains focus.
+			/// </summary>
 			public const string Focus = "focus";
+			/// <summary>
+			/// Emitted when the window is shown.
+			/// </summary>
 			public const string Show = "show";
+			/// <summary>
+			/// Emitted when the window is hidden.
+			/// </summary>
 			public const string Hide = "hide";
+			/// <summary>
+			/// Emitted when the web page has been rendered
+			/// (while not being shown) and window can be displayed
+			/// without a visual flash.
+			/// </summary>
 			public const string ReadyToShow = "ready-to-show";
+			/// <summary>
+			/// Emitted when window is maximized.
+			/// </summary>
 			public const string Maximize = "maximize";
+			/// <summary>
+			/// Emitted when the window exits from a maximized state.
+			/// </summary>
 			public const string Unmaximize = "unmaximize";
+			/// <summary>
+			/// Emitted when the window is minimized.
+			/// </summary>
 			public const string Minimize = "minimize";
+			/// <summary>
+			/// Emitted when the window is restored from a minimized state.
+			/// </summary>
 			public const string Restore = "restore";
+			/// <summary>
+			/// Emitted when the window is being resized.
+			/// </summary>
 			public const string Resize = "resize";
+			/// <summary>
+			/// Emitted when the window is being moved to a new position.
+			/// <para>
+			/// Note: On macOS this event is just an alias of moved.
+			/// </para>
+			/// </summary>
 			public const string Move = "move";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted once when the window is moved to a new position.
+			/// </summary>
 			public const string Moved = "moved";
+			/// <summary>
+			/// Emitted when the window enters a full-screen state.
+			/// </summary>
 			public const string EnterFullScreen = "enter-full-screen";
+			/// <summary>
+			/// Emitted when the window leaves a full-screen state.
+			/// </summary>
 			public const string LeaveFullScreen = "leave-full-screen";
+			/// <summary>
+			/// Emitted when the window enters a full-screen state triggered by HTML API.
+			/// </summary>
 			public const string EnterHtmlFullScreen = "enter-html-full-screen";
+			/// <summary>
+			/// Emitted when the window leaves a full-screen state triggered by HTML API.
+			/// </summary>
 			public const string LeaveHtmlFullScreen = "leave-html-full-screen";
-			/// <summary>*Windows*</summary>
+			/// <summary>
+			/// *Windows*
+			/// Emitted when an App Command is invoked.
+			/// </summary>
 			public const string AppCommand = "app-command";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when scroll wheel event phase has begun.
+			/// </summary>
 			public const string ScrollTouchBegin = "scroll-touch-begin";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when scroll wheel event phase has ended.
+			/// </summary>
 			public const string ScrollTouchEnd = "scroll-touch-end";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when scroll wheel event phase filed upon reaching the edge of element.
+			/// </summary>
 			public const string ScrollTouchEdge = "scroll-touch-edge";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted on 3-finger swipe.
+			/// Possible directions are up, right, down, left.
+			/// </summary>
 			public const string Swipe = "swipe";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the window opens a sheet.
+			/// </summary>
 			public const string SheetBegin = "sheet-begin";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the window has closed a sheet.
+			/// </summary>
 			public const string SheetEnd = "sheet-end";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the native new tab button is clicked.
+			/// </summary>
 			public const string NewWindowForTab = "new-window-for-tab";
 		}
 
@@ -66,9 +169,11 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public BrowserWindow(SocketronClient client) {
+		/// <param name="id"></param>
+		public BrowserWindow(SocketronClient client, int id) {
 			_disposeManually = true;
 			_client = client;
+			_id = id;
 		}
 
 		public BrowserWindow(Options options) {
@@ -89,14 +194,20 @@ namespace Socketron {
 			if (windowId != null && contentsId != null) {
 				_client = client;
 				_id = (int)windowId;
-				webContents = new WebContents(client, this) {
-					id = (int)contentsId
-				};
+				webContents = new WebContents(client, (int)contentsId);
 			} else {
 				throw new InvalidOperationException();
 			}
 		}
 
+		public BrowserWindow(string options) : this(Options.Parse(options)) {
+		}
+
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
 			if (!_callbackList.ContainsKey(id)) {
 				return null;
@@ -209,6 +320,19 @@ namespace Socketron {
 		/// <returns></returns>
 		public static JsonObject getDevToolsExtensions() {
 			return _Class.getDevToolsExtensions();
+		}
+
+		public int id {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var window = electron.BrowserWindow.fromId({0});",
+						"return window.id;"
+					),
+					_id
+				);
+				return _ExecuteBlocking<int>(script);
+			}
 		}
 
 		public void on(string eventName, Callback callback) {
@@ -2303,12 +2427,8 @@ namespace Socketron {
 			object[] result = _ExecuteBlocking<object[]>(script);
 			int windowId = (int)result[0];
 			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(_client) {
-				_id = windowId
-			};
-			window.webContents = new WebContents(_client, window) {
-				_id = contentsId
-			};
+			BrowserWindow window = new BrowserWindow(_client, windowId);
+			window.webContents = new WebContents(_client, contentsId);
 			return window;
 		}
 
@@ -2335,12 +2455,8 @@ namespace Socketron {
 			foreach (object[] item in result) {
 				int windowId = (int)item[0];
 				int contentsId = (int)item[1];
-				BrowserWindow window = new BrowserWindow(_client) {
-					_id = windowId
-				};
-				window.webContents = new WebContents(_client, window) {
-					_id = contentsId
-				};
+				BrowserWindow window = new BrowserWindow(_client, windowId);
+				window.webContents = new WebContents(_client, contentsId);
 				windows.Add(window);
 			}
 			return windows;
@@ -2528,10 +2644,7 @@ namespace Socketron {
 				_id
 			);
 			int result = _ExecuteBlocking<int>(script);
-			BrowserView view = new BrowserView(_client) {
-				_id = result
-			};
-			return view;
+			return new BrowserView(_client, result);
 		}
 	}
 }

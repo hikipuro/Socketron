@@ -11,9 +11,20 @@ namespace Socketron {
 		public const string Name = "NativeImage";
 		protected static NativeImageClass _Class = new NativeImageClass();
 
+		/// <summary>
+		/// NativeImage converter options.
+		/// </summary>
 		public class Options {
 			public double scaleFactor;
 
+			public static Options Parse(string text) {
+				return JSON.Parse<Options>(text);
+			}
+
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
 				return JSON.Stringify(this);
 			}
@@ -285,10 +296,11 @@ namespace Socketron {
 						"return null;",
 					"}}",
 					"image = image.crop({1});",
-					"return this._addObjectReference(image);"
+					"return {2};"
 				),
 				Script.GetObject(_id),
-				rect.Stringify()
+				rect.Stringify(),
+				Script.AddObject("image")
 			);
 			int result = _ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -311,10 +323,11 @@ namespace Socketron {
 						"return null;",
 					"}}",
 					"image = image.resize({1});",
-					"return this._addObjectReference(image);"
+					"return {2};"
 				),
 				Script.GetObject(_id),
-				options.Stringify()
+				options.Stringify(),
+				Script.AddObject("image")
 			);
 			int result = _ExecuteBlocking<int>(script);
 			return new NativeImage(_client, result);
@@ -346,13 +359,7 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void addRepresentation(JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0};",
-					"if (image == null) {{",
-						"return;",
-					"}}",
-					"image.addRepresentation({1});"
-				),
+				"{0}.addRepresentation({1});",
 				Script.GetObject(_id),
 				options.Stringify()
 			);

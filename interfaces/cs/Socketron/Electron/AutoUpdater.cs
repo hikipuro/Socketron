@@ -9,7 +9,7 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class AutoUpdater : NodeModule {
 		/// <summary>
-		/// AutoUpdater object events.
+		/// AutoUpdater module events.
 		/// </summary>
 		public class Events {
 			/// <summary>
@@ -48,24 +48,55 @@ namespace Socketron {
 			_client = client;
 		}
 
+		/// <summary>
+		/// Sets the url and initialize the auto updater.
+		/// </summary>
+		/// <param name="options"></param>
 		public void setFeedURL(JsonObject options) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				"electron.autoUpdater.setFeedURL({0});",
+				options.Stringify()
+			);
+			_ExecuteJavaScript(script);
 		}
 
-		public string getFeedURL(JsonObject options) {
-			// TODO: implement this
-			throw new NotImplementedException();
+		/// <summary>
+		/// Returns String - The current update feed URL.
+		/// </summary>
+		/// <returns></returns>
+		public string getFeedURL() {
+			string script = ScriptBuilder.Build(
+				"return electron.autoUpdater.getFeedURL();"
+			);
+			return _ExecuteBlocking<string>(script);
 		}
 
+		/// <summary>
+		/// Asks the server whether there is an update.
+		/// You must call setFeedURL before using this API.
+		/// </summary>
 		public void checkForUpdates() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = "electron.autoUpdater.checkForUpdates();";
+			_ExecuteJavaScript(script);
 		}
 
+		/// <summary>
+		/// Restarts the app and installs the update after it has been downloaded.
+		/// It should only be called after update-downloaded has been emitted.
+		/// <para>
+		/// Under the hood calling autoUpdater.quitAndInstall()
+		/// will close all application windows first,
+		/// and automatically call app.quit() after all windows have been closed.
+		/// </para>
+		/// <para>
+		/// Note: If the application is quit without calling this API
+		/// after the update-downloaded event has been emitted,
+		/// the application will still be replaced by the updated one on the next run.
+		/// </para>
+		/// </summary>
 		public void quitAndInstall() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = "electron.autoUpdater.quitAndInstall();";
+			_ExecuteJavaScript(script);
 		}
 	}
 }

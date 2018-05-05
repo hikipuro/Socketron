@@ -20,14 +20,12 @@ namespace Socketron {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"var session = electron.session.defaultSession;",
-						"return {1};"
+						"return {0};"
 					),
 					Script.AddObject("session")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Session(_client) {
-					_id = result
-				};
+				return new Session(_client, result);
 			}
 		}
 
@@ -54,9 +52,7 @@ namespace Socketron {
 				);
 			}
 			int result = _ExecuteBlocking<int>(script);
-			return new Session(_client) {
-				_id = result
-			};
+			return new Session(_client, result);
 		}
 	}
 }
