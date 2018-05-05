@@ -7,7 +7,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Notification : NodeBase {
+	public class Notification : NodeModule {
 		public const string Name = "Notification";
 
 		static ushort _callbackListId = 0;
@@ -84,8 +84,31 @@ namespace Socketron {
 			}
 		}
 
-		public Notification(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Notification(SocketronClient client) {
+			_client = client;
+		}
+
+		/// <summary>
+		/// *Experimental* 
+		/// </summary>
+		/// <param name="options"></param>
+		public Notification(Options options) {
+			SocketronClient client = SocketronClient.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+				"var notification = new electron.Notification({0});",
+				"return {1};"
+				),
+				options.Stringify(),
+				Script.AddObject("notification")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			_client = client;
+			_id = result;
 		}
 
 		public static Callback GetCallbackFromId(ushort id) {
@@ -93,16 +116,6 @@ namespace Socketron {
 				return null;
 			}
 			return _callbackList[id];
-		}
-
-		public void Dispose() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"this._removeObjectReference({0});"
-				),
-				id
-			);
-			_ExecuteJavaScript(_socketron, script, null, null);
 		}
 
 		public void on(string eventName, Callback callback) {
@@ -122,7 +135,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.on({3}, listener);"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -149,7 +162,7 @@ namespace Socketron {
 					"this._addClientEventListener({1},{2},listener);",
 					"notification.once({3}, listener);"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -178,7 +191,7 @@ namespace Socketron {
 					"}}",
 					"notification.show();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -195,7 +208,7 @@ namespace Socketron {
 					"}}",
 					"notification.close();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}

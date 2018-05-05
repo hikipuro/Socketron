@@ -39,10 +39,6 @@
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
-			// timer1
-			// 
-			this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-			// 
 			// textBox1
 			// 
 			this.textBox1.Location = new System.Drawing.Point(12, 82);

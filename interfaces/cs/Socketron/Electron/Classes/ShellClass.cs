@@ -6,9 +6,13 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ShellClass : NodeBase {
-		public ShellClass(Socketron socketron) {
-			_socketron = socketron;
+	public class ShellClass : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public ShellClass(SocketronClient client) {
+			_client = client;
 		}
 
 		/// <summary>

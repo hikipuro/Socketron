@@ -1,5 +1,12 @@
-﻿namespace Socketron {
-	static class JsonValueExtension {
+﻿using System.Collections.Generic;
+
+namespace Socketron {
+	public static class JsonValueExtension {
+		/// <summary>
+		/// Escape JSON value.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public static string Escape(this string value) {
 			if (value == null) {
 				return "null";
@@ -10,10 +17,20 @@
 			return "\"" + value + "\"";
 		}
 
+		/// <summary>
+		/// Escape JSON value.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public static string Escape(this bool value) {
 			return value.ToString().ToLower();
 		}
 
+		/// <summary>
+		/// Escape JSON value.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public static string Escape(this string[] value) {
 			if (value == null) {
 				return "null";
@@ -24,6 +41,26 @@
 				result[i] = item.Escape();
 			}
 			return string.Join(",", result);
+		}
+
+		/// <summary>
+		/// Create JSON text.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static string Stringify<T>(this List<T> value) {
+			return JSON.Stringify(value);
+		}
+
+		/// <summary>
+		/// Create JSON text.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static string Stringify<T>(this T[] value) {
+			return JSON.Stringify(value);
 		}
 	}
 }

@@ -1,11 +1,11 @@
 ﻿namespace Socketron {
 	public class SocketronObject : NodeJS {
-		protected Electron electron;
+		protected ElectronModule electron;
 
-		public override void Init(Socketron socketron) {
-			base.Init(socketron);
-			_socketron = socketron;
-			electron = new Electron(socketron);
+		public override void Init(SocketronClient client) {
+			base.Init(client);
+			_client = client;
+			electron = new ElectronModule(client);
 		}
 	}
 }

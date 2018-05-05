@@ -6,34 +6,38 @@ namespace Socketron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	public class BrowserWindowProxy {
-		public bool Closed;
+		public bool closed {
+			get {
+				return false;
+			}
+		}
 
-		public void Blur() {
+		public void blur() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void Close() {
+		public void close() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void Eval() {
+		public void eval() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void Focus() {
+		public void focus() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void Print() {
+		public void print() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}
 
-		public void PostMessage() {
+		public void postMessage() {
 			// TODO: implement this
 			throw new NotImplementedException();
 		}

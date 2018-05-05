@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
@@ -8,43 +6,135 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Tray : NodeBase {
+	public class Tray : NodeModule {
 		public const string Name = "Tray";
 
+		/// <summary>
+		/// Tray instance events.
+		/// </summary>
 		public class Events {
+			/// <summary>
+			/// Emitted when the tray icon is clicked.
+			/// </summary>
 			public const string Click = "click";
-			/// <summary>*macOS Windows*</summary>
+			/// <summary>
+			/// *macOS Windows*
+			/// Emitted when the tray icon is right clicked.
+			/// </summary>
 			public const string RightClick = "right-click";
-			/// <summary>*macOS Windows*</summary>
+			/// <summary>
+			/// *macOS Windows*
+			/// Emitted when the tray icon is double clicked.
+			/// </summary>
 			public const string DoubleClick = "double-click";
-			/// <summary>*Windows*</summary>
+			/// <summary>
+			/// *Windows*
+			/// Emitted when the tray balloon shows.
+			/// </summary>
 			public const string BalloonShow = "balloon-show";
-			/// <summary>*Windows*</summary>
+			/// <summary>
+			/// *Windows*
+			/// Emitted when the tray balloon is clicked.
+			/// </summary>
 			public const string BalloonClick = "balloon-click";
-			/// <summary>*Windows*</summary>
+			/// <summary>
+			/// *Windows*
+			/// Emitted when the tray balloon is closed
+			/// because of timeout or user manually closes it.
+			/// </summary>
 			public const string BalloonClosed = "balloon-closed";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when any dragged items are dropped on the tray icon.
+			/// </summary>
 			public const string Drop = "drop";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when dragged files are dropped in the tray icon.
+			/// </summary>
 			public const string DropFiles = "drop-files";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when dragged text is dropped in the tray icon.
+			/// </summary>
 			public const string DropText = "drop-text";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when a drag operation enters the tray icon.
+			/// </summary>
 			public const string DragEnter = "drag-enter";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when a drag operation exits the tray icon.
+			/// </summary>
 			public const string DragLeave = "drag-leave";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when a drag operation ends on the tray or ends at another location.
+			/// </summary>
 			public const string DragEnd = "drag-end";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the mouse enters the tray icon.
+			/// </summary>
 			public const string MouseEnter = "mouse-enter";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the mouse exits the tray icon.
+			/// </summary>
 			public const string MouseLeave = "mouse-leave";
-			/// <summary>*macOS*</summary>
+			/// <summary>
+			/// *macOS*
+			/// Emitted when the mouse moves in the tray icon.
+			/// </summary>
 			public const string MouseMove = "mouse-move";
 		}
 
-		public Tray(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Tray(SocketronClient client) {
+			_client = client;
+		}
+
+		/// <summary>
+		/// Creates a new tray icon associated with the image.
+		/// </summary>
+		/// <param name="image"></param>
+		public Tray(NativeImage image) {
+			SocketronClient client = SocketronClient.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var image = {0};",
+					"var tray = new electron.Tray(image);",
+					"return {1};"
+				),
+				Script.GetObject(image._id),
+				Script.AddObject("tray")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			_client = client;
+			_id = result;
+		}
+
+		/// <summary>
+		/// Creates a new tray icon associated with the image.
+		/// </summary>
+		/// <param name="image"></param>
+		public Tray(string image) {
+			SocketronClient client = SocketronClient.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var tray = new electron.Tray({0});",
+					"return {1};"
+				),
+				image.Escape(),
+				Script.AddObject("tray")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			_client = client;
+			_id = result;
 		}
 
 		/// <summary>
@@ -57,8 +147,8 @@ namespace Socketron {
 					"tray.destroy();",
 					"{1};"
 				),
-				Script.GetObject(id),
-				Script.RemoveObject(id)
+				Script.GetObject(_id),
+				Script.RemoveObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -77,8 +167,8 @@ namespace Socketron {
 					"var tray = {1};",
 					"tray.setImage(image);"
 				),
-				Script.GetObject(image.id),
-				Script.GetObject(id)
+				Script.GetObject(image._id),
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -93,7 +183,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.setImage({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				image.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -114,8 +204,8 @@ namespace Socketron {
 					"var tray = {1};",
 					"tray.setPressedImage(image);"
 				),
-				Script.GetObject(image.id),
-				Script.GetObject(id)
+				Script.GetObject(image._id),
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -130,7 +220,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.setToolTip({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				toolTip.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -147,7 +237,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.setToolTip({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				title.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -164,7 +254,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.setHighlightMode({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				mode.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -181,7 +271,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.displayBalloon({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -201,7 +291,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"tray.popUpContextMenu();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -225,8 +315,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.popUpContextMenu(menu);"
 				),
-				Script.GetObject(id),
-				Script.GetObject(menu.id)
+				Script.GetObject(_id),
+				Script.GetObject(menu._id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -251,8 +341,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.popUpContextMenu(menu, {2});"
 				),
-				Script.GetObject(id),
-				Script.GetObject(menu.id),
+				Script.GetObject(_id),
+				Script.GetObject(menu._id),
 				position.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -272,8 +362,8 @@ namespace Socketron {
 					"var menu = {1};",
 					"tray.setContextMenu(menu);"
 				),
-				Script.GetObject(id),
-				Script.GetObject(menu.id)
+				Script.GetObject(_id),
+				Script.GetObject(menu._id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -289,7 +379,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"return tray.getBounds();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Rectangle.FromObject(result);
@@ -305,7 +395,7 @@ namespace Socketron {
 					"var tray = {0};",
 					"return tray.isDestroyed();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}

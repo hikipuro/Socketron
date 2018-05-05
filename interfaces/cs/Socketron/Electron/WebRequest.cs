@@ -5,9 +5,9 @@ namespace Socketron {
 	/// Intercept and modify the contents of a request at various stages of its lifetime.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class WebRequest : NodeBase {
-		public WebRequest(Socketron socketron) {
-			_socketron = socketron;
+	public class WebRequest : NodeModule {
+		public WebRequest(SocketronClient client) {
+			_client = client;
 		}
 
 		public void OnBeforeRequest() {

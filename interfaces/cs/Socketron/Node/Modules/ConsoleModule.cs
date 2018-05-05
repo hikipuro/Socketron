@@ -1,12 +1,15 @@
-﻿
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ConsoleModule : NodeBase {
-		public ConsoleModule(Socketron socketron) {
-			_socketron = socketron;
+	public class ConsoleModule : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public ConsoleModule(SocketronClient client) {
+			_disposeManually = true;
+			_client = client;
 		}
 
 		public void clear() {
@@ -114,9 +117,9 @@ namespace Socketron {
 					strings[i] = ((bool)arg).Escape();
 					continue;
 				}
-				if (arg is NodeBase) {
-					NodeBase obj = arg as NodeBase;
-					strings[i] = string.Format("this._objRefs[{0}]", obj.id);
+				if (arg is NodeModule) {
+					NodeModule obj = arg as NodeModule;
+					strings[i] = string.Format("this._objRefs[{0}]", obj._id);
 					continue;
 				}
 				strings[i] = arg.ToString();

@@ -8,9 +8,10 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContents : NodeBase {
+	public class WebContents : NodeModule {
 		// TODO: add instance properties
 		public const string Name = "webContents";
+		public int id;
 		protected BrowserWindow _window;
 
 		static ushort _callbackListId = 0;
@@ -62,14 +63,23 @@ namespace Socketron {
 			public const string ConsoleMessage = "console-message";
 		}
 
-		public WebContents(Socketron socketron) {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public WebContents(SocketronClient client) {
 			_disposeManually = true;
-			_socketron = socketron;
+			_client = client;
 		}
 
-		public WebContents(Socketron socketron, BrowserWindow browserWindow) {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		/// <param name="browserWindow"></param>
+		public WebContents(SocketronClient client, BrowserWindow browserWindow) {
 			_disposeManually = true;
-			_socketron = socketron;
+			_client = client;
 			_window = browserWindow;
 		}
 
@@ -88,12 +98,12 @@ namespace Socketron {
 						"var session = contents.session;",
 						"return {1};"
 					),
-					id,
+					_id,
 					Script.AddObject("session")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Session(_socketron) {
-					id = result
+				return new Session(_client) {
+					_id = result
 				};
 			}
 		}
@@ -106,12 +116,12 @@ namespace Socketron {
 						"var hostWebContents = contents.hostWebContents;",
 						"return {1};"
 					),
-					id,
+					_id,
 					Script.AddObject("hostWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new WebContents(_socketron) {
-					id = result
+				return new WebContents(_client) {
+					_id = result
 				};
 			}
 		}
@@ -124,12 +134,12 @@ namespace Socketron {
 						"var devToolsWebContents = contents.devToolsWebContents;",
 						"return {1};"
 					),
-					id,
+					_id,
 					Script.AddObject("devToolsWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new WebContents(_socketron) {
-					id = result
+				return new WebContents(_client) {
+					_id = result
 				};
 			}
 		}
@@ -142,12 +152,12 @@ namespace Socketron {
 						"var debugger = contents.debugger;",
 						"return {1};"
 					),
-					id,
+					_id,
 					Script.AddObject("debugger")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Debugger(_socketron) {
-					id = result
+				return new Debugger(_client) {
+					_id = result
 				};
 			}
 		}
@@ -167,7 +177,7 @@ namespace Socketron {
 					"contents.on({4}, listener);"
 				),
 				Name,
-				id,
+				_id,
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -192,7 +202,7 @@ namespace Socketron {
 					"contents.once({4}, listener);"
 				),
 				Name,
-				id,
+				_id,
 				Name.Escape(),
 				_callbackListId,
 				eventName.Escape()
@@ -216,7 +226,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.loadURL({1});"
 					),
-					id,
+					_id,
 					url.Escape()
 				);
 			} else {
@@ -225,7 +235,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.loadURL({1},{2});"
 					),
-					id,
+					_id,
 					url.Escape(),
 					options.Stringify()
 				);
@@ -244,7 +254,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.loadFile({1});"
 				),
-				id,
+				_id,
 				filePath.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -261,7 +271,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.downloadURL({1});"
 				),
-				id,
+				_id,
 				url.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -277,7 +287,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getURL();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -292,7 +302,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getTitle();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -307,7 +317,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDestroyed();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -321,7 +331,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.focus();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -336,7 +346,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isFocused();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -351,7 +361,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isLoading();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -367,7 +377,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isLoadingMainFrame();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -383,7 +393,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isWaitingForResponse();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -397,7 +407,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.stop();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -411,7 +421,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.reload();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -425,7 +435,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.reloadIgnoringCache();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -440,7 +450,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoBack();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -455,7 +465,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoForward();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -471,7 +481,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.canGoToOffset({1});"
 				),
-				id,
+				_id,
 				offset
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -486,7 +496,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.clearHistory();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -500,7 +510,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goBack();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -514,7 +524,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goForward();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -529,7 +539,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goToIndex({1});"
 				),
-				id,
+				_id,
 				index
 			);
 			_ExecuteJavaScript(script);
@@ -545,7 +555,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.goToOffset({1});"
 				),
-				id,
+				_id,
 				offset
 			);
 			_ExecuteJavaScript(script);
@@ -561,7 +571,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isCrashed();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -576,7 +586,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setUserAgent({1});"
 				),
-				id,
+				_id,
 				userAgent.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -592,7 +602,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getUserAgent();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -607,7 +617,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.insertCSS({1});"
 				),
-				id,
+				_id,
 				css.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -626,7 +636,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.executeJavaScript({1});"
 				),
-				id,
+				_id,
 				code.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -643,7 +653,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setIgnoreMenuShortcuts({1});"
 				),
-				id,
+				_id,
 				ignore.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -659,7 +669,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setAudioMuted({1});"
 				),
-				id,
+				_id,
 				muted.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -675,7 +685,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isAudioMuted();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -691,7 +701,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setZoomFactor({1});"
 				),
-				id,
+				_id,
 				factor
 			);
 			_ExecuteJavaScript(script);
@@ -728,7 +738,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setZoomLevel({1});"
 				),
-				id,
+				_id,
 				level
 			);
 			_ExecuteJavaScript(script);
@@ -760,7 +770,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setVisualZoomLevelLimits({1},{2});"
 				),
-				id,
+				_id,
 				minimumLevel,
 				maximumLevel
 			);
@@ -778,7 +788,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setLayoutZoomLevelLimits({1},{2});"
 				),
-				id,
+				_id,
 				minimumLevel,
 				maximumLevel
 			);
@@ -794,7 +804,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.undo();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -808,7 +818,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.redo();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -822,7 +832,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.cut();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -836,7 +846,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.copy();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -852,7 +862,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.copyImageAt({1},{2});"
 				),
-				id, x, y
+				_id, x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -866,7 +876,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.paste();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -880,7 +890,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.pasteAndMatchStyle();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -894,7 +904,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.delete();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -908,7 +918,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.selectAll();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -922,7 +932,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.unselect();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -937,7 +947,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.replace({1});"
 				),
-				id,
+				_id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -953,7 +963,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.replaceMisspelling({1});"
 				),
-				id,
+				_id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -969,7 +979,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.insertText({1});"
 				),
-				id,
+				_id,
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -992,7 +1002,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.findInPage({1});"
 					),
-					id,
+					_id,
 					text.Escape()
 				);
 			} else {
@@ -1001,7 +1011,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.findInPage({1},{2});"
 					),
-					id,
+					_id,
 					text.Escape(),
 					options.Stringify()
 				);
@@ -1131,7 +1141,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.addWorkSpace({1});"
 				),
-				id,
+				_id,
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1147,7 +1157,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.removeWorkSpace({1});"
 				),
-				id,
+				_id,
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1184,7 +1194,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.openDevTools();"
 					),
-					id
+					_id
 				);
 			} else {
 				script = ScriptBuilder.Build(
@@ -1192,7 +1202,7 @@ namespace Socketron {
 						"var contents = electron.webContents.fromId({0});",
 						"contents.openDevTools({1});"
 					),
-					id,
+					_id,
 					options.Stringify()
 				);
 			}
@@ -1208,7 +1218,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.closeDevTools();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1223,7 +1233,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDevToolsOpened();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1238,7 +1248,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isDevToolsFocused();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1252,7 +1262,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.toggleDevTools();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1268,7 +1278,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.inspectElement({1},{2});"
 				),
-				id, x, y
+				_id, x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1282,7 +1292,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.inspectServiceWorker();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1316,7 +1326,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.enableDeviceEmulation({1});"
 				),
-				id,
+				_id,
 				parameters.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1331,7 +1341,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.disableDeviceEmulation();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1349,7 +1359,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.sendInputEvent({1});"
 				),
-				id,
+				_id,
 				@event.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1380,7 +1390,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.endFrameSubscription();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1417,7 +1427,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.showDefinitionForSelection();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1447,7 +1457,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isOffscreen();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1461,7 +1471,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.startPainting();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1475,7 +1485,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.stopPainting();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1490,7 +1500,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.isPainting();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1506,7 +1516,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setFrameRate({1});"
 				),
-				id,
+				_id,
 				fps
 			);
 			_ExecuteJavaScript(script);
@@ -1522,7 +1532,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getFrameRate();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -1540,7 +1550,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.invalidate();"
 				),
-				id
+				_id
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1555,7 +1565,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getWebRTCIPHandlingPolicy();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -1571,7 +1581,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"contents.setWebRTCIPHandlingPolicy({1});"
 				),
-				id,
+				_id,
 				policy.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1587,7 +1597,7 @@ namespace Socketron {
 					"var contents = electron.webContents.fromId({0});",
 					"return contents.getOSProcessId();"
 				),
-				id
+				_id
 			);
 			return _ExecuteBlocking<int>(script);
 		}

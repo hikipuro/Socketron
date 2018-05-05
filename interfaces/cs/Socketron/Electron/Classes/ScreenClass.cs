@@ -7,9 +7,13 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ScreenClass : NodeBase {
-		public ScreenClass(Socketron socketron) {
-			_socketron = socketron;
+	public class ScreenClass : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public ScreenClass(SocketronClient client) {
+			_client = client;
 		}
 
 		/// <summary>

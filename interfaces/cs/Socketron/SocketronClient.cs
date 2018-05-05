@@ -35,48 +35,6 @@ namespace Socketron {
 			string script = string.Join("\n", scriptList);
 			ExecuteJavaScript(script, success, error);
 		}
-
-		/*
-		public async Task<object> ExecuteJavaScriptAsync(string script) {
-			SocketronData data = new SocketronData() {
-				Type = Type,
-				Func = "executeJavaScript",
-				Params = new object[] { script }
-			};
-			return await _CallAsync<object>(data);
-		}
-
-		public async Task<object> ExecuteJavaScriptAsync(string[] scriptList) {
-			string script = string.Join("\n", scriptList);
-			return await ExecuteJavaScriptAsync(script);
-		}
-
-		protected async Task<T> _CallAsync<T>(SocketronData socketronData, int timeout = 10000) where T: class {
-			T result = null;
-			bool done = false;
-			var tokenSource = new CancellationTokenSource();
-			tokenSource.CancelAfter(timeout);
-			Task<T> task = Task.Run(async () => {
-				while (!done) {
-					await Task.Delay(1);
-					if (tokenSource.IsCancellationRequested) {
-						break;
-					}
-				}
-				return result;
-			}, tokenSource.Token);
-
-			Callback success = (data) => {
-				result = data as T;
-				done = true;
-			};
-			Callback error = (data) => {
-				done = true;
-			};
-			Emit("text", socketronData, success, error);
-			return await task;
-		}
-		//*/
 	}
 
 	public class RendererProcess : EventEmitter {
@@ -172,55 +130,60 @@ namespace Socketron {
 		//*/
 	}
 
-	public class Socketron: EventEmitter {
+	public class SocketronClient: EventEmitter {
 		public string ID = string.Empty;
 		public Config Config = new Config();
 		public MainProcess Main;
 		public RendererProcess Renderer;
-		SocketClient _client;
+		SocketClient _socketClient;
 		Dictionary<ushort, Callback> _successList;
 		Dictionary<ushort, Callback> _errorList;
 		ushort _sequenceId = 0;
-		static Dictionary<Thread, Socketron> _Socketrons;
+		static Dictionary<Thread, SocketronClient> _Clients;
 
-		static Socketron() {
-			_Socketrons = new Dictionary<Thread, Socketron>();
+		static SocketronClient() {
+			_Clients = new Dictionary<Thread, SocketronClient>();
 		}
 
-		public static Socketron Current {
+		public static SocketronClient Current {
 			get {
 				Thread thread = Thread.CurrentThread;
-				if (_Socketrons.ContainsKey(thread)) {
-					return _Socketrons[thread];
+				if (_Clients.ContainsKey(thread)) {
+					return _Clients[thread];
 				}
 				return null;
 			}
 		}
 
-		public static Socketron GetCurrent() {
+		public static SocketronClient GetCurrent() {
 			Thread thread = Thread.CurrentThread;
-			if (_Socketrons.ContainsKey(thread)) {
-				return _Socketrons[thread];
+			if (_Clients.ContainsKey(thread)) {
+				return _Clients[thread];
 			}
 			string message = "Socketron instance is not found in this thread.";
 			throw new InvalidOperationException(message);
 		}
 
+		public static void Execute(string script) {
+			SocketronClient client = GetCurrent();
+			client.Main.ExecuteJavaScript(script);
+		}
+
 		public static T ExecuteBlocking<T>(string script) {
-			Socketron client = GetCurrent();
+			SocketronClient client = GetCurrent();
 			return client.ExecuteJavaScriptBlocking<T>(script);
 		}
 
-		public Socketron() {
-			_client = new SocketClient(Config);
-			_client.On("debug", (args) => {
+		public SocketronClient() {
+			_socketClient = new SocketClient(Config);
+			_socketClient.On("debug", (args) => {
 				if (!Config.IsDebug) {
 					return;
 				}
 				Emit("debug", args[0]);
 			});
-			_client.On("connect", _OnConnect);
-			_client.On("data", _OnData);
+			_socketClient.On("connect", _OnConnect);
+			_socketClient.On("data", _OnData);
 
 			_successList = new Dictionary<ushort, Callback>();
 			_errorList = new Dictionary<ushort, Callback>();
@@ -233,23 +196,24 @@ namespace Socketron {
 		}
 
 		public bool IsConnected {
-			get { return _client.IsConnected; }
+			get { return _socketClient.IsConnected; }
 		}
 
 		public void Connect(string hostname, int port = 3000) {
-			_client.Connect(hostname, port);
+			_socketClient.Connect(hostname, port);
 		}
 
 		public void Close() {
 			ID = string.Empty;
-			_client.Close();
+			NodeModule.DisposeAll();
+			_socketClient.Close();
 		}
 
 		public void Write(byte[] bytes) {
-			if (!_client.IsConnected) {
+			if (!_socketClient.IsConnected) {
 				return;
 			}
-			_client.Write(bytes);
+			_socketClient.Write(bytes);
 		}
 
 		public void Write(LocalBuffer buffer) {
@@ -276,21 +240,29 @@ namespace Socketron {
 				return;
 			}
 			string script = string.Format(
-				"this._removeObjectReference({0});", id
+				"this._removeObjectReference({0});",
+				id
 			);
+			//Console.WriteLine("RemoveObject: " + id);
 			Main.ExecuteJavaScript(script);
 		}
 
 		public T ExecuteJavaScriptBlocking<T>(string script) {
 			ManualResetEvent resetEvent = new ManualResetEvent(false);
 			T value = default(T);
+			Type typeofT = typeof(T);
 
 			Main.ExecuteJavaScript(script, (result) => {
 				if (result == null) {
 					resetEvent.Set();
 					return;
 				}
-				value = (T)Convert.ChangeType(result, typeof(T));
+				if (typeofT is object) {
+					value = (T)result;
+					resetEvent.Set();
+					return;
+				}
+				value = (T)Convert.ChangeType(result, typeofT);
 				resetEvent.Set();
 			}, (result) => {
 				Console.Error.WriteLine("error: " + GetType().Name + ".ExecuteJavaScriptBlocking");
@@ -304,11 +276,12 @@ namespace Socketron {
 		protected void _OnConnect(object[] args) {
 			Thread t = new Thread(() => {
 				Thread thread = Thread.CurrentThread;
-				thread.Name = typeof(Socketron).Name + " Connection";
-				if (!_Socketrons.ContainsKey(thread)) {
-					_Socketrons.Add(thread, this);
+				thread.Name = typeof(SocketronClient).Name + " Connection";
+				if (!_Clients.ContainsKey(thread)) {
+					_Clients.Add(thread, this);
 				}
 				Emit("connect");
+				_Clients.Remove(thread);
 			});
 			t.Start();
 		}
@@ -389,8 +362,8 @@ namespace Socketron {
 
 			if (eventName == "__event") {
 				Thread thread = Thread.CurrentThread;
-				if (!_Socketrons.ContainsKey(thread)) {
-					_Socketrons.Add(thread, this);
+				if (!_Clients.ContainsKey(thread)) {
+					_Clients.Add(thread, this);
 				}
 
 				object[] list = args as object[];
@@ -406,7 +379,7 @@ namespace Socketron {
 				className = "Socketron." + Char.ToUpper(className[0]) + className.Substring(1);
 				Type type = GetType().Assembly.GetType(className);
 				if (type == null) {
-					_Socketrons.Remove(thread);
+					_Clients.Remove(thread);
 					return;
 				}
 				MethodInfo method = type.GetMethod(
@@ -414,12 +387,12 @@ namespace Socketron {
 					BindingFlags.Static | BindingFlags.Public
 				);
 				if (method == null) {
-					_Socketrons.Remove(thread);
+					_Clients.Remove(thread);
 					return;
 				}
 				callback = method.Invoke(null, new[] { (object)callbackId }) as Callback;
 				callback?.Invoke(callbackParams);
-				_Socketrons.Remove(thread);
+				_Clients.Remove(thread);
 
 				/*
 				switch (className) {
@@ -438,11 +411,11 @@ namespace Socketron {
 
 			if (args is object[]) {
 				Thread thread = Thread.CurrentThread;
-				if (!_Socketrons.ContainsKey(thread)) {
-					_Socketrons.Add(thread, this);
+				if (!_Clients.ContainsKey(thread)) {
+					_Clients.Add(thread, this);
 				}
 				Emit(eventName, args as object[]);
-				_Socketrons.Remove(thread);
+				_Clients.Remove(thread);
 				return;
 			}
 			Emit(eventName, args);
@@ -452,7 +425,7 @@ namespace Socketron {
 			if (!Config.IsDebug) {
 				return;
 			}
-			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
+			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
 			Emit("debug", string.Format(format, args));
 		}
 	}

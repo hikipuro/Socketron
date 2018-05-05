@@ -11,6 +11,9 @@ namespace SocketronTest {
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new Form1());
+			test = null;
 		}
+
+		public static TestJQuery test;
 	}
 }

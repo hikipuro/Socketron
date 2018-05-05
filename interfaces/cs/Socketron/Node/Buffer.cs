@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Buffer : NodeBase, IDisposable {
+	public class Buffer : NodeModule, IDisposable {
 		public class Encodings {
 			public const string ascii = "ascii";
 			public const string utf8 = "utf8";
@@ -19,31 +19,31 @@ namespace Socketron {
 			public static long MAX_LENGTH {
 				get {
 					string script = "return this.require('buffer').constants.MAX_LENGTH;";
-					return Socketron.ExecuteBlocking<long>(script);
+					return SocketronClient.ExecuteBlocking<long>(script);
 				}
 			}
 			public static long MAX_STRING_LENGTH {
 				get {
 					string script = "return this.require('buffer').constants.MAX_STRING_LENGTH;";
-					return Socketron.ExecuteBlocking<long>(script);
+					return SocketronClient.ExecuteBlocking<long>(script);
 				}
 			}
 		}
 
-		public Buffer(Socketron socketron) {
-			_socketron = socketron;
+		protected Buffer(SocketronClient client) {
+			_client = client;
 		}
 
-		public Buffer(Socketron socketron, int id) {
-			_socketron = socketron;
-			this.id = id;
+		protected Buffer(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
 		public byte this[int index] {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}[{1}];",
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					index
 				);
 				return _ExecuteBlocking<byte>(script);
@@ -51,7 +51,7 @@ namespace Socketron {
 			set {
 				string script = ScriptBuilder.Build(
 					"{0}[{1}] = {2};",
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					index,
 					value
 				);
@@ -60,7 +60,7 @@ namespace Socketron {
 		}
 
 		public static Buffer alloc(long size) {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.alloc({0});",
@@ -74,7 +74,7 @@ namespace Socketron {
 		}
 
 		public static Buffer alloc(long size, string fill, string encoding = "utf8") {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.alloc({0},{1},{2});",
@@ -90,7 +90,7 @@ namespace Socketron {
 		}
 
 		public static Buffer allocUnsafe(long size) {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.allocUnsafe({0});",
@@ -104,7 +104,7 @@ namespace Socketron {
 		}
 
 		public static Buffer allocUnsafeSlow(long size) {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.allocUnsafeSlow({0});",
@@ -125,7 +125,7 @@ namespace Socketron {
 				value.Escape(),
 				encoding
 			);
-			return Socketron.ExecuteBlocking<long>(script);
+			return SocketronClient.ExecuteBlocking<long>(script);
 		}
 
 		public static long byteLength(Buffer value) {
@@ -133,9 +133,9 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return Buffer.byteLength({0});"
 				),
-				Script.GetObject(value.id)
+				Script.GetObject(value._id)
 			);
-			return Socketron.ExecuteBlocking<long>(script);
+			return SocketronClient.ExecuteBlocking<long>(script);
 		}
 
 		public static long compare(Buffer buf1, Buffer buf2) {
@@ -143,17 +143,17 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return Buffer.compare({0},{1});"
 				),
-				Script.GetObject(buf1.id),
-				Script.GetObject(buf2.id)
+				Script.GetObject(buf1._id),
+				Script.GetObject(buf2._id)
 			);
-			return Socketron.ExecuteBlocking<long>(script);
+			return SocketronClient.ExecuteBlocking<long>(script);
 		}
 
 		public static Buffer concat(params Buffer[] list) {
 			if (list == null) {
 				return null;
 			}
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.concat([{0}]);",
@@ -170,7 +170,7 @@ namespace Socketron {
 			if (array == null) {
 				return null;
 			}
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.from([{0}]);",
@@ -184,13 +184,13 @@ namespace Socketron {
 		}
 
 		public static Buffer from(Buffer buffer) {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.from({0});",
 					"return {1};"
 				),
-				Script.GetObject(buffer.id),
+				Script.GetObject(buffer._id),
 				Script.AddObject("buf")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
@@ -198,7 +198,7 @@ namespace Socketron {
 		}
 
 		public static Buffer from(string str, string encoding = "utf8") {
-			Socketron client = Socketron.GetCurrent();
+			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var buf = Buffer.from({0},{1});",
@@ -212,14 +212,14 @@ namespace Socketron {
 			return new Buffer(client, result);
 		}
 
-		public static bool isBuffer(NodeBase obj) {
+		public static bool isBuffer(NodeModule obj) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return Buffer.isBuffer({0});"
 				),
-				Script.GetObject(obj.id)
+				Script.GetObject(obj._id)
 			);
-			return Socketron.ExecuteBlocking<bool>(script);
+			return SocketronClient.ExecuteBlocking<bool>(script);
 		}
 
 		public static bool isEncoding(string encoding) {
@@ -229,13 +229,13 @@ namespace Socketron {
 				),
 				encoding.Escape()
 			);
-			return Socketron.ExecuteBlocking<bool>(script);
+			return SocketronClient.ExecuteBlocking<bool>(script);
 		}
 
 		public static int poolSize {
 			get {
 				string script = "return Buffer.poolSize;";
-				return Socketron.ExecuteBlocking<int>(script);
+				return SocketronClient.ExecuteBlocking<int>(script);
 			}
 		}
 
@@ -260,8 +260,8 @@ namespace Socketron {
 		public int compare(Buffer target) {
 			string script = ScriptBuilder.Build(
 				"return {0}.compare({1});",
-				Script.GetObject(id),
-				Script.GetObject(target.id)
+				Script.GetObject(_id),
+				Script.GetObject(target._id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -269,8 +269,8 @@ namespace Socketron {
 		public int copy(Buffer target) {
 			string script = ScriptBuilder.Build(
 				"return {0}.copy({1});",
-				Script.GetObject(id),
-				Script.GetObject(target.id)
+				Script.GetObject(_id),
+				Script.GetObject(target._id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -283,8 +283,8 @@ namespace Socketron {
 		public bool equals(Buffer otherBuffer) {
 			string script = ScriptBuilder.Build(
 				"return {0}.equals({1});",
-				Script.GetObject(id),
-				Script.GetObject(otherBuffer.id)
+				Script.GetObject(_id),
+				Script.GetObject(otherBuffer._id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -295,12 +295,12 @@ namespace Socketron {
 					"var b = {0}.fill({1});",
 					"return {2};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value.Escape(),
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public bool includes(string value) {
@@ -308,7 +308,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.includes({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -319,7 +319,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.indexOf({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -335,7 +335,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.lastIndexOf({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -345,7 +345,7 @@ namespace Socketron {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.length;",
-					Script.GetObject(id)
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<int>(script);
 			}
@@ -358,18 +358,18 @@ namespace Socketron {
 						"var b = {0}.parent;",
 						"return {1};"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					Script.AddObject("b")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Buffer(_socketron, result);
+				return new Buffer(_client, result);
 			}
 		}
 
 		public double readDoubleBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readDoubleBE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<double>(script);
@@ -378,7 +378,7 @@ namespace Socketron {
 		public double readDoubleLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readDoubleLE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<double>(script);
@@ -387,7 +387,7 @@ namespace Socketron {
 		public float readFloatBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatBE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<float>(script);
@@ -396,7 +396,7 @@ namespace Socketron {
 		public float readFloatLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatLE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<float>(script);
@@ -405,7 +405,7 @@ namespace Socketron {
 		public sbyte readInt8(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatLE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<sbyte>(script);
@@ -414,7 +414,7 @@ namespace Socketron {
 		public short readInt16BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt16BE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<short>(script);
@@ -423,7 +423,7 @@ namespace Socketron {
 		public short readInt16LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt16LE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<short>(script);
@@ -432,7 +432,7 @@ namespace Socketron {
 		public int readInt32BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt32BE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -441,7 +441,7 @@ namespace Socketron {
 		public int readInt32LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt32LE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -450,7 +450,7 @@ namespace Socketron {
 		public long readIntBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readIntBE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<long>(script);
@@ -459,7 +459,7 @@ namespace Socketron {
 		public long readIntLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readIntLE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<long>(script);
@@ -468,7 +468,7 @@ namespace Socketron {
 		public byte readUInt8(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt8({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<byte>(script);
@@ -477,7 +477,7 @@ namespace Socketron {
 		public ushort readUInt16BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt16BE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<ushort>(script);
@@ -486,7 +486,7 @@ namespace Socketron {
 		public ushort readUInt16LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt16LE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<ushort>(script);
@@ -495,7 +495,7 @@ namespace Socketron {
 		public uint readUInt32BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt32BE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<uint>(script);
@@ -504,7 +504,7 @@ namespace Socketron {
 		public uint readUInt32LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt32LE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<uint>(script);
@@ -513,7 +513,7 @@ namespace Socketron {
 		public ulong readUIntBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUIntBE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<ulong>(script);
@@ -522,7 +522,7 @@ namespace Socketron {
 		public ulong readUIntLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUIntLE({1},{2});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<ulong>(script);
@@ -534,11 +534,11 @@ namespace Socketron {
 					"var b = {0}.slice();",
 					"return {1};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public Buffer slice(int start) {
@@ -547,12 +547,12 @@ namespace Socketron {
 					"var b = {0}.slice({1});",
 					"return {2};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				start,
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public Buffer slice(int start, int end) {
@@ -561,13 +561,13 @@ namespace Socketron {
 					"var b = {0}.slice({1},{2});",
 					"return {3};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				start,
 				end,
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public Buffer swap16() {
@@ -576,11 +576,11 @@ namespace Socketron {
 					"var b = {0}.swap16();",
 					"return {1};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public Buffer swap32() {
@@ -589,11 +589,11 @@ namespace Socketron {
 					"var b = {0}.swap32();",
 					"return {1};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public Buffer swap64() {
@@ -602,11 +602,11 @@ namespace Socketron {
 					"var b = {0}.swap64();",
 					"return {1};"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				Script.AddObject("b")
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_socketron, result);
+			return new Buffer(_client, result);
 		}
 
 		public JsonObject toJSON() {
@@ -614,7 +614,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toJSON();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
@@ -625,7 +625,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toString({1},{2});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				encoding.Escape(),
 				start
 			);
@@ -637,7 +637,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toString({1},{2});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				encoding.Escape(),
 				start,
 				end
@@ -655,7 +655,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.write({1},{2});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				str.Escape(),
 				offset
 			);
@@ -667,7 +667,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.write({1},{2},{3},{4});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				str.Escape(),
 				offset,
 				length,
@@ -679,7 +679,7 @@ namespace Socketron {
 		public int writeDoubleBE(double value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeDoubleBE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -688,7 +688,7 @@ namespace Socketron {
 		public int writeDoubleLE(double value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeDoubleLE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -697,7 +697,7 @@ namespace Socketron {
 		public int writeFloatBE(float value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeFloatBE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -706,7 +706,7 @@ namespace Socketron {
 		public int writeFloatLE(float value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeFloatLE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -715,7 +715,7 @@ namespace Socketron {
 		public int writeInt8(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt8({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -724,7 +724,7 @@ namespace Socketron {
 		public int writeInt16BE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt16BE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -733,7 +733,7 @@ namespace Socketron {
 		public int writeInt16LE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt16LE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -742,7 +742,7 @@ namespace Socketron {
 		public int writeInt32BE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt32BE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -751,7 +751,7 @@ namespace Socketron {
 		public int writeInt32LE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt32LE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -760,7 +760,7 @@ namespace Socketron {
 		public int writeIntBE(long value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeIntBE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -769,7 +769,7 @@ namespace Socketron {
 		public int writeIntLE(long value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeIntLE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -778,7 +778,7 @@ namespace Socketron {
 		public int writeUInt8(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt8({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -787,7 +787,7 @@ namespace Socketron {
 		public int writeUInt16BE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt16BE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -796,7 +796,7 @@ namespace Socketron {
 		public int writeUInt16LE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt16LE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -805,7 +805,7 @@ namespace Socketron {
 		public int writeUInt32BE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt32BE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -814,7 +814,7 @@ namespace Socketron {
 		public int writeUInt32LE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt32LE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -823,7 +823,7 @@ namespace Socketron {
 		public int writeUIntBE(ulong value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUIntBE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -832,7 +832,7 @@ namespace Socketron {
 		public int writeUIntLE(ulong value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUIntLE({1},{2},{3});",
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				value, offset, noAssert.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -841,14 +841,14 @@ namespace Socketron {
 		public static int INSPECT_MAX_BYTES {
 			get {
 				string script = "return this.require('buffer').INSPECT_MAX_BYTES;";
-				return Socketron.ExecuteBlocking<int>(script);
+				return SocketronClient.ExecuteBlocking<int>(script);
 			}
 		}
 
 		public static int kMaxLength {
 			get {
 				string script = "return this.require('buffer').kMaxLength;";
-				return Socketron.ExecuteBlocking<int>(script);
+				return SocketronClient.ExecuteBlocking<int>(script);
 			}
 		}
 
@@ -858,12 +858,12 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"return this.require('buffer').transcode({0},{1},{2});",
-				Script.GetObject(source.id),
+				Script.GetObject(source._id),
 				fromEnc.Escape(),
 				toEnc.Escape()
 			);
-			int result = Socketron.ExecuteBlocking<int>(script);
-			return new Buffer(Socketron.GetCurrent(), result);
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new Buffer(SocketronClient.GetCurrent(), result);
 		}
 	}
 }

@@ -7,11 +7,13 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ClipboardClass : NodeBase {
-		public const string Name = "Clipboard";
-
-		public ClipboardClass(Socketron socketron) {
-			_socketron = socketron;
+	public class Clipboard : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Clipboard(SocketronClient client) {
+			_client = client;
 		}
 
 		/// <summary>
@@ -118,9 +120,7 @@ namespace Socketron {
 				option
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new NativeImage(_socketron) {
-				id = result
-			};
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -136,7 +136,7 @@ namespace Socketron {
 						"var image = {0};",
 						"electron.clipboard.writeImage(image,{1});"
 					),
-					Script.GetObject(image.id),
+					Script.GetObject(image._id),
 					type.Escape()
 				);
 			} else {
@@ -145,7 +145,7 @@ namespace Socketron {
 						"var image = {0};",
 						"electron.clipboard.writeImage(image);"
 					),
-					Script.GetObject(image.id)
+					Script.GetObject(image._id)
 				);
 			}
 			_ExecuteJavaScript(script);

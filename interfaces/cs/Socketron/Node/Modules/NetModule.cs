@@ -2,9 +2,9 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NetModule : NodeBase {
-		public NetModule(Socketron socketron) {
-			_socketron = socketron;
+	public class NetModule : NodeModule {
+		public NetModule() {
+			_client = SocketronClient.GetCurrent();
 		}
 
 		public void createConnection() {

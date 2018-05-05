@@ -4,14 +4,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NodeJS : NodeBase {
+	public class NodeJS : NodeModule {
 		public const string Name = "NodeJS";
 		public ConsoleModule console;
 		public ProcessModule process;
-		public OSModule os;
-		public PathModule path;
-		public URLModule url;
-		public FileSystemModule fs;
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -23,39 +19,28 @@ namespace Socketron {
 			return _callbackList[id];
 		}
 
-		public virtual void Init(Socketron socketron) {
-			console = new ConsoleModule(socketron);
-			process = new ProcessModule(socketron);
-			os = new OSModule(socketron);
-			path = new PathModule(socketron);
-			url = new URLModule(socketron);
-			fs = new FileSystemModule(socketron);
+		public virtual void Init(SocketronClient client) {
+			console = new ConsoleModule(client);
+			process = new ProcessModule(client);
 		}
 
-		/*
-		public static string GetDirname(Socketron socketron) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return global.__dirname;"
-				)
-			);
-			return _ExecuteJavaScriptBlocking<string>(socketron, script);
-		}
-		//*/
-
-		public int require(string module) {
-			if (module == null) {
-				return 0;
+		public T require<T>(string moduleName) where T: NodeModule, new() {
+			if (moduleName == null) {
+				return null;
 			}
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var module = this.require({0});",
 					"return {1};"
 				),
-				module.Escape(),
+				moduleName.Escape(),
 				Script.AddObject("module")
 			);
-			return _ExecuteBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
+			T module = new T() {
+				_id = result
+			};
+			return module;
 		}
 
 		public int setTimeout(Action callback, int delay) {

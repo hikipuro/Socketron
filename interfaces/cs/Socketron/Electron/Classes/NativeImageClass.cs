@@ -6,9 +6,11 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NativeImageClass : NodeBase {
-		public NativeImageClass(Socketron socketron) {
-			_socketron = socketron;
+	public class NativeImageClass : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		public NativeImageClass() {
 		}
 
 		/// <summary>
@@ -22,11 +24,8 @@ namespace Socketron {
 					"return this._addObjectReference(image);"
 				)
 			);
-			int result = _ExecuteBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				id = result
-			};
-			return image;
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -44,11 +43,8 @@ namespace Socketron {
 				),
 				path.Escape()
 			);
-			int result = _ExecuteBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				id = result
-			};
-			return image;
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -65,11 +61,8 @@ namespace Socketron {
 				),
 				buffer.Stringify()
 			);
-			int result = _ExecuteBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				id = result
-			};
-			return image;
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -85,11 +78,8 @@ namespace Socketron {
 				),
 				dataURL.Escape()
 			);
-			int result = _ExecuteBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				id = result
-			};
-			return image;
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -108,11 +98,8 @@ namespace Socketron {
 				),
 				imageName.Escape()
 			);
-			int result = _ExecuteBlocking<int>(script);
-			NativeImage image = new NativeImage(_socketron) {
-				id = result
-			};
-			return image;
+			int result = SocketronClient.ExecuteBlocking<int>(script);
+			return new NativeImage(_client, result);
 		}
 	}
 }

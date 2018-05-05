@@ -2,13 +2,12 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class PathModule : NodeBase {
-		public int id;
-
-		public PathModule(Socketron socketron) {
-			_socketron = socketron;
+	public class PathModule : NodeModule {
+		public PathModule() {
+			_client = SocketronClient.GetCurrent();
 		}
 
+		/*
 		public void require() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -18,8 +17,9 @@ namespace Socketron {
 				"path".Escape(),
 				Script.AddObject("module")
 			);
-			id = _ExecuteBlocking<int>(script);
+			_id = SocketronClient.ExecuteBlocking<int>(script);
 		}
+		//*/
 
 		public string basename(string path) {
 			string script = ScriptBuilder.Build(
@@ -27,10 +27,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.basename({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string basename(string path, string ext) {
@@ -39,11 +39,11 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.basename({1},{2});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape(),
 				ext.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string delimiter {
@@ -53,9 +53,9 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.delimiter;"
 					),
-					Script.GetObject(id)
+					Script.GetObject(_id)
 				);
-				return _ExecuteBlocking<string>(script);
+				return SocketronClient.ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -65,10 +65,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.dirname({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string extname(string path) {
@@ -77,10 +77,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.extname({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string format(JsonObject pathObject) {
@@ -89,10 +89,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.format({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				pathObject.Stringify()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public bool isAbsolute(string path) {
@@ -101,10 +101,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.isAbsolute({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return SocketronClient.ExecuteBlocking<bool>(script);
 		}
 
 		public string join(params string[] paths) {
@@ -113,10 +113,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.join({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				paths.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string normalize(string path) {
@@ -125,10 +125,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.normalize({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public JsonObject parse(string path) {
@@ -137,10 +137,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.parse({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = SocketronClient.ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -154,7 +154,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = SocketronClient.ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}
@@ -166,11 +166,11 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.relative({1},{2});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				from.Escape(),
 				to.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string resolve(params string[] paths) {
@@ -179,10 +179,10 @@ namespace Socketron {
 					"var path = {0};",
 					"return path.resolve({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				paths.Escape()
 			);
-			return _ExecuteBlocking<string>(script);
+			return SocketronClient.ExecuteBlocking<string>(script);
 		}
 
 		public string sep {
@@ -192,9 +192,9 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.sep;"
 					),
-					Script.GetObject(id)
+					Script.GetObject(_id)
 				);
-				return _ExecuteBlocking<string>(script);
+				return SocketronClient.ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace Socketron {
 					),
 					Script.GetObject(id)
 				);
-				object result = _ExecuteJavaScriptBlocking<object>(script);
+				object result = SocketronClient.ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 		}

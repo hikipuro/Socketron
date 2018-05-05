@@ -2,13 +2,12 @@
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class URLModule : NodeBase {
-		public int id;
-
-		public URLModule(Socketron socketron) {
-			_socketron = socketron;
+	public class URLModule : NodeModule {
+		public URLModule() {
+			_client = SocketronClient.GetCurrent();
 		}
 
+		/*
 		public void require() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -18,8 +17,9 @@ namespace Socketron {
 				"url".Escape(),
 				Script.AddObject("module")
 			);
-			id = _ExecuteBlocking<int>(script);
+			_id = _ExecuteBlocking<int>(script);
 		}
+		//*/
 
 	}
 }

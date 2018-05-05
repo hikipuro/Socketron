@@ -9,29 +9,13 @@ namespace Socketron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NotificationClass : NodeBase {
-		public NotificationClass(Socketron socketron) {
-			_socketron = socketron;
-		}
-
+	public class NotificationClass : NodeModule {
 		/// <summary>
-		/// *Experimental* 
+		/// Used Internally by the library.
 		/// </summary>
-		/// <param name="options"></param>
-		/// <returns></returns>
-		public Notification Create(Notification.Options options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-				"var notification = new electron.Notification({0});",
-				"return this._addObjectReference(notification);"
-				),
-				options.Stringify()
-			);
-			int result = _ExecuteBlocking<int>(script);
-			Notification notification = new Notification(_socketron) {
-				id = result
-			};
-			return notification;
+		/// <param name="client"></param>
+		public NotificationClass(SocketronClient client) {
+			_client = client;
 		}
 
 		/// <summary>

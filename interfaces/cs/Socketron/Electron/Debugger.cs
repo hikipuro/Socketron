@@ -6,7 +6,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Debugger : NodeBase {
+	public class Debugger : NodeModule {
 		public class Events {
 			/// <summary>
 			/// Emitted when debugging session is terminated.
@@ -20,8 +20,12 @@ namespace Socketron {
 			public const string Message = "message";
 		}
 
-		public Debugger(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Debugger(SocketronClient client) {
+			_client = client;
 		}
 
 		/// <summary>
@@ -38,7 +42,7 @@ namespace Socketron {
 						"var debugger = {0};",
 						"debugger.attach();"
 					),
-					Script.GetObject(id)
+					Script.GetObject(_id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
@@ -46,7 +50,7 @@ namespace Socketron {
 						"var debugger = {0};",
 						"debugger.attach({1});"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					protocolVersion.Escape()
 				);
 			}
@@ -63,7 +67,7 @@ namespace Socketron {
 					"var debugger = {0};",
 					"return debugger.isAttached();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -77,7 +81,7 @@ namespace Socketron {
 					"var debugger = {0};",
 					"debugger.detach();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -93,7 +97,7 @@ namespace Socketron {
 					"var debugger = {0};",
 					"debugger.sendCommand({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				method.Escape()
 			);
 			_ExecuteJavaScript(script);

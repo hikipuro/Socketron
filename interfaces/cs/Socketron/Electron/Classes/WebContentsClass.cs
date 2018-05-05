@@ -7,9 +7,13 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContentsClass : NodeBase {
-		public WebContentsClass(Socketron socketron) {
-			_socketron = socketron;
+	public class WebContentsClass : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public WebContentsClass(SocketronClient client) {
+			_client = client;
 		}
 
 		public List<WebContents> getAllWebContents() {
@@ -27,8 +31,8 @@ namespace Socketron {
 			List<WebContents> contentsList = new List<WebContents>();
 			foreach (object[] item in result) {
 				int id = (int)item[0];
-				WebContents contents = new WebContents(_socketron) {
-					id = id
+				WebContents contents = new WebContents(_client) {
+					_id = id
 				};
 				contentsList.Add(contents);
 			}
@@ -46,8 +50,8 @@ namespace Socketron {
 				)
 			);
 			int result = _ExecuteBlocking<int>(script);
-			WebContents contents = new WebContents(_socketron) {
-				id = result
+			WebContents contents = new WebContents(_client) {
+				_id = result
 			};
 			return contents;
 		}
@@ -64,8 +68,8 @@ namespace Socketron {
 				id
 			);
 			int result = _ExecuteBlocking<int>(script);
-			WebContents contents = new WebContents(_socketron) {
-				id = result
+			WebContents contents = new WebContents(_client) {
+				_id = result
 			};
 			return contents;
 		}

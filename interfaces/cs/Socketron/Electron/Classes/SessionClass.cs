@@ -6,9 +6,13 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class SessionClass : NodeBase {
-		public SessionClass(Socketron socketron) {
-			_socketron = socketron;
+	public class SessionClass : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public SessionClass(SocketronClient client) {
+			_client = client;
 		}
 
 		public Session defaultSession {
@@ -21,8 +25,8 @@ namespace Socketron {
 					Script.AddObject("session")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Session(_socketron) {
-					id = result
+				return new Session(_client) {
+					_id = result
 				};
 			}
 		}
@@ -50,8 +54,8 @@ namespace Socketron {
 				);
 			}
 			int result = _ExecuteBlocking<int>(script);
-			return new Session(_socketron) {
-				id = result
+			return new Session(_client) {
+				_id = result
 			};
 		}
 	}

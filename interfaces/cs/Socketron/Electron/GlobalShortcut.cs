@@ -7,14 +7,18 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class GlobalShortcutClass : NodeBase {
+	public class GlobalShortcut : NodeModule {
 		public const string Name = "GlobalShortcut";
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
-		public GlobalShortcutClass(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public GlobalShortcut(SocketronClient client) {
+			_client = client;
 		}
 
 		public static Callback GetCallbackFromId(ushort id) {

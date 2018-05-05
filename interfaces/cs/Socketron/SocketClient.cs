@@ -18,7 +18,7 @@ namespace Socketron {
 		protected Packet _packet = new Packet();
 		protected byte[] _buffer;
 		protected Thread _readThread;
-		protected ManualResetEvent _readDone = new ManualResetEvent(false);
+		//protected ManualResetEvent _readDone = new ManualResetEvent(false);
 		protected AsyncCallback _writeCallback;
 
 		public SocketClient(Config config = null) {
@@ -43,42 +43,70 @@ namespace Socketron {
 			_tcpClient = new TcpClient() {
 				NoDelay = true
 			};
-			_tcpClient.BeginConnect(
-				hostname, port,
-				new AsyncCallback(_OnConnect),
-				_tcpClient
+			IAsyncResult result = _tcpClient.BeginConnect(
+				hostname, port, null, null
 			);
+			bool success = result.AsyncWaitHandle.WaitOne(
+				Config.Timeout, true
+			);
+			if (success) {
+				_tcpClient.EndConnect(result);
+			} else {
+				_tcpClient.Close();
+				throw new TimeoutException();
+			}
+
+			_DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
+				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
+				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Port,
+				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address,
+				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Port
+			);
+
+			_stream = _tcpClient.GetStream();
+			//_stream.ReadTimeout = Config.Timeout;
+			//_stream.WriteTimeout = Config.Timeout;
+
+			_readThread = new Thread(_Read) {
+				Name = typeof(SocketronClient).Name + " read thread"
+			};
+			_readThread.Start();
+			Emit("connect");
 		}
 
 		public void Close() {
-			Console.WriteLine("Socketron close");
+			_DebugLog("SocketClient close");
 			if (_stream != null) {
 				_stream.Close();
 				_stream = null;
 			}
 			if (_tcpClient != null) {
 				_tcpClient.Close();
-				//_tcpClient = null;
+				_tcpClient = null;
 			}
+			/*
 			if (_readThread != null) {
 				//_readDone.Set();
 				_readThread.Abort();
 				_readThread = null;
 			}
+			//*/
 		}
 
 		public void Write(byte[] bytes) {
 			try {
-				//*
+				/*
 				_stream.BeginWrite(
 					bytes, 0, bytes.Length,
 					_writeCallback, _stream
 				);
 				//*/
-				//_stream.Write(bytes, 0, bytes.Length);
+				_stream.Write(bytes, 0, bytes.Length);
 			} catch (IOException) {
+				_DebugLog("Write IOException");
 				Close();
 			} catch (NullReferenceException) {
+				_DebugLog("Write NullReferenceException");
 				Close();
 			}
 		}
@@ -89,7 +117,7 @@ namespace Socketron {
 			NetworkStream stream = _stream;
 			while (tcpClient.Connected && stream.CanRead) {
 				do {
-					//*
+					/*
 					stream.BeginRead(
 						_buffer, 0, _buffer.Length,
 						callback, stream
@@ -107,42 +135,45 @@ namespace Socketron {
 					}
 					_OnData(_buffer, bytesReaded);
 					//*/
+					IAsyncResult result = stream.BeginRead(
+						_buffer, 0, _buffer.Length, null, null
+					);
+					bool success = result.AsyncWaitHandle.WaitOne();
+					if (success) {
+						int bytesReaded = 0;
+						try {
+							bytesReaded = stream.EndRead(result);
+						} catch (IOException) {
+							_DebugLog("_OnRead IOException");
+							break;
+						} catch (ObjectDisposedException) {
+							_DebugLog("_OnRead ObjectDisposedException");
+							break;
+						}
+						if (bytesReaded == 0) {
+							break;
+						}
+						_OnData(_buffer, bytesReaded);
+					} else {
+						break;
+					}
 				} while (stream.DataAvailable);
 				//Thread.Sleep(TimeSpan.FromTicks(1));
 			}
 		}
 
-		protected void _OnConnect(IAsyncResult result) {
-			TcpClient client = (TcpClient)result.AsyncState;
-			client.EndConnect(result);
-
-			_DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
-				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
-				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Port,
-				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address,
-				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Port
-			);
-
-			_stream = _tcpClient.GetStream();
-			_stream.ReadTimeout = Config.Timeout;
-			_stream.WriteTimeout = Config.Timeout;
-
-			_readThread = new Thread(_Read) {
-				Name = typeof(Socketron).Name + " read thread"
-			};
-			_readThread.Start();
-			Emit("connect");
-		}
-
 		protected void _OnRead(IAsyncResult result) {
+			/*
 			NetworkStream stream = (NetworkStream)result.AsyncState;
 			int bytesReaded = 0;
 			try {
 				bytesReaded = stream.EndRead(result);
 			} catch (IOException) {
+				_DebugLog("_OnRead IOException");
 				_readDone.Set();
 				return;
 			} catch (ObjectDisposedException) {
+				_DebugLog("_OnRead ObjectDisposedException");
 				_readDone.Set();
 				return;
 			}
@@ -153,6 +184,7 @@ namespace Socketron {
 			}
 			_OnData(_buffer, bytesReaded);
 			_readDone.Set();
+			*/
 		}
 
 		protected void _OnWrite(IAsyncResult result) {
@@ -216,7 +248,7 @@ namespace Socketron {
 			if (!Config.IsDebug) {
 				return;
 			}
-			format = string.Format("[{0}] {1}", typeof(Socketron).Name, format);
+			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
 			Emit("debug", string.Format(format, args));
 		}
 	}

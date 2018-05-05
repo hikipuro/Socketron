@@ -5,13 +5,17 @@ namespace Socketron {
 	/// Query and modify a session's cookies.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Cookies : NodeBase {
+	public class Cookies : NodeModule {
 		public class Events {
 			public const string Changed = "changed";
 		}
 
-		public Cookies(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Cookies(SocketronClient client) {
+			_client = client;
 		}
 
 		public void Get() {

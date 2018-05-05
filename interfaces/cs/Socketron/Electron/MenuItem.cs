@@ -7,7 +7,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class MenuItem : NodeBase {
+	public class MenuItem : NodeModule {
 		public const string Name = "MenuItem";
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -19,6 +19,9 @@ namespace Socketron {
 			return _callbackList[id];
 		}
 
+		/// <summary>
+		/// MenuItem constructor options.
+		/// </summary>
 		public class Options {
 			/// <summary>
 			/// (optional) Will be called with click(menuItem, browserWindow, event)
@@ -87,11 +90,18 @@ namespace Socketron {
 				return JSON.Parse<Options[]>(text);
 			}
 
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
 			public string Stringify() {
 				return JSON.Stringify(this);
 			}
 		}
 
+		/// <summary>
+		/// MenuItem.Options.type values.
+		/// </summary>
 		public class Types {
 			public const string normal = "normal";
 			public const string separator = "separator";
@@ -100,6 +110,9 @@ namespace Socketron {
 			public const string radio = "radio";
 		}
 
+		/// <summary>
+		/// MenuItem.Options.role values.
+		/// </summary>
 		public class Roles {
 			public const string undo = "undo";
 			public const string redo = "redo";
@@ -202,108 +215,122 @@ namespace Socketron {
 			public const string clearRecentDocuments = "clearRecentDocuments";
 		}
 
-		public MenuItem(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public MenuItem(SocketronClient client) {
+			_client = client;
 		}
 
-		public int id;
+		public MenuItem(Options options) {
+			SocketronClient client = SocketronClient.GetCurrent();
+			if (options == null) {
+				options = new Options();
+			}
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var item = new electron.MenuItem({0});",
+					"return {1};"
+				),
+				options.Stringify(),
+				Script.AddObject("item")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			_client = client;
+			_id = result;
+		}
 
+		/// <summary>
+		/// A Boolean indicating whether the item is enabled,
+		/// this property can be dynamically changed.
+		/// </summary>
 		public bool enabled {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"return item.enabled;"
-					),
-					Script.GetObject(id)
+					"return {0}.enabled;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"item.enabled = {1};"
-					),
-					Script.GetObject(id),
+					"{0}.enabled = {1};",
+					Script.GetObject(_id),
 					value.Escape()
 				);
 				_ExecuteJavaScript(script);
 			}
 		}
 
+		/// <summary>
+		/// A Boolean indicating whether the item is visible,
+		/// this property can be dynamically changed.
+		/// </summary>
 		public bool visible {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"return item.visible;"
-					),
-					Script.GetObject(id)
+					"return {0}.visible;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"item.visible = {1};"
-					),
-					Script.GetObject(id),
+					"{0}.visible = {1};",
+					Script.GetObject(_id),
 					value.Escape()
 				);
 				_ExecuteJavaScript(script);
 			}
 		}
 
+		/// <summary>
+		/// A Boolean indicating whether the item is checked,
+		/// this property can be dynamically changed.
+		/// </summary>
 		public bool @checked {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"return item.checked;"
-					),
-					Script.GetObject(id)
+					"return {0}.checked;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<bool>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"item.checked = {1};"
-					),
-					Script.GetObject(id),
+					"{0}.checked = {1};",
+					Script.GetObject(_id),
 					value.Escape()
 				);
 				_ExecuteJavaScript(script);
 			}
 		}
 
+		/// <summary>
+		/// A String representing the menu items visible label.
+		/// </summary>
 		public string label {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"return item.label;"
-					),
-					Script.GetObject(id)
+					"return {0}.label;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<string>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"item.label = {1};"
-					),
-					Script.GetObject(id),
+					"{0}.label = {1};",
+					Script.GetObject(_id),
 					value.Escape()
 				);
 				_ExecuteJavaScript(script);
 			}
 		}
 
+		/// <summary>
+		/// A Function that is fired when the MenuItem receives a click event.
+		/// </summary>
 		public Callback click {
 			set {
 				_callbackList.Add(_callbackListId, value);
@@ -316,7 +343,7 @@ namespace Socketron {
 						"this._addClientEventListener({1},{2},listener);",
 						"item.click = listener;"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					Name.Escape(),
 					_callbackListId
 				);

@@ -7,8 +7,9 @@ namespace Socketron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NativeImage : NodeBase, IDisposable {
+	public class NativeImage : NodeModule, IDisposable {
 		public const string Name = "NativeImage";
+		protected static NativeImageClass _Class = new NativeImageClass();
 
 		public class Options {
 			public double scaleFactor;
@@ -31,24 +32,35 @@ namespace Socketron {
 			public const string x4 = "@4x";
 			public const string x5 = "@5x";
 		}
-
-		public NativeImage(Socketron socketron) {
-			_socketron = socketron;
+		
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		/// <param name="id"></param>
+		public NativeImage(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
-		public NativeImage(Socketron socketron, int id) {
-			_socketron = socketron;
-			this.id = id;
+		public static NativeImage createEmpty() {
+			return _Class.createEmpty();
 		}
 
-		public void Dispose() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"this._removeObjectReference({0});"
-				),
-				id
-			);
-			_ExecuteJavaScript(script);
+		public static NativeImage createFromPath(string path) {
+			return _Class.createFromPath(path);
+		}
+
+		public static NativeImage createFromBuffer(LocalBuffer buffer) {
+			return _Class.createFromBuffer(buffer);
+		}
+
+		public static NativeImage createFromDataURL(string dataURL) {
+			return _Class.createFromDataURL(dataURL);
+		}
+
+		public static NativeImage createFromNamedImage(string imageName) {
+			return _Class.createFromNamedImage(imageName);
 		}
 
 		/// <summary>
@@ -69,7 +81,7 @@ namespace Socketron {
 					"}}",
 					"return image.toPNG({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				option
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -90,7 +102,7 @@ namespace Socketron {
 					"}}",
 					"return image.toJPEG({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				quality
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -115,7 +127,7 @@ namespace Socketron {
 					"}}",
 					"return image.toBitmap({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				option
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -135,7 +147,7 @@ namespace Socketron {
 					"}}",
 					"return image.toDataURL();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -158,7 +170,7 @@ namespace Socketron {
 					"}}",
 					"return image.getBitmap({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				option
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -180,7 +192,7 @@ namespace Socketron {
 					"}}",
 					"return image.getNativeHandle();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return LocalBuffer.FromObject(result);
@@ -199,7 +211,7 @@ namespace Socketron {
 					"}}",
 					"return image.isEmpty();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -217,7 +229,7 @@ namespace Socketron {
 					"}}",
 					"return image.getSize();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Size.FromObject(result);
@@ -236,7 +248,7 @@ namespace Socketron {
 					"}}",
 					"return image.setTemplateImage({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				option.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -255,7 +267,7 @@ namespace Socketron {
 					"}}",
 					"return image.isTemplateImage();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -275,11 +287,11 @@ namespace Socketron {
 					"image = image.crop({1});",
 					"return this._addObjectReference(image);"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				rect.Stringify()
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new NativeImage(_socketron, result);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -301,11 +313,11 @@ namespace Socketron {
 					"image = image.resize({1});",
 					"return this._addObjectReference(image);"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			int result = _ExecuteBlocking<int>(script);
-			return new NativeImage(_socketron, result);
+			return new NativeImage(_client, result);
 		}
 
 		/// <summary>
@@ -321,7 +333,7 @@ namespace Socketron {
 					"}}",
 					"return image.getAspectRatio();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<double>(script);
 		}
@@ -341,7 +353,7 @@ namespace Socketron {
 					"}}",
 					"image.addRepresentation({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);

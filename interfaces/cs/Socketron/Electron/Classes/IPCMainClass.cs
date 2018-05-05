@@ -8,14 +8,18 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class IPCMainClass : NodeBase {
+	public class IPCMainClass : NodeModule {
 		public const string Name = "ipcMain";
 
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
 
-		public IPCMainClass(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public IPCMainClass(SocketronClient client) {
+			_client = client;
 		}
 
 		public void on(string channel, Callback listener) {

@@ -1,9 +1,13 @@
-﻿namespace Socketron {
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron {
 	/// <summary>
 	/// Enable apps to automatically update themselves.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class AutoUpdater : NodeBase {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class AutoUpdater : NodeModule {
 		/// <summary>
 		/// AutoUpdater object events.
 		/// </summary>
@@ -34,7 +38,34 @@
 			/// This event is emitted after a user calls quitAndInstall().
 			/// </summary>
 			public const string BeforeQuitForUpdate = "before-quit-for-update";
+		}
 
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public AutoUpdater(SocketronClient client) {
+			_client = client;
+		}
+
+		public void setFeedURL(JsonObject options) {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public string getFeedURL(JsonObject options) {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public void checkForUpdates() {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public void quitAndInstall() {
+			// TODO: implement this
+			throw new NotImplementedException();
 		}
 	}
 }

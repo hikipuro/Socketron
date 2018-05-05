@@ -35,6 +35,17 @@ namespace Socketron {
 			return null;
 		}
 
+		public static List<JsonObject> FromArray(object[] array) {
+			if (array == null) {
+				return null;
+			}
+			List<JsonObject> list = new List<JsonObject>();
+			foreach (object item in array) {
+				list.Add(FromObject(item));
+			}
+			return list;
+		}
+
 		public static object[] Array(params object[] args) {
 			return args;
 		}

@@ -8,7 +8,7 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Session : NodeBase {
+	public class Session : NodeModule {
 		/// <summary>
 		/// Session instance events.
 		/// </summary>
@@ -16,8 +16,12 @@ namespace Socketron {
 			public const string WillDownload = "will-download";
 		}
 
-		public Session(Socketron socketron) {
-			_socketron = socketron;
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Session(SocketronClient client) {
+			_client = client;
 		}
 
 		public Cookies cookies {
@@ -28,12 +32,12 @@ namespace Socketron {
 						"var cookies = session.cookies;",
 						"return {1};"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					Script.AddObject("cookies")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Cookies(_socketron) {
-					id = result
+				return new Cookies(_client) {
+					_id = result
 				};
 			}
 		}
@@ -46,12 +50,12 @@ namespace Socketron {
 						"var webRequest = session.webRequest;",
 						"return {1};"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					Script.AddObject("webRequest")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new WebRequest(_socketron) {
-					id = result
+				return new WebRequest(_client) {
+					_id = result
 				};
 			}
 		}
@@ -64,12 +68,12 @@ namespace Socketron {
 						"var protocol = session.protocol;",
 						"return {1};"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					Script.AddObject("protocol")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Protocol(_socketron) {
-					id = result
+				return new Protocol(_client) {
+					_id = result
 				};
 			}
 		}
@@ -98,7 +102,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.flushStorageData();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -124,7 +128,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.setDownloadPath({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -140,7 +144,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.enableNetworkEmulation({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -156,7 +160,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.disableNetworkEmulation();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -188,7 +192,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.allowNTLMCredentialsForDomains({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				domains.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -207,7 +211,7 @@ namespace Socketron {
 						"var session = {0};",
 						"session.setUserAgent({1});"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					userAgent.Escape()
 				);
 			} else {
@@ -216,7 +220,7 @@ namespace Socketron {
 						"var session = {0};",
 						"session.setUserAgent({1},{2});"
 					),
-					Script.GetObject(id),
+					Script.GetObject(_id),
 					userAgent.Escape(),
 					acceptLanguages.Escape()
 				);
@@ -234,7 +238,7 @@ namespace Socketron {
 					"var session = {0};",
 					"return session.getUserAgent();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -254,7 +258,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.createInterruptedDownload({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -276,7 +280,7 @@ namespace Socketron {
 					"var session = {0};",
 					"session.setPreloads({1});"
 				),
-				Script.GetObject(id),
+				Script.GetObject(_id),
 				JSON.Stringify(preloads)
 			);
 			_ExecuteJavaScript(script);
@@ -292,7 +296,7 @@ namespace Socketron {
 					"var session = {0};",
 					"return session.getPreloads();"
 				),
-				Script.GetObject(id)
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return result.Cast<string>().ToArray();

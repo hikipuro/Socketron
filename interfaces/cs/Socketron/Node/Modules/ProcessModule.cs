@@ -9,9 +9,14 @@ namespace Socketron {
 	/// As a global, it is always available to Node.js applications without using require().
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ProcessModule : NodeBase {
-		public ProcessModule(Socketron socketron) {
-			_socketron = socketron;
+	public class ProcessModule : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public ProcessModule(SocketronClient client) {
+			_disposeManually = true;
+			_client = client;
 		}
 
 		public void ExecuteJavaScript(string script) {

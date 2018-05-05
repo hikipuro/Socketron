@@ -5,9 +5,13 @@ namespace Socketron {
 	/// Register a custom protocol and intercept existing protocol requests.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class Protocol : NodeBase {
-		public Protocol(Socketron socketron) {
-			_socketron = socketron;
+	public class Protocol : NodeModule {
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public Protocol(SocketronClient client) {
+			_client = client;
 		}
 
 		public void RegisterStandardSchemes() {
