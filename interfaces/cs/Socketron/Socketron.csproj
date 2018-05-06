@@ -73,6 +73,7 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CallbackManager.cs" />
     <Compile Include="Electron\Classes\BrowserWindowClass.cs" />
     <Compile Include="Electron\Classes\ElectronProcessModule.cs" />
     <Compile Include="Electron\Classes\MenuClass.cs" />

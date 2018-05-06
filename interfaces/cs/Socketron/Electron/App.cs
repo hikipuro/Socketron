@@ -10,11 +10,6 @@ namespace Socketron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class App : NodeModule {
-		public const string Name = "App";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		public CommandLine commandLine;
 		/// <summary>*macOS*</summary>
 		public Dock dock;
@@ -22,21 +17,11 @@ namespace Socketron {
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
 		/// <param name="client"></param>
-		public App(SocketronClient client) {
+		/// <param name="id"></param>
+		public App(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 			commandLine = new CommandLine(client);
 			dock = new Dock(client);
 		}
@@ -469,49 +454,6 @@ namespace Socketron {
 			}
 		}
 
-		public void on(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var listener = () => {{",
-						"emit('__event',{0},{1});",
-					"}};",
-					"this._addClientEventListener({0},{1},listener);",
-					"electron.app.on({2}, listener);"
-				),
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
-		}
-
-		public void once(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var listener = () => {{",
-						"this._removeClientEventListener({0},{1});",
-						"emit('__event',{0},{1});",
-					"}};",
-					"this._addClientEventListener({0},{1},listener);",
-					"electron.app.once({2}, listener);"
-				),
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
-		}
-
 		/// <summary>
 		/// Try to close all windows.
 		/// <para>
@@ -527,9 +469,8 @@ namespace Socketron {
 		/// </summary>
 		public void quit() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.quit();"
-				)
+				"{0}.quit();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -545,9 +486,8 @@ namespace Socketron {
 		/// <param name="exitCode">(optional)</param>
 		public void exit(int exitCode = 0) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.exit({0});"
-				),
+				"{0}.exit({1});",
+				Script.GetObject(_id),
 				exitCode
 			);
 			_ExecuteJavaScript(script);
@@ -561,15 +501,13 @@ namespace Socketron {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.relaunch();"
-					)
+					"{0}.relaunch();",
+					Script.GetObject(_id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.relaunch({0});"
-					),
+					"{0}.relaunch({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
@@ -582,9 +520,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isReady() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isReady();"
-				)
+				"return {0}.isReady();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -608,9 +545,8 @@ namespace Socketron {
 		/// </summary>
 		public void focus() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.focus();"
-				)
+				"{0}.focus();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -621,9 +557,8 @@ namespace Socketron {
 		/// </summary>
 		public void hide() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.hide();"
-				)
+				"{0}.hide();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -634,9 +569,8 @@ namespace Socketron {
 		/// </summary>
 		public void show() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.show();"
-				)
+				"{0}.show();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -647,9 +581,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getAppPath() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getAppPath();"
-				)
+				"return {0}.getAppPath();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -662,9 +595,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getPath(string name) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getPath({0});"
-				),
+				"return {0}.getPath({1});",
+				Script.GetObject(_id),
 				name.Escape()
 			);
 			return _ExecuteBlocking<string>(script);
@@ -679,12 +611,12 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "getFileIcon";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
-					callback?.Invoke(null, null);
 					return;
 				}
 				Error error = new Error(_client, (int)argsList[0]);
@@ -693,23 +625,27 @@ namespace Socketron {
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var callback = (err, icon) => {{",
-						"var errId = {0};",
-						"var iconId = 0;",
-						"if (icon != null) {{",
-							"iconId = {1};",
-						"}}",
-						"emit('__event',{2},{3},errId,iconId);",
+					"var callback = (error, icon) => {{",
+						"emit('__event',{0},{1},{2},{3},{4});",
 					"}};",
-					"return electron.app.getFileIcon({4},callback);"
+					"return {5};"
 				),
-				Script.AddObject("err"),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("error"),
 				Script.AddObject("icon"),
-				Name.Escape(),
-				_callbackListId,
-				path.Escape()
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.getFileIcon({1},{2});",
+				Script.GetObject(_id),
+				path.Escape(),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -723,12 +659,12 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "getFileIcon";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
-					callback?.Invoke(null, null);
 					return;
 				}
 				Error error = new Error(_client, (int)argsList[0]);
@@ -737,24 +673,28 @@ namespace Socketron {
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var callback = (err, icon) => {{",
-						"var errId = {0};",
-						"var iconId = 0;",
-						"if (icon != null) {{",
-							"iconId = {1};",
-						"}}",
-						"emit('__event',{2},{3},errId,iconId);",
+					"var callback = (error, icon) => {{",
+						"emit('__event',{0},{1},{2},{3},{4});",
 					"}};",
-					"return electron.app.getFileIcon({4},{5},callback);"
+					"return {5};"
 				),
-				Script.AddObject("err"),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("error"),
 				Script.AddObject("icon"),
-				Name.Escape(),
-				_callbackListId,
-				path.Escape(),
-				options.Stringify()
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.getFileIcon({1},{2},{3});",
+				Script.GetObject(_id),
+				path.Escape(),
+				options.Stringify(),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -770,9 +710,8 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void setPath(string name, string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setPath({0},{1});"
-				),
+				"{0}.setPath({1},{2});",
+				Script.GetObject(_id),
 				name.Escape(),
 				path.Escape()
 			);
@@ -789,9 +728,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getVersion() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getVersion();"
-				)
+				"return {0}.getVersion();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -803,9 +741,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getName() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getName();"
-				)
+				"return {0}.getName();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -816,9 +753,8 @@ namespace Socketron {
 		/// <param name="name"></param>
 		public void setName(string name) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setName({0});"
-				),
+				"{0}.setName({1});",
+				Script.GetObject(_id),
 				name.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -836,9 +772,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getLocale() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getLocale();"
-				)
+				"return {0}.getLocale();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -855,9 +790,8 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void addRecentDocument(string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.addRecentDocument({0});"
-				),
+				"{0}.addRecentDocument({1});",
+				Script.GetObject(_id),
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -869,9 +803,8 @@ namespace Socketron {
 		/// </summary>
 		public void clearRecentDocuments() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.clearRecentDocuments();"
-				)
+				"{0}.clearRecentDocuments();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -906,9 +839,8 @@ namespace Socketron {
 			}
 
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setAsDefaultProtocolClient({0});"
-				),
+				"{0}.setAsDefaultProtocolClient({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -926,9 +858,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.removeAsDefaultProtocolClient({0});"
-				),
+				"return {0}.removeAsDefaultProtocolClient({1});",
+				Script.GetObject(_id),
 				protocol.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -942,9 +873,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol, string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.removeAsDefaultProtocolClient({0},{1});"
-				),
+				"return {0}.removeAsDefaultProtocolClient({1},{2});",
+				Script.GetObject(_id),
 				protocol.Escape(),
 				path.Escape()
 			);
@@ -960,9 +890,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol, string path, string[] args) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.removeAsDefaultProtocolClient({0},{1},{2});"
-				),
+				"return {0}.removeAsDefaultProtocolClient({1},{2},{3});",
+				Script.GetObject(_id),
 				protocol.Escape(),
 				path.Escape(),
 				args.Escape()
@@ -979,9 +908,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isDefaultProtocolClient({0});"
-				),
+				"return {0}.isDefaultProtocolClient({1});",
+				Script.GetObject(_id),
 				protocol.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -997,9 +925,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol, string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isDefaultProtocolClient({0},{1});"
-				),
+				"return {0}.isDefaultProtocolClient({1},{2});",
+				Script.GetObject(_id),
 				protocol.Escape(),
 				path.Escape()
 			);
@@ -1017,9 +944,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol, string path, string[] args) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isDefaultProtocolClient({0},{1},{2});"
-				),
+				"return {0}.isDefaultProtocolClient({1},{2},{3});",
+				Script.GetObject(_id),
 				protocol.Escape(),
 				path.Escape(),
 				args.Escape()
@@ -1038,10 +964,10 @@ namespace Socketron {
 		/// <param name="tasks">Array of Task objects.</param>
 		/// <returns>Whether the call succeeded.</returns>
 		public bool setUserTasks(TaskObject[] tasks) {
+			// TODO: check array arg
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.setUserTasks({0});"
-				),
+				"return {0}.setUserTasks({1});",
+				Script.GetObject(_id),
 				JSON.Stringify(tasks)
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -1054,9 +980,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public JsonObject getJumpListSettings() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getJumpListSettings();"
-				)
+				"return {0}.getJumpListSettings();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
@@ -1070,9 +995,8 @@ namespace Socketron {
 		/// <param name="categories"></param>
 		public void setJumpList(JumpListCategory[] categories) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setJumpList({0});"
-				),
+				"{0}.setJumpList({1});",
+				Script.GetObject(_id),
 				JSON.Stringify(categories)
 			);
 			_ExecuteJavaScript(script);
@@ -1090,9 +1014,10 @@ namespace Socketron {
 			if (callback == null) {
 				return false;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "makeSingleInstance";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -1107,14 +1032,23 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (argv, workingDirectory) => {{",
-						"emit('__event',{0},{1},argv,workingDirectory);",
+						"emit('__event',{0},{1},{2},argv, workingDirectory);",
 					"}};",
-					"return electron.app.makeSingleInstance(callback);"
+					"return {3};"
 				),
-				Name.Escape(),
-				_callbackListId
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.makeSingleInstance({1});",
+				Script.GetObject(_id),
+				Script.GetObject(objectId)
+			);
 			return _ExecuteBlocking<bool>(script);
 		}
 
@@ -1124,9 +1058,8 @@ namespace Socketron {
 		/// </summary>
 		public void releaseSingleInstance() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.releaseSingleInstance();"
-				)
+				"{0}.releaseSingleInstance();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1154,9 +1087,8 @@ namespace Socketron {
 				);
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setUserActivity({0});"
-				),
+				"{0}.setUserActivity({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -1169,9 +1101,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getCurrentActivityType() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getCurrentActivityType();"
-				)
+				"return {0}.getCurrentActivityType();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -1182,9 +1113,8 @@ namespace Socketron {
 		/// </summary>
 		public void invalidateCurrentActivity() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.invalidateCurrentActivity();"
-				)
+				"{0}.invalidateCurrentActivity();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1198,9 +1128,8 @@ namespace Socketron {
 		/// <param name="userInfo"></param>
 		public void updateCurrentActivity(string type, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.updateCurrentActivity({0},{1});"
-				),
+				"{0}.updateCurrentActivity({1},{2});",
+				Script.GetObject(_id),
 				type.Escape(),
 				userInfo.Stringify()
 			);
@@ -1214,9 +1143,8 @@ namespace Socketron {
 		/// <param name="id"></param>
 		public void setAppUserModelId(string id) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setAppUserModelId({0});"
-				),
+				"{0}.setAppUserModelId({1});",
+				Script.GetObject(_id),
 				id.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1240,9 +1168,10 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "importCertificate";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -1252,15 +1181,24 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (result) => {{",
-						"emit('__event',{0},{1},result);",
+						"emit('__event',{0},{1},{2},result);",
 					"}};",
-					"return electron.app.importCertificate({2},callback);"
+					"return {3};"
 				),
-				Name.Escape(),
-				_callbackListId,
-				options.Stringify()
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.importCertificate({1},{2});",
+				Script.GetObject(_id),
+				options.Stringify(),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -1272,9 +1210,8 @@ namespace Socketron {
 		/// </summary>
 		public void disableHardwareAcceleration() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.disableHardwareAcceleration();"
-				)
+				"{0}.disableHardwareAcceleration();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1289,9 +1226,8 @@ namespace Socketron {
 		/// </summary>
 		public void disableDomainBlockingFor3DAPIs() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.disableDomainBlockingFor3DAPIs();"
-				)
+				"{0}.disableDomainBlockingFor3DAPIs();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1304,9 +1240,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public List<ProcessMetric> getAppMetrics() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getAppMetrics();"
-				)
+				"return {0}.getAppMetrics();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			List<ProcessMetric> metricList = new List<ProcessMetric>();
@@ -1323,9 +1258,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public GPUFeatureStatus getGPUFeatureStatus() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getGPUFeatureStatus();"
-				)
+				"return {0}.getGPUFeatureStatus();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return GPUFeatureStatus.FromObject(result);
@@ -1339,9 +1273,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool setBadgeCount(int count) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.setBadgeCount({0});"
-				),
+				"return {0}.setBadgeCount({1});",
+				Script.GetObject(_id),
 				count
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -1354,9 +1287,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public int getBadgeCount() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.getBadgeCount();"
-				)
+				"return {0}.getBadgeCount();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -1368,9 +1300,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isUnityRunning() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isUnityRunning();"
-				)
+				"return {0}.isUnityRunning();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1386,15 +1317,13 @@ namespace Socketron {
 			string script = string.Empty;
 			if (options == null) {
 				ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.app.getLoginItemSettings();"
-					)
+					"return {0}.getLoginItemSettings();",
+					Script.GetObject(_id)
 				);
 			} else {
 				ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.app.getLoginItemSettings({0});"
-					),
+					"return {0}.getLoginItemSettings({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
@@ -1409,9 +1338,8 @@ namespace Socketron {
 		/// <param name="settings"></param>
 		public void setLoginItemSettings(JsonObject settings) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setLoginItemSettings({0});"
-				),
+				"{0}.setLoginItemSettings({1});",
+				Script.GetObject(_id),
 				settings.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1429,9 +1357,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isAccessibilitySupportEnabled() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isAccessibilitySupportEnabled();"
-				)
+				"return {0}.isAccessibilitySupportEnabled();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1444,9 +1371,8 @@ namespace Socketron {
 		/// <param name="enabled"></param>
 		public void setAccessibilitySupportEnabled(bool enabled) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setAccessibilitySupportEnabled({0});"
-				),
+				"{0}.setAccessibilitySupportEnabled({1});",
+				Script.GetObject(_id),
 				enabled.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1460,9 +1386,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void setAboutPanelOptions(JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.setAboutPanelOptions({0});"
-				),
+				"{0}.setAboutPanelOptions({1});",
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1476,9 +1401,8 @@ namespace Socketron {
 		/// <param name="bookmarkData"></param>
 		public void startAccessingSecurityScopedResource(string bookmarkData) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.startAccessingSecurityScopedResource({0});"
-				),
+				"{0}.startAccessingSecurityScopedResource({1});",
+				Script.GetObject(_id),
 				bookmarkData.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1491,9 +1415,8 @@ namespace Socketron {
 		/// </summary>
 		public void enableMixedSandbox() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.enableMixedSandbox();"
-				)
+				"{0}.enableMixedSandbox();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1507,9 +1430,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isInApplicationsFolder() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.isInApplicationsFolder();"
-				)
+				"return {0}.isInApplicationsFolder();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1522,9 +1444,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool moveToApplicationsFolder() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.app.moveToApplicationsFolder();"
-				)
+				"return {0}.moveToApplicationsFolder();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}

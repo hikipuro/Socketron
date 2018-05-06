@@ -10,7 +10,11 @@ namespace Socketron {
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
-		public MenuClass() {
+		/// <param name="client"></param>
+		/// <param name="id"></param>
+		public MenuClass(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -29,13 +33,11 @@ namespace Socketron {
 				return;
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var menu = {0};",
-					"electron.Menu.setApplicationMenu(menu);"
-				),
+				"{0}.setApplicationMenu({1});",
+				Script.GetObject(_id),
 				Script.GetObject(menu._id)
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -47,19 +49,19 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		public Menu getApplicationMenu() {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var menu = electron.Menu.getApplicationMenu();",
-					"return {0};"
+					"var menu = {0}.getApplicationMenu();",
+					"return {1};"
 				),
+				Script.GetObject(_id),
 				Script.AddObject("menu")
 			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			if (result <= 0) {
 				return null;
 			}
-			return new Menu(client, result);
+			return new Menu(_client, result);
 		}
 
 		/// <summary>
@@ -76,12 +78,11 @@ namespace Socketron {
 		/// <param name="action"></param>
 		public void sendActionToFirstResponder(string action) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.Menu.sendActionToFirstResponder({0});"
-				),
+				"{0}.sendActionToFirstResponder({1});",
+				Script.GetObject(_id),
 				action.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -94,22 +95,22 @@ namespace Socketron {
 		/// <param name="template"></param>
 		/// <returns></returns>
 		public Menu buildFromTemplate(MenuItem.Options[] template) {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string templateText = JSON.Stringify(template);
 
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var menu = electron.Menu.buildFromTemplate({0});",
-					"return {1};"
+					"var menu = {0}.buildFromTemplate({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				templateText,
 				Script.AddObject("menu")
 			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			if (result <= 0) {
 				return null;
 			}
-			return new Menu(client, result);
+			return new Menu(_client, result);
 		}
 
 		/// <summary>

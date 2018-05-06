@@ -17,6 +17,16 @@ namespace Socketron {
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
+		/// <param name="client"></param>
+		/// <param name="id"></param>
+		public Dialog(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
+		}
+
+		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public static Callback GetCallbackFromId(ushort id) {
@@ -67,7 +77,7 @@ namespace Socketron {
 		/// <summary>
 		/// MessageBoxOptions.type values.
 		/// </summary>
-		public class Type {
+		public class Types {
 			public const string none = "none";
 			public const string info = "info";
 			public const string error = "error";
@@ -277,22 +287,19 @@ namespace Socketron {
 			string script = string.Empty;
 			if (browserWindow != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"return electron.dialog.showOpenDialog(window,{1});"
-					),
-					browserWindow._id,
+					"return {0}.showOpenDialog({1},{2});",
+					Script.GetObject(_id),
+					Script.GetObject(browserWindow._id),
 					options.Stringify()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.dialog.showOpenDialog({0});"
-					),
+					"return {0}.showOpenDialog({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
-			object[] result = SocketronClient.ExecuteBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			if (result == null) {
 				return null;
 			}
@@ -334,12 +341,12 @@ namespace Socketron {
 						"var callback = (filePaths, bookmarks) => {{",
 							"emit('__event',{0},{1},filePaths,bookmarks);",
 						"}};",
-						"var window = electron.BrowserWindow.fromId({2});",
-						"return electron.dialog.showOpenDialog(window,{3},callback);"
+						"return {2}.showOpenDialog({3},{4},callback);"
 					),
 					Name.Escape(),
 					_callbackListId,
-					browserWindow._id,
+					Script.GetObject(_id),
+					Script.GetObject(browserWindow._id),
 					options.Stringify()
 				);
 			} else {
@@ -348,15 +355,16 @@ namespace Socketron {
 						"var callback = (filePaths, bookmarks) => {{",
 							"emit('__event',{0},{1},filePaths,bookmarks);",
 						"}};",
-						"return electron.dialog.showOpenDialog({2},callback);"
+						"return {2}.showOpenDialog({3},callback);"
 					),
 					Name.Escape(),
 					_callbackListId,
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
 			_callbackListId++;
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 			return null;
 		}
 
@@ -372,22 +380,19 @@ namespace Socketron {
 			string script = string.Empty;
 			if (browserWindow != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"return electron.dialog.showSaveDialog(window,{1});"
-					),
-					browserWindow._id,
+					"return {0}.showSaveDialog({1},{2});",
+					Script.GetObject(_id),
+					Script.GetObject(browserWindow._id),
 					options.Stringify()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.dialog.showSaveDialog({0});"
-					),
+					"return {0}.showSaveDialog({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
-			return SocketronClient.ExecuteBlocking<string>(script);
+			return _ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -402,22 +407,19 @@ namespace Socketron {
 			string script = string.Empty;
 			if (browserWindow != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"return electron.dialog.showMessageBox(window,{1});"
-					),
-					browserWindow._id,
+					"return {0}.showMessageBox({1},{2});",
+					Script.GetObject(_id),
+					Script.GetObject(browserWindow._id),
 					options.Stringify()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.dialog.showMessageBox({0});"
-					),
+					"return {0}.showMessageBox({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
-			return SocketronClient.ExecuteBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -427,11 +429,12 @@ namespace Socketron {
 		/// <param name="content">The text content to display in the error box.</param>
 		public void showErrorBox(string title, string content) {
 			string script = ScriptBuilder.Build(
-				"electron.dialog.showErrorBox({0},{1});",
+				"{0}.showErrorBox({1},{2});",
+				Script.GetObject(_id),
 				title.Escape(),
 				content.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -456,20 +459,19 @@ namespace Socketron {
 			string script = string.Empty;
 			if (browserWindow != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"return electron.dialog.showCertificateTrustDialog(window,{1});"
-					),
-					browserWindow._id,
+					"return {0}.showCertificateTrustDialog({1},{2});",
+					Script.GetObject(_id),
+					Script.GetObject(browserWindow._id),
 					options.Stringify()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					"return electron.dialog.showCertificateTrustDialog({0});",
+					"return {0}.showCertificateTrustDialog({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
-			return SocketronClient.ExecuteBlocking<int>(script);
+			return _ExecuteBlocking<int>(script);
 		}
 	}
 }

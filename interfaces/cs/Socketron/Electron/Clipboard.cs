@@ -12,8 +12,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Clipboard(SocketronClient client) {
+		/// <param name="id"></param>
+		public Clipboard(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -27,9 +29,8 @@ namespace Socketron {
 				option = type.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readText({0});"
-				),
+				"return {0}.readText({1});",
+				Script.GetObject(_id),
 				option
 			);
 			return _ExecuteBlocking<string>(script);
@@ -51,9 +52,8 @@ namespace Socketron {
 				option = text.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.writeText({0});"
-				),
+				"{0}.writeText({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -70,9 +70,8 @@ namespace Socketron {
 				option = type.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readHTML({0});"
-				),
+				"return {0}.readHTML({1});",
+				Script.GetObject(_id),
 				option
 			);
 			return _ExecuteBlocking<string>(script);
@@ -94,9 +93,8 @@ namespace Socketron {
 				option = markup.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.writeHTML({0});"
-				),
+				"{0}.writeHTML({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -114,9 +112,10 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.clipboard.readImage({0});",
-					"return {1};"
+					"var image = {0}.readImage({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				option,
 				Script.AddObject("image")
 			);
@@ -133,19 +132,15 @@ namespace Socketron {
 			string script = string.Empty;
 			if (type != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var image = {0};",
-						"electron.clipboard.writeImage(image,{1});"
-					),
+					"{0}.writeImage({1},{2});",
+					Script.GetObject(_id),
 					Script.GetObject(image._id),
 					type.Escape()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var image = {0};",
-						"electron.clipboard.writeImage(image);"
-					),
+					"{0}.writeImage({1});",
+					Script.GetObject(_id),
 					Script.GetObject(image._id)
 				);
 			}
@@ -163,9 +158,8 @@ namespace Socketron {
 				option = type.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readRTF({0});"
-				),
+				"return {0}.readRTF({1});",
+				Script.GetObject(_id),
 				option
 			);
 			return _ExecuteBlocking<string>(script);
@@ -187,9 +181,8 @@ namespace Socketron {
 				option = text.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.writeRTF({0});"
-				),
+				"{0}.writeRTF({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -204,9 +197,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public JsonObject readBookmark() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readBookmark({0});"
-				)
+				"return {0}.readBookmark();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
@@ -243,9 +235,8 @@ namespace Socketron {
 				option = url.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.writeBookmark({0});"
-				),
+				"{0}.writeBookmark({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -262,9 +253,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string readFindText() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readFindText();"
-				)
+				"return {0}.readFindText();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -278,9 +268,8 @@ namespace Socketron {
 		/// <param name="text"></param>
 		public void writeFindText(string text) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.writeFindText({0});"
-				),
+				"{0}.writeFindText({1});",
+				Script.GetObject(_id),
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -296,9 +285,8 @@ namespace Socketron {
 				option = type.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.clipboard.clear({0});"
-				),
+				"{0}.clear({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -315,9 +303,8 @@ namespace Socketron {
 				option = type.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.availableFormats({0});"
-				),
+				"return {0}.availableFormats({1});",
+				Script.GetObject(_id),
 				option
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
@@ -350,9 +337,8 @@ namespace Socketron {
 				option = format.Escape();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.has({0});"
-				),
+				"return {0}.has({1});",
+				Script.GetObject(_id),
 				option
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -366,9 +352,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string read(string format) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.read({0});"
-				),
+				"return {0}.read({1});",
+				Script.GetObject(_id),
 				format.Escape()
 			);
 			return _ExecuteBlocking<string>(script);
@@ -382,9 +367,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public LocalBuffer readBuffer(string format) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.readBuffer({0});"
-				),
+				"return {0}.readBuffer({1});",
+				Script.GetObject(_id),
 				format.Escape()
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -403,18 +387,16 @@ namespace Socketron {
 			string script = string.Empty;
 			if (type != null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.clipboard.writeBuffer({0},{1},{2});"
-					),
+					"{0}.writeBuffer({1},{2},{3});",
+					Script.GetObject(_id),
 					format.Escape(),
 					buffer.Stringify(),
 					type.Escape()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.clipboard.writeBuffer({0},{1});"
-					),
+					"{0}.writeBuffer({1},{2});",
+					Script.GetObject(_id),
 					format.Escape(),
 					buffer.Stringify()
 				);
@@ -452,9 +434,8 @@ namespace Socketron {
 				option = data.Stringify();
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.clipboard.write({0});"
-				),
+				"{0}.write({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);

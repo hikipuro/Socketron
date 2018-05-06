@@ -12,8 +12,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Net(SocketronClient client) {
+		/// <param name="id"></param>
+		public Net(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -29,9 +31,10 @@ namespace Socketron {
 		public ClientRequest request(ClientRequest.Options options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var request = electron.net.request({0});",
-					"return {1};"
+					"var request = {0}.request({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				options.Stringify(),
 				Script.AddObject("request")
 			);

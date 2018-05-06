@@ -9,55 +9,183 @@ namespace Socketron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class WebContents : NodeModule {
-		// TODO: add instance properties
-		public const string Name = "webContents";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// WebContents instance events.
 		/// </summary>
 		public class Events {
+			/// <summary>
+			/// Emitted when the navigation is done,
+			/// i.e. the spinner of the tab has stopped spinning,
+			/// and the onload event was dispatched.
+			/// </summary>
 			public const string DidFinishLoad = "did-finish-load";
+			/// <summary>
+			/// This event is like did-finish-load but emitted
+			/// when the load failed or was cancelled,
+			/// e.g. window.stop() is invoked.
+			/// The full list of error codes and their meaning is available here.
+			/// </summary>
 			public const string DidFailLoad = "did-fail-load";
+			/// <summary>
+			/// Emitted when a frame has done navigation.
+			/// </summary>
 			public const string DidFrameFinishLoad = "did-frame-finish-load";
+			/// <summary>
+			/// Corresponds to the points in time when the spinner of the tab started spinning.
+			/// </summary>
 			public const string DidStartLoading = "did-start-loading";
+			/// <summary>
+			/// Corresponds to the points in time when the spinner of the tab stopped spinning.
+			/// </summary>
 			public const string DidStopLoading = "did-stop-loading";
-			/// <summary>*Deprecated*</summary>
+			/// <summary>
+			/// *Deprecated*
+			/// Emitted when details regarding a requested resource are available.
+			/// </summary>
 			[Obsolete]
 			public const string DidGetResponseDetails = "did-get-response-details";
-			/// <summary>*Deprecated*</summary>
+			/// <summary>
+			/// *Deprecated*
+			/// Emitted when a redirect is received while requesting a resource.
+			/// </summary>
 			[Obsolete]
 			public const string DidGetRedirectRequest = "did-get-redirect-request";
+			/// <summary>
+			/// Emitted when the document in the given frame is loaded.
+			/// </summary>
 			public const string DomReady = "dom-ready";
+			/// <summary>
+			/// Emitted when page receives favicon urls.
+			/// </summary>
 			public const string PageFaviconUpdated = "page-favicon-updated";
+			/// <summary>
+			/// Emitted when the page requests to open a new window for a url.
+			/// </summary>
 			public const string NewWindow = "new-window";
+			/// <summary>
+			/// Emitted when a user or the page wants to start navigation.
+			/// </summary>
 			public const string WillNavigate = "will-navigate";
+			/// <summary>
+			/// Emitted when any frame (including main) starts navigating.
+			/// </summary>
+			public const string DidStartNavigation = "did-start-navigation";
+			/// <summary>
+			/// Emitted when a main frame navigation is done.
+			/// </summary>
 			public const string DidNavigate = "did-navigate";
+			/// <summary>
+			/// Emitted when any frame navigation is done.
+			/// </summary>
+			public const string DidFrameNavigate = "did-frame-navigate";
+			/// <summary>
+			/// Emitted when an in-page navigation happened in any frame.
+			/// </summary>
 			public const string DidNavigateInPage = "did-navigate-in-page";
+			/// <summary>
+			/// Emitted when a beforeunload event handler is attempting to cancel a page unload.
+			/// </summary>
 			public const string WillPreventUnload = "will-prevent-unload";
+			/// <summary>
+			/// Emitted when the renderer process crashes or is killed.
+			/// </summary>
 			public const string Crashed = "crashed";
+			/// <summary>
+			/// Emitted when the web page becomes unresponsive.
+			/// </summary>
+			public const string Unresponsive = "unresponsive";
+			/// <summary>
+			/// Emitted when the unresponsive web page becomes responsive again.
+			/// </summary>
+			public const string Responsive = "responsive";
+			/// <summary>
+			/// Emitted when a plugin process has crashed.
+			/// </summary>
 			public const string PluginCrashed = "plugin-crashed";
+			/// <summary>
+			/// Emitted when webContents is destroyed.
+			/// </summary>
 			public const string Destroyed = "destroyed";
+			/// <summary>
+			/// Emitted before dispatching the keydown and keyup events in the page.
+			/// </summary>
 			public const string BeforeInputEvent = "before-input-event";
+			/// <summary>
+			/// Emitted when DevTools is opened.
+			/// </summary>
 			public const string DevtoolsOpened = "devtools-opened";
+			/// <summary>
+			/// Emitted when DevTools is closed.
+			/// </summary>
 			public const string DevtoolsClosed = "devtools-closed";
+			/// <summary>
+			/// Emitted when DevTools is focused / opened.
+			/// </summary>
 			public const string DevtoolsFocused = "devtools-focused";
+			/// <summary>
+			/// Emitted when failed to verify the certificate for url.
+			/// </summary>
 			public const string CertificateError = "certificate-error";
+			/// <summary>
+			/// Emitted when a client certificate is requested.
+			/// </summary>
 			public const string SelectClientCertificate = "select-client-certificate";
+			/// <summary>
+			/// Emitted when webContents wants to do basic auth.
+			/// </summary>
 			public const string Login = "login";
+			/// <summary>
+			/// Emitted when a result is available for [webContents.findInPage] request.
+			/// </summary>
 			public const string FoundInPage = "found-in-page";
+			/// <summary>
+			/// Emitted when media starts playing.
+			/// </summary>
 			public const string MediaStartedPlaying = "media-started-playing";
+			/// <summary>
+			/// Emitted when media is paused or done playing.
+			/// </summary>
 			public const string MediaPaused = "media-paused";
+			/// <summary>
+			/// Emitted when a page's theme color changes.
+			/// </summary>
+			public const string DidChangeThemeColor = "did-change-theme-color";
+			/// <summary>
+			/// Emitted when mouse moves over a link or the keyboard moves the focus to a link.
+			/// </summary>
 			public const string UpdateTargetUrl = "update-target-url";
+			/// <summary>
+			/// Emitted when the cursor's type changes.
+			/// </summary>
 			public const string CursorChanged = "cursor-changed";
+			/// <summary>
+			/// Emitted when there is a new context menu that needs to be handled.
+			/// </summary>
 			public const string ContextMenu = "context-menu";
+			/// <summary>
+			/// Emitted when bluetooth device needs to be selected
+			/// on call to navigator.bluetooth.requestDevice. 
+			/// </summary>
 			public const string SelectBluetoothDevice = "select-bluetooth-device";
+			/// <summary>
+			/// Emitted when a new frame is generated.
+			/// </summary>
 			public const string Paint = "paint";
+			/// <summary>
+			/// Emitted when the devtools window instructs the webContents to reload.
+			/// </summary>
 			public const string DevtoolsReloadPage = "devtools-reload-page";
+			/// <summary>
+			/// Emitted when a &lt;webview&gt;'s web contents is being attached to this web contents.
+			/// </summary>
 			public const string WillAttachWebview = "will-attach-webview";
+			/// <summary>
+			/// Emitted when a &lt;webview&gt; has been attached to this web contents.
+			/// </summary>
 			public const string DidAttachWebview = "did-attach-webview";
+			/// <summary>
+			/// Emitted when the associated window logs a console message.
+			/// </summary>
 			public const string ConsoleMessage = "console-message";
 		}
 
@@ -67,45 +195,34 @@ namespace Socketron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public WebContents(SocketronClient client, int id) {
-			_disposeManually = true;
 			_client = client;
 			_id = id;
 		}
 
 		/// <summary>
-		/// Used Internally by the library.
+		/// A Integer representing the unique ID of this WebContents.
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
 		public int id {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"return contents.id;"
-					),
-					_id
+					"return {0}.id;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<int>(script);
 			}
 		}
 
+		/// <summary>
+		/// A Session used by this webContents.
+		/// </summary>
 		public Session session {
 			get {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"var session = contents.session;",
+						"var session = {0}.session;",
 						"return {1};"
 					),
-					_id,
+					Script.GetObject(_id),
 					Script.AddObject("session")
 				);
 				int result = _ExecuteBlocking<int>(script);
@@ -113,15 +230,17 @@ namespace Socketron {
 			}
 		}
 
+		/// <summary>
+		/// A WebContents instance that might own this WebContents.
+		/// </summary>
 		public WebContents hostWebContents {
 			get {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"var hostWebContents = contents.hostWebContents;",
+						"var hostWebContents = {0}.hostWebContents;",
 						"return {1};"
 					),
-					_id,
+					Script.GetObject(_id),
 					Script.AddObject("hostWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
@@ -129,15 +248,17 @@ namespace Socketron {
 			}
 		}
 
+		/// <summary>
+		/// A WebContents of DevTools for this WebContents.
+		/// </summary>
 		public WebContents devToolsWebContents {
 			get {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"var devToolsWebContents = contents.devToolsWebContents;",
+						"var devToolsWebContents = {0}.devToolsWebContents;",
 						"return {1};"
 					),
-					_id,
+					Script.GetObject(_id),
 					Script.AddObject("devToolsWebContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
@@ -145,69 +266,22 @@ namespace Socketron {
 			}
 		}
 
+		/// <summary>
+		/// A Debugger instance for this webContents.
+		/// </summary>
 		public Debugger debugger {
 			get {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"var debugger = contents.debugger;",
+						"var debugger = {0}.debugger;",
 						"return {1};"
 					),
-					_id,
+					Script.GetObject(_id),
 					Script.AddObject("debugger")
 				);
 				int result = _ExecuteBlocking<int>(script);
 				return new Debugger(_client, result);
 			}
-		}
-
-		public void on(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.{0}.fromId({1});",
-					"var listener = (e, ...args) => {{",
-						"emit.apply(this, ['__event',{2},{3}].concat(args));",
-					"}};",
-					"this._addClientEventListener({2},{3},listener);",
-					"contents.on({4}, listener);"
-				),
-				Name,
-				_id,
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
-		}
-
-		public void once(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.{0}.fromId({1});",
-					"var listener = (e, ...args) => {{",
-						"this._removeClientEventListener({2},{3});",
-						"emit.apply(this, ['__event',{2},{3}].concat(args));",
-					"}};",
-					"this._addClientEventListener({2},{3},listener);",
-					"contents.once({4}, listener);"
-				),
-				Name,
-				_id,
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -221,20 +295,14 @@ namespace Socketron {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.loadURL({1});"
-					),
-					_id,
+					"{0}.loadURL({1});",
+					Script.GetObject(_id),
 					url.Escape()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.loadURL({1},{2});"
-					),
-					_id,
+					"{0}.loadURL({1},{2});",
+					Script.GetObject(_id),
 					url.Escape(),
 					options.Stringify()
 				);
@@ -249,11 +317,8 @@ namespace Socketron {
 		/// <param name="filePath"></param>
 		public void loadFile(string filePath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.loadFile({1});"
-				),
-				_id,
+				"{0}.loadFile({1});",
+				Script.GetObject(_id),
 				filePath.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -266,11 +331,8 @@ namespace Socketron {
 		/// <param name="url"></param>
 		public void downloadURL(string url) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.downloadURL({1});"
-				),
-				_id,
+				"{0}.downloadURL({1});",
+				Script.GetObject(_id),
 				url.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -282,11 +344,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getURL() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getURL();"
-				),
-				_id
+				"return {0}.getURL();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -297,11 +356,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getTitle() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getTitle();"
-				),
-				_id
+				"return {0}.getTitle();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -312,11 +368,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isDestroyed();"
-				),
-				_id
+				"return {0}.isDestroyed();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -326,11 +379,8 @@ namespace Socketron {
 		/// </summary>
 		public void focus() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.focus();"
-				),
-				_id
+				"{0}.focus();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -341,11 +391,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isFocused() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isFocused();"
-				),
-				_id
+				"return {0}.isFocused();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -356,11 +403,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isLoading() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isLoading();"
-				),
-				_id
+				"return {0}.isLoading();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -372,11 +416,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isLoadingMainFrame() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isLoadingMainFrame();"
-				),
-				_id
+				"return {0}.isLoadingMainFrame();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -388,11 +429,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isWaitingForResponse() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isWaitingForResponse();"
-				),
-				_id
+				"return {0}.isWaitingForResponse();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -402,11 +440,8 @@ namespace Socketron {
 		/// </summary>
 		public void stop() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.stop();"
-				),
-				_id
+				"{0}.stop();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -416,11 +451,8 @@ namespace Socketron {
 		/// </summary>
 		public void reload() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.reload();"
-				),
-				_id
+				"{0}.reload();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -430,11 +462,8 @@ namespace Socketron {
 		/// </summary>
 		public void reloadIgnoringCache() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.reloadIgnoringCache();"
-				),
-				_id
+				"{0}.reloadIgnoringCache();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -445,11 +474,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool canGoBack() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.canGoBack();"
-				),
-				_id
+				"return {0}.canGoBack();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -460,11 +486,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool canGoForward() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.canGoForward();"
-				),
-				_id
+				"return {0}.canGoForward();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -476,11 +499,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool canGoToOffset(int offset) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.canGoToOffset({1});"
-				),
-				_id,
+				"return {0}.canGoToOffset({1});",
+				Script.GetObject(_id),
 				offset
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -491,11 +511,8 @@ namespace Socketron {
 		/// </summary>
 		public void clearHistory() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.clearHistory();"
-				),
-				_id
+				"{0}.clearHistory();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -505,11 +522,8 @@ namespace Socketron {
 		/// </summary>
 		public void goBack() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.goBack();"
-				),
-				_id
+				"{0}.goBack();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -519,11 +533,8 @@ namespace Socketron {
 		/// </summary>
 		public void goForward() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.goForward();"
-				),
-				_id
+				"{0}.goForward();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -534,11 +545,8 @@ namespace Socketron {
 		/// <param name="index"></param>
 		public void goToIndex(int index) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.goToIndex({1});"
-				),
-				_id,
+				"{0}.goToIndex({1});",
+				Script.GetObject(_id),
 				index
 			);
 			_ExecuteJavaScript(script);
@@ -550,11 +558,8 @@ namespace Socketron {
 		/// <param name="offset"></param>
 		public void goToOffset(int offset) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.goToOffset({1});"
-				),
-				_id,
+				"{0}.goToOffset({1});",
+				Script.GetObject(_id),
 				offset
 			);
 			_ExecuteJavaScript(script);
@@ -566,11 +571,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isCrashed() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isCrashed();"
-				),
-				_id
+				"return {0}.isCrashed();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -581,11 +583,8 @@ namespace Socketron {
 		/// <param name="userAgent"></param>
 		public void setUserAgent(string userAgent) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setUserAgent({1});"
-				),
-				_id,
+				"{0}.setUserAgent({1});",
+				Script.GetObject(_id),
 				userAgent.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -597,11 +596,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getUserAgent() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getUserAgent();"
-				),
-				_id
+				"return {0}.getUserAgent();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -612,11 +608,8 @@ namespace Socketron {
 		/// <param name="css"></param>
 		public void insertCSS(string css) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.insertCSS({1});"
-				),
-				_id,
+				"{0}.insertCSS({1});",
+				Script.GetObject(_id),
 				css.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -631,11 +624,8 @@ namespace Socketron {
 				return;
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.executeJavaScript({1});"
-				),
-				_id,
+				"{0}.executeJavaScript({1});",
+				Script.GetObject(_id),
 				code.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -648,11 +638,8 @@ namespace Socketron {
 		/// <param name="ignore"></param>
 		public void setIgnoreMenuShortcuts(bool ignore) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setIgnoreMenuShortcuts({1});"
-				),
-				_id,
+				"{0}.setIgnoreMenuShortcuts({1});",
+				Script.GetObject(_id),
 				ignore.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -664,11 +651,8 @@ namespace Socketron {
 		/// <param name="muted"></param>
 		public void setAudioMuted(bool muted) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setAudioMuted({1});"
-				),
-				_id,
+				"{0}.setAudioMuted({1});",
+				Script.GetObject(_id),
 				muted.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -680,11 +664,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isAudioMuted() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isAudioMuted();"
-				),
-				_id
+				"return {0}.isAudioMuted();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -696,11 +677,8 @@ namespace Socketron {
 		/// <param name="factor"></param>
 		public void setZoomFactor(double factor) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setZoomFactor({1});"
-				),
-				_id,
+				"{0}.setZoomFactor({1});",
+				Script.GetObject(_id),
 				factor
 			);
 			_ExecuteJavaScript(script);
@@ -710,17 +688,42 @@ namespace Socketron {
 		/// Sends a request to get current zoom factor,
 		/// the callback will be called with callback(zoomFactor).
 		/// </summary>
-		/// <returns></returns>
-		/*
-		public double getZoomFactor() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"return contents.getZoomFactor();"
-			};
-			return _ExecuteJavaScriptBlocking<double>(script);
+		/// <param name="callback"></param>
+		public void getZoomFactor(Action<double> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "getZoomFactor";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				double zoomFactor = (double)argsList[0];
+				callback?.Invoke(zoomFactor);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (zoomFactor) => {{",
+						"emit('__event',{0},{1},{2},zoomFactor);",
+					"}};",
+					"return {3};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.getZoomFactor({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Changes the zoom level to the specified level.
@@ -733,30 +736,53 @@ namespace Socketron {
 		/// <param name="level"></param>
 		public void setZoomLevel(double level) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setZoomLevel({1});"
-				),
-				_id,
+				"{0}.setZoomLevel({1});",
+				Script.GetObject(_id),
 				level
 			);
 			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
-		/// Sends a request to get current zoom level, the callback will be called with callback(zoomLevel).
+		/// Sends a request to get current zoom level,
+		/// the callback will be called with callback(zoomLevel).
 		/// </summary>
-		/// <returns></returns>
-		/*
-		public double getZoomLevel() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"return contents.getZoomLevel();"
-			};
-			return _ExecuteJavaScriptBlocking<double>(script);
+		/// <param name="callback"></param>
+		public void getZoomLevel(Action<double> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "getZoomLevel";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				double zoomLevel = (double)argsList[0];
+				callback?.Invoke(zoomLevel);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (zoomLevel) => {{",
+						"emit('__event',{0},{1},{2},zoomLevel);",
+					"}};",
+					"return {3};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.getZoomLevel({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Sets the maximum and minimum pinch-to-zoom level.
@@ -765,11 +791,8 @@ namespace Socketron {
 		/// <param name="maximumLevel"></param>
 		public void setVisualZoomLevelLimits(double minimumLevel, double maximumLevel) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setVisualZoomLevelLimits({1},{2});"
-				),
-				_id,
+				"{0}.setVisualZoomLevelLimits({1},{2});",
+				Script.GetObject(_id),
 				minimumLevel,
 				maximumLevel
 			);
@@ -783,11 +806,8 @@ namespace Socketron {
 		/// <param name="maximumLevel"></param>
 		public void setLayoutZoomLevelLimits(double minimumLevel, double maximumLevel) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setLayoutZoomLevelLimits({1},{2});"
-				),
-				_id,
+				"{0}.setLayoutZoomLevelLimits({1},{2});",
+				Script.GetObject(_id),
 				minimumLevel,
 				maximumLevel
 			);
@@ -799,11 +819,8 @@ namespace Socketron {
 		/// </summary>
 		public void undo() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.undo();"
-				),
-				_id
+				"{0}.undo();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -813,11 +830,8 @@ namespace Socketron {
 		/// </summary>
 		public void redo() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.redo();"
-				),
-				_id
+				"{0}.redo();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -827,11 +841,8 @@ namespace Socketron {
 		/// </summary>
 		public void cut() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.cut();"
-				),
-				_id
+				"{0}.cut();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -841,11 +852,8 @@ namespace Socketron {
 		/// </summary>
 		public void copy() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.copy();"
-				),
-				_id
+				"{0}.copy();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -857,11 +865,8 @@ namespace Socketron {
 		/// <param name="y"></param>
 		public void copyImageAt(int x, int y) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.copyImageAt({1},{2});"
-				),
-				_id, x, y
+				"{0}.copyImageAt({1},{2});",
+				Script.GetObject(_id), x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -871,11 +876,8 @@ namespace Socketron {
 		/// </summary>
 		public void paste() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.paste();"
-				),
-				_id
+				"{0}.paste();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -885,11 +887,8 @@ namespace Socketron {
 		/// </summary>
 		public void pasteAndMatchStyle() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.pasteAndMatchStyle();"
-				),
-				_id
+				"{0}.pasteAndMatchStyle();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -899,11 +898,8 @@ namespace Socketron {
 		/// </summary>
 		public void delete() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.delete();"
-				),
-				_id
+				"{0}.delete();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -913,11 +909,8 @@ namespace Socketron {
 		/// </summary>
 		public void selectAll() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.selectAll();"
-				),
-				_id
+				"{0}.selectAll();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -927,11 +920,8 @@ namespace Socketron {
 		/// </summary>
 		public void unselect() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.unselect();"
-				),
-				_id
+				"{0}.unselect();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -942,11 +932,8 @@ namespace Socketron {
 		/// <param name="text"></param>
 		public void replace(string text) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.replace({1});"
-				),
-				_id,
+				"{0}.replace({1});",
+				Script.GetObject(_id),
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -958,11 +945,8 @@ namespace Socketron {
 		/// <param name="text"></param>
 		public void replaceMisspelling(string text) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.replaceMisspelling({1});"
-				),
-				_id,
+				"{0}.replaceMisspelling({1});",
+				Script.GetObject(_id),
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -974,11 +958,8 @@ namespace Socketron {
 		/// <param name="text"></param>
 		public void insertText(string text) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.insertText({1});"
-				),
-				_id,
+				"{0}.insertText({1});",
+				Script.GetObject(_id),
 				text.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -997,20 +978,14 @@ namespace Socketron {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.findInPage({1});"
-					),
-					_id,
+					"{0}.findInPage({1});",
+					Script.GetObject(_id),
 					text.Escape()
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.findInPage({1},{2});"
-					),
-					_id,
+					"{0}.findInPage({1},{2});",
+					Script.GetObject(_id),
 					text.Escape(),
 					options.Stringify()
 				);
@@ -1022,103 +997,301 @@ namespace Socketron {
 		/// <summary>
 		/// Stops any findInPage request for the webContents with the provided action.
 		/// </summary>
-		/// <param name="action"></param>
-		/*
+		/// <param name="action">
+		/// Specifies the action to take place when ending [webContents.findInPage] request.
+		/// </param>
 		public void stopFindInPage(string action) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.stopFindInPage('" + action + "');"
-			};
+			string script = ScriptBuilder.Build(
+				"{0}.stopFindInPage({1});",
+				Script.GetObject(_id),
+				action.Escape()
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
-
-		/*
-		public void capturePage(string text) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.capturePage('" + text + "');"
-			};
-			_ExecuteJavaScript(script);
-		}
-		//*/
 
 		/// <summary>
-		/// Checks if any ServiceWorker is registered and returns a boolean as response to callback.
+		/// Captures a snapshot of the page within rect. 
 		/// </summary>
-		/// <param name="text"></param>
-		/*
-		public void hasServiceWorker(string text) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.hasServiceWorker('" + text + "');"
-			};
+		/// <param name="rect">The area of the page to be captured.</param>
+		/// <param name="callback"></param>
+		public void capturePage(Rectangle rect, Action<NativeImage> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "capturePage";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+				callback?.Invoke(image);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (image) => {{",
+						"emit('__event',{0},{1},{2},{3});",
+					"}};",
+					"return {4};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("image"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.capturePage({1},{2});",
+				Script.GetObject(_id),
+				rect.Stringify(),
+				Script.GetObject(item.ObjectId)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
+
+		/// <summary>
+		/// Captures a snapshot of the page within rect. 
+		/// </summary>
+		/// <param name="callback"></param>
+		public void capturePage(Action<NativeImage> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "capturePage";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+				callback?.Invoke(image);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (image) => {{",
+						"emit('__event',{0},{1},{2},{3});",
+					"}};",
+					"return {4};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("image"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.capturePage({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
+		}
+
+		/// <summary>
+		/// Checks if any ServiceWorker is registered 
+		/// and returns a boolean as response to callback.
+		/// </summary>
+		/// <param name="callback"></param>
+		public void hasServiceWorker(Action<bool> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "hasServiceWorker";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				callback?.Invoke((bool)argsList[0]);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (hasWorker) => {{",
+						"emit('__event',{0},{1},{2},hasWorker);",
+					"}};",
+					"return {3};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.hasServiceWorker({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
+		}
 
 		/// <summary>
 		/// Unregisters any ServiceWorker if present and returns a boolean as response
 		/// to callback when the JS promise is fulfilled or false when the JS promise is rejected.
 		/// </summary>
 		/// <param name="text"></param>
-		/*
-		public void unregisterServiceWorker(string text) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.unregisterServiceWorker('" + text + "');"
-			};
+		public void unregisterServiceWorker(Action<bool> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "unregisterServiceWorker";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				callback?.Invoke((bool)argsList[0]);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (success) => {{",
+						"emit('__event',{0},{1},{2},success);",
+					"}};",
+					"return {3};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.unregisterServiceWorker({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Get the system printer list.
 		/// </summary>
-		/*
-		public void getPrinters() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.getPrinters('" + text + "');"
-			};
-			_ExecuteJavaScript(script);
+		/// <returns></returns>
+		public List<PrinterInfo> getPrinters() {
+			string script = ScriptBuilder.Build(
+				"return {0}.getPrinters();",
+				Script.GetObject(_id)
+			);
+			object[] result = _ExecuteBlocking<object[]>(script);
+			List<PrinterInfo> printers = new List<PrinterInfo>();
+			foreach (object item in result) {
+				PrinterInfo info = PrinterInfo.FromObject(item);
+				printers.Add(info);
+			}
+			return printers;
 		}
-		//*/
 
 		/// <summary>
 		/// Prints window's web page.
 		/// When silent is set to true, Electron will pick the system's
 		/// default printer if deviceName is empty and the default settings for printing.
 		/// </summary>
-		/*
 		public void print() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.print('" + text + "');"
-			};
+			string script = ScriptBuilder.Build(
+				"{0}.print();",
+				Script.GetObject(_id)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
+
+		public void print(JsonObject options) {
+			string script = ScriptBuilder.Build(
+				"{0}.print({1});",
+				Script.GetObject(_id),
+				options.Stringify()
+			);
+			_ExecuteJavaScript(script);
+		}
+
+		public void print(JsonObject options, Action<bool> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "print";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				callback?.Invoke((bool)argsList[0]);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (success) => {{",
+						"emit('__event',{0},{1},{2},success);",
+					"}};",
+					"return {3};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.print({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
+		}
 
 		/// <summary>
 		/// Prints window's web page as PDF with Chromium's preview printing custom settings.
 		/// </summary>
-		/*
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
 		public void printToPDF(JsonObject options, Action<Error, Buffer> callback) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.printToPDF('" + text + "');"
-			};
+			if (callback == null) {
+				return;
+			}
+			string eventName = "printToPDF";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				Error error = new Error(_client, (int)argsList[0]);
+				Buffer data = new Buffer(_client, (int)argsList[1]);
+				callback?.Invoke(error, data);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (error,data) => {{",
+						"emit('__event',{0},{1},{2},{3},{4});",
+					"}};",
+					"return {5};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("error"),
+				Script.AddObject("data"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.printToPDF({1},{2});",
+				Script.GetObject(_id),
+				options.Stringify(),
+				Script.GetObject(item.ObjectId)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Adds the specified path to DevTools workspace.
@@ -1136,11 +1309,8 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void addWorkSpace(string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.addWorkSpace({1});"
-				),
-				_id,
+				"{0}.addWorkSpace({1});",
+				Script.GetObject(_id),
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1152,11 +1322,8 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void removeWorkSpace(string path) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.removeWorkSpace({1});"
-				),
-				_id,
+				"{0}.removeWorkSpace({1});",
+				Script.GetObject(_id),
 				path.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1166,16 +1333,14 @@ namespace Socketron {
 		/// Uses the devToolsWebContents as the target WebContents to show devtools.
 		/// </summary>
 		/// <param name="devToolsWebContents"></param>
-		/*
-		public void setDevToolsWebContents(string devToolsWebContents) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.setDevToolsWebContents('" + devToolsWebContents + "');"
-			};
+		public void setDevToolsWebContents(WebContents devToolsWebContents) {
+			string script = ScriptBuilder.Build(
+				"{0}.setDevToolsWebContents({1});",
+				Script.GetObject(_id),
+				Script.GetObject(devToolsWebContents._id)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Opens the devtools.
@@ -1189,19 +1354,13 @@ namespace Socketron {
 			string script = string.Empty;
 			if (options == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.openDevTools();"
-					),
-					_id
+					"{0}.openDevTools();",
+					Script.GetObject(_id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var contents = electron.webContents.fromId({0});",
-						"contents.openDevTools({1});"
-					),
-					_id,
+					"{0}.openDevTools({1});",
+					Script.GetObject(_id),
 					options.Stringify()
 				);
 			}
@@ -1213,11 +1372,8 @@ namespace Socketron {
 		/// </summary>
 		public void closeDevTools() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.closeDevTools();"
-				),
-				_id
+				"{0}.closeDevTools();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1228,11 +1384,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDevToolsOpened() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isDevToolsOpened();"
-				),
-				_id
+				"return {0}.isDevToolsOpened();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1243,11 +1396,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDevToolsFocused() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isDevToolsFocused();"
-				),
-				_id
+				"return {0}.isDevToolsFocused();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1257,11 +1407,8 @@ namespace Socketron {
 		/// </summary>
 		public void toggleDevTools() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.toggleDevTools();"
-				),
-				_id
+				"{0}.toggleDevTools();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1273,11 +1420,8 @@ namespace Socketron {
 		/// <param name="y"></param>
 		public void inspectElement(int x, int y) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.inspectElement({1},{2});"
-				),
-				_id, x, y
+				"{0}.inspectElement({1},{2});",
+				Script.GetObject(_id), x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1287,11 +1431,8 @@ namespace Socketron {
 		/// </summary>
 		public void inspectServiceWorker() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.inspectServiceWorker();"
-				),
-				_id
+				"{0}.inspectServiceWorker();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1304,16 +1445,15 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="channel"></param>
 		/// <param name="args"></param>
-		/*
 		public void send(string channel, params object[] args) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.send('" + channel + "');"
-			};
+			string script = ScriptBuilder.Build(
+				"{0}.send({1},{2});",
+				Script.GetObject(_id),
+				channel,
+				ConsoleModule.CreateParams(args)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Enable device emulation with the given parameters.
@@ -1321,11 +1461,8 @@ namespace Socketron {
 		/// <param name="parameters"></param>
 		public void enableDeviceEmulation(JsonObject parameters) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.enableDeviceEmulation({1});"
-				),
-				_id,
+				"{0}.enableDeviceEmulation({1});",
+				Script.GetObject(_id),
 				parameters.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1336,11 +1473,8 @@ namespace Socketron {
 		/// </summary>
 		public void disableDeviceEmulation() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.disableDeviceEmulation();"
-				),
-				_id
+				"{0}.disableDeviceEmulation();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1354,11 +1488,8 @@ namespace Socketron {
 		/// <param name="event"></param>
 		public void sendInputEvent(JsonObject @event) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.sendInputEvent({1});"
-				),
-				_id,
+				"{0}.sendInputEvent({1});",
+				Script.GetObject(_id),
 				@event.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -1369,52 +1500,151 @@ namespace Socketron {
 		/// the callback will be called with callback(frameBuffer, dirtyRect)
 		/// when there is a presentation event.
 		/// </summary>
-		/*
-		public void beginFrameSubscription(string channel) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.beginFrameSubscription('" + channel + "');"
-			};
+		public void beginFrameSubscription(Action<Buffer, Rectangle> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "beginFrameSubscription";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				Buffer frameBuffer = new Buffer(_client, (int)argsList[0]);
+				Rectangle dirtyRect = Rectangle.FromObject(argsList[1]);
+				callback?.Invoke(frameBuffer, dirtyRect);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (frameBuffer,dirtyRect) => {{",
+						"emit('__event',{0},{1},{2},{3},dirtyRect);",
+					"}};",
+					"return {4};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("frameBuffer"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.beginFrameSubscription({1});",
+				Script.GetObject(_id),
+				Script.GetObject(item.ObjectId)
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
+
+		public void beginFrameSubscription(bool onlyDirty, Action<Buffer, Rectangle> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "beginFrameSubscription";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				Buffer frameBuffer = new Buffer(_client, (int)argsList[0]);
+				Rectangle dirtyRect = Rectangle.FromObject(argsList[1]);
+				callback?.Invoke(frameBuffer, dirtyRect);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (frameBuffer,dirtyRect) => {{",
+						"emit('__event',{0},{1},{2},{3},dirtyRect);",
+					"}};",
+					"return {4};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("frameBuffer"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.beginFrameSubscription({1},{2});",
+				Script.GetObject(_id),
+				onlyDirty.Escape(),
+				Script.GetObject(item.ObjectId)
+			);
+			_ExecuteJavaScript(script);
+		}
+
 
 		/// <summary>
 		/// End subscribing for frame presentation events.
 		/// </summary>
 		public void endFrameSubscription() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.endFrameSubscription();"
-				),
-				_id
+				"{0}.endFrameSubscription();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
 
-		/*
-		public void startDrag() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.startDrag();"
-			};
+		/// <summary>
+		/// Sets the item as dragging item for current drag-drop operation.
+		/// </summary>
+		/// <param name="item"></param>
+		public void startDrag(JsonObject item) {
+			// TODO: fix item.icon param
+			string script = ScriptBuilder.Build(
+				"{0}.startDrag({1});",
+				Script.GetObject(_id),
+				item.Stringify()
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
-		/*
-		public void savePage(string fullPath, string saveType, Action<Error> callback) {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.savePage();"
-			};
-			_ExecuteJavaScript(script);
+		/// <summary>
+		/// Returns Boolean - true if the process of saving page has been initiated successfully.
+		/// </summary>
+		/// <param name="fullPath"></param>
+		/// <param name="saveType"></param>
+		/// <param name="callback"></param>
+		/// <returns></returns>
+		public bool savePage(string fullPath, string saveType, Action<Error> callback) {
+			string eventName = "savePage";
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				object[] argsList = args as object[];
+				if (argsList == null) {
+					return;
+				}
+				Error error = new Error(_client, (int)argsList[0]);
+				callback?.Invoke(error);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var callback = (error) => {{",
+						"emit('__event',{0},{1},{2},{3});",
+					"}};",
+					"return {4};"
+				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("error"),
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.savePage({1},{2},{3});",
+				Script.GetObject(_id),
+				fullPath.Escape(),
+				saveType.Escape(),
+				Script.GetObject(item.ObjectId)
+			);
+			return _ExecuteBlocking<bool>(script);
 		}
-		//*/
 
 		/// <summary>
 		/// *macOS* 
@@ -1422,11 +1652,8 @@ namespace Socketron {
 		/// </summary>
 		public void showDefinitionForSelection() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.showDefinitionForSelection();"
-				),
-				_id
+				"{0}.showDefinitionForSelection();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1435,16 +1662,15 @@ namespace Socketron {
 		/// Set the size of the page.
 		/// This is only supported for &lt;webview&gt; guest contents.
 		/// </summary>
-		/*
-		public void setSize() {
-			// TODO: implement this
-			string[] script = new[] {
-				"var contents = electron.webContents.fromId(" + ID + ");",
-				"contents.setSize();"
-			};
+		/// <param name="options"></param>
+		public void setSize(JsonObject options) {
+			string script = ScriptBuilder.Build(
+				"return {0}.setSize({1});",
+				Script.GetObject(_id),
+				options.Stringify()
+			);
 			_ExecuteJavaScript(script);
 		}
-		//*/
 
 		/// <summary>
 		/// Returns Boolean - Indicates whether offscreen rendering is enabled.
@@ -1452,11 +1678,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isOffscreen() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isOffscreen();"
-				),
-				_id
+				"return {0}.isOffscreen();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1466,11 +1689,8 @@ namespace Socketron {
 		/// </summary>
 		public void startPainting() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.startPainting();"
-				),
-				_id
+				"{0}.startPainting();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1480,11 +1700,8 @@ namespace Socketron {
 		/// </summary>
 		public void stopPainting() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.stopPainting();"
-				),
-				_id
+				"{0}.stopPainting();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1495,11 +1712,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isPainting() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.isPainting();"
-				),
-				_id
+				"return {0}.isPainting();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1511,11 +1725,8 @@ namespace Socketron {
 		/// <param name="fps"></param>
 		public void setFrameRate(int fps) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setFrameRate({1});"
-				),
-				_id,
+				"{0}.setFrameRate({1});",
+				Script.GetObject(_id),
 				fps
 			);
 			_ExecuteJavaScript(script);
@@ -1527,11 +1738,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public int getFrameRate() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getFrameRate();"
-				),
-				_id
+				"return {0}.getFrameRate();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -1545,11 +1753,8 @@ namespace Socketron {
 		/// </summary>
 		public void invalidate() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.invalidate();"
-				),
-				_id
+				"{0}.invalidate();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1560,11 +1765,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getWebRTCIPHandlingPolicy() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getWebRTCIPHandlingPolicy();"
-				),
-				_id
+				"return {0}.getWebRTCIPHandlingPolicy();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -1576,11 +1778,8 @@ namespace Socketron {
 		/// <param name="policy"></param>
 		public void setWebRTCIPHandlingPolicy(string policy) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"contents.setWebRTCIPHandlingPolicy({1});"
-				),
-				_id,
+				"{0}.setWebRTCIPHandlingPolicy({1});",
+				Script.GetObject(_id),
 				policy.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1592,11 +1791,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public int getOSProcessId() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"return contents.getOSProcessId();"
-				),
-				_id
+				"return {0}.getOSProcessId();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}

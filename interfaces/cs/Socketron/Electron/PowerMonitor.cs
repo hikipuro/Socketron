@@ -25,29 +25,14 @@ namespace Socketron {
 	/// </example>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class PowerMonitor : NodeModule {
-		public const string Name = "PowerMonitor";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public PowerMonitor(SocketronClient client) {
-			_client = client;
-		}
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
 		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
+		public PowerMonitor(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -103,9 +88,10 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "querySystemIdleState";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -116,15 +102,24 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (idleState) => {{",
-						"emit('__event',{0},{1},idleState);",
+						"emit('__event',{0},{1},{2},idleState);",
 					"}};",
-					"electron.powerMonitor.querySystemIdleState({2},callback);"
+					"return {3};"
 				),
-				Name.Escape(),
-				_callbackListId,
-				idleThreshold
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.querySystemIdleState({1},{2});",
+				Script.GetObject(_id),
+				idleThreshold,
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -136,9 +131,10 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "querySystemIdleTime";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -149,14 +145,23 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (idleTime) => {{",
-						"emit('__event',{0},{1},idleTime);",
+						"emit('__event',{0},{1},{2},idleTime);",
 					"}};",
-					"electron.powerMonitor.querySystemIdleTime(callback);"
+					"return {3};"
 				),
-				Name.Escape(),
-				_callbackListId
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.querySystemIdleTime({1});",
+				Script.GetObject(_id),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 	}

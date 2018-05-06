@@ -5,24 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class NodeJS : NodeModule {
-		public const string Name = "NodeJS";
 		public ConsoleModule console;
 		public ProcessModule process;
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
 
 		public virtual void Init(SocketronClient client) {
 			console = new ConsoleModule(client);
@@ -52,28 +36,39 @@ namespace Socketron {
 			if (callback == null) {
 				return -1;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "setTimeout";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"{4};",
-						"emit('__event',{1},{2});",
-					"}}",
-					"var timer = setTimeout(callback,{0});",
-					"var id = {3};",
+						"{0};",
+						"emit('__event',{1},{2},{3});",
+					"}};",
+					"var id = {4};",
 					"return id;"
 				),
-				delay,
-				Name.Escape(),
-				_callbackListId,
-				Script.AddObject("timer"),
-				Script.RemoveObject("id")
+				Script.RemoveObject("id"),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var timer = setTimeout({0},{1});",
+					"return {2};"
+				),
+				Script.GetObject(objectId),
+				delay,
+				Script.AddObject("timer")
+			);
 			return _ExecuteBlocking<int>(script);
 		}
 
@@ -94,22 +89,33 @@ namespace Socketron {
 			if (callback == null) {
 				return -1;
 			}
-			_callbackList.Add(_callbackListId, callback);
+			string eventName = "setInterval";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{1},{2});",
-					"}}",
-					"var timer = setInterval(callback,{0});",
-					"var id = {3};",
-					"return id;"
+						"emit('__event',{0},{1},{2});",
+					"}};",
+					"return {3};"
 				),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
+			);
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var timer = setInterval({0},{1});",
+					"return {2};"
+				),
+				Script.GetObject(objectId),
 				delay,
-				Name.Escape(),
-				_callbackListId,
 				Script.AddObject("timer")
 			);
-			_callbackListId++;
 			return _ExecuteBlocking<int>(script);
 		}
 
@@ -130,23 +136,35 @@ namespace Socketron {
 			if (callback == null) {
 				return -1;
 			}
-			_callbackList.Add(_callbackListId, callback);
+			string eventName = "setImmediate";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"{3};",
-						"emit('__event',{0},{1});",
-					"}}",
-					"var timer = setImmediate(callback);",
-					"var id = {2};",
+						"{0};",
+						"emit('__event',{1},{2},{3});",
+					"}};",
+					"var id = {4};",
 					"return id;"
 				),
-				Name.Escape(),
-				_callbackListId,
-				Script.AddObject("timer"),
-				Script.RemoveObject("id")
+				Script.RemoveObject("id"),
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var timer = setImmediate({0});",
+					"return {1};"
+				),
+				Script.GetObject(objectId),
+				Script.AddObject("timer")
+			);
 			return _ExecuteBlocking<int>(script);
 		}
 

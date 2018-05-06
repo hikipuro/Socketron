@@ -94,6 +94,11 @@ namespace Socketron {
 			return (int)obj;
 		}
 
+		public bool Bool(string name) {
+			object obj = this[name];
+			return Convert.ToBoolean(obj);
+		}
+
 		/*
 		public void Add(string name, JsonObject json) {
 			this[name] = json;

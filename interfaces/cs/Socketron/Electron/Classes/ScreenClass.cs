@@ -12,8 +12,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public ScreenClass(SocketronClient client) {
+		/// <param name="id"></param>
+		public ScreenClass(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -22,9 +24,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Point getCursorScreenPoint() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getCursorScreenPoint();"
-				)
+				"return {0}.getCursorScreenPoint();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Point.FromObject(result);
@@ -37,9 +38,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public int getMenuBarHeight() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getMenuBarHeight();"
-				)
+				"return {0}.getMenuBarHeight();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<int>(script);
 		}
@@ -50,9 +50,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Display getPrimaryDisplay() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getPrimaryDisplay();"
-				)
+				"return {0}.getPrimaryDisplay();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Display.FromObject(result);
@@ -64,9 +63,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public List<Display> getAllDisplays() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getAllDisplays();"
-				)
+				"return {0}.getAllDisplays();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			object[] list = result as object[];
@@ -85,9 +83,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Display getDisplayNearestPoint(Point point) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getDisplayNearestPoint({0});"
-				),
+				"return {0}.getDisplayNearestPoint({1});",
+				Script.GetObject(_id),
 				point.Stringify()
 			);
 			object result = _ExecuteBlocking<object>(script);
@@ -101,9 +98,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Display getDisplayMatching(Rectangle rect) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.screen.getDisplayMatching({0});"
-				),
+				"return {0}.getDisplayMatching({1});",
+				Script.GetObject(_id),
 				rect.Stringify()
 			);
 			object result = _ExecuteBlocking<object>(script);

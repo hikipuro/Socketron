@@ -7,11 +7,15 @@ namespace Socketron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class BrowserWindowClass {
+	public class BrowserWindowClass : NodeModule {
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
-		public BrowserWindowClass() {
+		/// <param name="client"></param>
+		/// <param name="id"></param>
+		public BrowserWindowClass(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -19,24 +23,22 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		public List<BrowserWindow> getAllWindows() {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var result = [];",
-					"var windows = electron.BrowserWindow.getAllWindows();",
+					"var windows = {0}.getAllWindows();",
 					"for (var window of windows) {{",
-						"result.push([window.id,window.webContents.id]);",
+						"result.push({1});",
 					"}}",
 					"return result;"
-				)
+				),
+				Script.GetObject(_id),
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
+			object[] result = _ExecuteBlocking<object[]>(script);
 			List<BrowserWindow> windows = new List<BrowserWindow>();
-			foreach (object[] item in result) {
-				int windowId = (int)item[0];
-				int contentsId = (int)item[1];
-				BrowserWindow window = new BrowserWindow(client, windowId);
-				window.webContents = new WebContents(client, contentsId);
+			foreach (object item in result) {
+				BrowserWindow window = new BrowserWindow(_client, (int)item);
 				windows.Add(window);
 			}
 			return windows;
@@ -48,22 +50,19 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		public BrowserWindow getFocusedWindow() {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.getFocusedWindow();",
+					"var window = {0}.getFocusedWindow();",
 					"if (window == null) {{",
 						"return null",
 					"}}",
-					"return [window.id,window.webContents.id];"
-				)
+					"return {1};"
+				),
+				Script.GetObject(_id),
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(client, windowId);
-			window.webContents = new WebContents(client, contentsId);
-			return window;
+			int result = _ExecuteBlocking<int>(script);
+			return new BrowserWindow(_client, result);
 		}
 
 		/// <summary>
@@ -72,24 +71,20 @@ namespace Socketron {
 		/// <param name="webContents"></param>
 		/// <returns></returns>
 		public BrowserWindow fromWebContents(WebContents webContents) {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"var window = electron.BrowserWindow.fromWebContents(contents);",
+					"var window = {0}.fromWebContents({1});",
 					"if (window == null) {{",
 						"return null",
 					"}}",
-					"return [window.id,window.webContents.id];"
+					"return {2};"
 				),
-				webContents._id
+				Script.GetObject(_id),
+				Script.GetObject(webContents._id),
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(client, windowId);
-			window.webContents = new WebContents(client, contentsId);
-			return window;
+			int result = _ExecuteBlocking<int>(script);
+			return new BrowserWindow(_client, result);
 		}
 
 		/// <summary>
@@ -99,24 +94,20 @@ namespace Socketron {
 		/// <param name="browserView"></param>
 		/// <returns></returns>
 		public BrowserWindow fromBrowserView(BrowserView browserView) {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"var window = electron.BrowserWindow.fromBrowserView(view);",
+					"var window = {0}.fromBrowserView({1});",
 					"if (window == null) {{",
 						"return null",
 					"}}",
-					"return [window.id,window.webContents.id];"
+					"return {2};"
 				),
-				browserView._id
+				Script.GetObject(_id),
+				Script.GetObject(browserView._id),
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(client, windowId);
-			window.webContents = new WebContents(client, contentsId);
-			return window;
+			int result = _ExecuteBlocking<int>(script);
+			return new BrowserWindow(_client, result);
 		}
 
 		/// <summary>
@@ -128,20 +119,18 @@ namespace Socketron {
 			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
+					"var window = {0}.fromId({1});",
 					"if (window == null) {{",
 						"return null;",
 					"}}",
-					"return [window.id,window.webContents.id];"
+					"return {2};"
 				),
-				id
+				Script.GetObject(_id),
+				id,
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(client, windowId);
-			window.webContents = new WebContents(client, contentsId);
-			return window;
+			int result = _ExecuteBlocking<int>(script);
+			return new BrowserWindow(_client, result);
 		}
 
 		/// <summary>
@@ -156,10 +145,11 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void addExtension(string path) {
 			string script = ScriptBuilder.Build(
-				"electron.BrowserWindow.addExtension({0});",
+				"{0}.addExtension({1});",
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -171,10 +161,11 @@ namespace Socketron {
 		/// <param name="name"></param>
 		public void removeExtension(string name) {
 			string script = ScriptBuilder.Build(
-				"electron.BrowserWindow.removeExtension({0});",
+				"{0}.removeExtension({1});",
+				Script.GetObject(_id),
 				name.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -186,11 +177,11 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getExtensions() {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
-				"return electron.BrowserWindow.getExtensions();"
+				"return {0}.getExtensions();",
+				Script.GetObject(_id)
 			);
-			object result = client.ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -200,10 +191,11 @@ namespace Socketron {
 		/// <param name="path"></param>
 		public void addDevToolsExtension(string path) {
 			string script = ScriptBuilder.Build(
-				"electron.BrowserWindow.addDevToolsExtension({0});",
+				"{0}.addDevToolsExtension({1});",
+				Script.GetObject(_id),
 				path.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -212,10 +204,11 @@ namespace Socketron {
 		/// <param name="name"></param>
 		public void removeDevToolsExtension(string name) {
 			string script = ScriptBuilder.Build(
-				"electron.BrowserWindow.removeDevToolsExtension({0});",
+				"{0}.removeDevToolsExtension({1});",
+				Script.GetObject(_id),
 				name.Escape()
 			);
-			SocketronClient.Execute(script);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -224,11 +217,11 @@ namespace Socketron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getDevToolsExtensions() {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
-				"return electron.BrowserWindow.getDevToolsExtensions();"
+				"return {0}.getDevToolsExtensions();",
+				Script.GetObject(_id)
 			);
-			object result = client.ExecuteJavaScriptBlocking<object>(script);
+			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 	}

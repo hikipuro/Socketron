@@ -10,7 +10,11 @@ namespace Socketron {
 		/// <summary>
 		/// Used Internally by the library.
 		/// </summary>
-		public NativeImageClass() {
+		/// <param name="client"></param>
+		/// <param name="id"></param>
+		public NativeImageClass(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -20,9 +24,10 @@ namespace Socketron {
 		public NativeImage createEmpty() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.nativeImage.createEmpty();",
-					"return {0};"
+					"var image = {0}.createEmpty();",
+					"return {1};"
 				),
+				Script.GetObject(_id),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
@@ -39,9 +44,10 @@ namespace Socketron {
 		public NativeImage createFromPath(string path) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.nativeImage.createFromPath({0});",
-					"return {1};"
+					"var image = {0}.createFromPath({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				path.Escape(),
 				Script.AddObject("image")
 			);
@@ -58,9 +64,10 @@ namespace Socketron {
 			// TODO: add options
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.nativeImage.createFromBuffer({0});",
-					"return {1};"
+					"var image = {0}.createFromBuffer({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				buffer.Stringify(),
 				Script.AddObject("image")
 			);
@@ -76,9 +83,10 @@ namespace Socketron {
 		public NativeImage createFromDataURL(string dataURL) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.nativeImage.createFromDataURL({0});",
-					"return {1};"
+					"var image = {0}.createFromDataURL({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				dataURL.Escape(),
 				Script.AddObject("image")
 			);
@@ -97,9 +105,10 @@ namespace Socketron {
 			// TODO: add hslShift option
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var image = electron.nativeImage.createFromNamedImage({0});",
-					"return {1};"
+					"var image = {0}.createFromNamedImage({1});",
+					"return {2};"
 				),
+				Script.GetObject(_id),
 				imageName.Escape(),
 				Script.AddObject("image")
 			);

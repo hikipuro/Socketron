@@ -74,9 +74,7 @@ namespace Socketron {
 					Script.AddObject("protocol")
 				);
 				int result = _ExecuteBlocking<int>(script);
-				return new Protocol(_client) {
-					_id = result
-				};
+				return new Protocol(_client, result);
 			}
 		}
 

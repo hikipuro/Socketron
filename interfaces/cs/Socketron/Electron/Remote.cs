@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Use main process modules from the renderer process.
 	/// <para>Process: Renderer</para>
 	/// </summary>
+	[type: SuppressMessage("Style", "IDE1006")]
 	public class Remote {
 		/// <summary>
 		/// The process object in the main process.

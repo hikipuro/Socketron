@@ -135,6 +135,7 @@ namespace Socketron {
 		public Config Config = new Config();
 		public MainProcess Main;
 		public RendererProcess Renderer;
+		public CallbackManager Callbacks;
 		SocketClient _socketClient;
 		Dictionary<ushort, Callback> _successList;
 		Dictionary<ushort, Callback> _errorList;
@@ -187,6 +188,7 @@ namespace Socketron {
 
 			_successList = new Dictionary<ushort, Callback>();
 			_errorList = new Dictionary<ushort, Callback>();
+			Callbacks = new CallbackManager();
 
 			Main = new MainProcess();
 			Main.On("text", _OnText);
@@ -239,6 +241,7 @@ namespace Socketron {
 			if (id <= 0) {
 				return;
 			}
+			Callbacks.RemoveInstanceEvents(id);
 			string script = string.Format(
 				"this._removeObjectReference({0});",
 				id
@@ -257,7 +260,7 @@ namespace Socketron {
 					resetEvent.Set();
 					return;
 				}
-				if (typeofT is object) {
+				if (typeofT == typeof(object)) {
 					value = (T)result;
 					resetEvent.Set();
 					return;
@@ -331,6 +334,9 @@ namespace Socketron {
 
 		protected void _OnCallback(SocketronData data) {
 			if (data.SequenceId == null) {
+				if (data.Status == "error") {
+					throw new InvalidOperationException(data.Params as string);
+				}
 				return;
 			}
 			ushort sequenceId = (ushort)data.SequenceId;
@@ -341,6 +347,8 @@ namespace Socketron {
 					error?.Invoke(data.Params);
 					_successList.Remove(sequenceId);
 					_errorList.Remove(sequenceId);
+				} else {
+					throw new InvalidOperationException(data.Params as string);
 				}
 				return;
 			}
@@ -367,13 +375,15 @@ namespace Socketron {
 				}
 
 				object[] list = args as object[];
-				string className = list[0] as string;
-				ushort callbackId = (ushort)(int)list[1];
+				long instanceId = Convert.ToInt64(list[0]);
+				string eventId = list[1] as string;
+				long callbackId = Convert.ToInt64(list[2]);
 				object[] callbackParams = null;
-				if (list.Length >= 3) {
-					callbackParams = new object[list.Length - 2];
-					Array.Copy(list, 2, callbackParams, 0, list.Length - 2);
+				if (list.Length >= 4) {
+					callbackParams = new object[list.Length - 3];
+					Array.Copy(list, 2, callbackParams, 0, list.Length - 3);
 				}
+				/*
 				Callback callback = null;
 
 				className = "Socketron." + Char.ToUpper(className[0]) + className.Substring(1);
@@ -392,6 +402,11 @@ namespace Socketron {
 				}
 				callback = method.Invoke(null, new[] { (object)callbackId }) as Callback;
 				callback?.Invoke(callbackParams);
+				//*/
+
+				CallbackItem item = Callbacks.GetItem(instanceId, eventId, callbackId);
+				item?.Callback?.Invoke(callbackParams);
+
 				_Clients.Remove(thread);
 
 				/*

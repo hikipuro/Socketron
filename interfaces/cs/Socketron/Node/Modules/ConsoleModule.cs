@@ -48,7 +48,7 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"console.log({0});",
-				_CreateParams(args)
+				CreateParams(args)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -59,7 +59,7 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"console.table({0});",
-				_CreateParams(args)
+				CreateParams(args)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -70,7 +70,7 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"console.trace({0});",
-				_CreateParams(args)
+				CreateParams(args)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -101,7 +101,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		protected string _CreateParams(object[] args) {
+		public static string CreateParams(object[] args) {
 			string[] strings = new string[args.Length];
 			for (int i = 0; i < args.Length; i++) {
 				object arg = args[i];

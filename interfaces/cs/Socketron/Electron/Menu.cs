@@ -9,7 +9,6 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Menu : NodeModule {
 		public const string Name = "Menu";
-		protected static MenuClass _Class = new MenuClass();
 
 		public class Events {
 			/// <summary>
@@ -32,6 +31,7 @@ namespace Socketron {
 			_id = id;
 		}
 
+		/*
 		public void setApplicationMenu(Menu menu) {
 			_Class.setApplicationMenu(menu);
 		}
@@ -51,6 +51,7 @@ namespace Socketron {
 		public static Menu buildFromTemplate(string template) {
 			return _Class.buildFromTemplate(template);
 		}
+		//*/
 
 		public List<MenuItem> items {
 			get {

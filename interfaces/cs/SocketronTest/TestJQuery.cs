@@ -39,8 +39,6 @@ namespace SocketronTest {
 				Console.WriteLine("Connect errror");
 				return;
 			}
-
-			Init(_client);
 		}
 
 		public void Close() {
@@ -48,6 +46,7 @@ namespace SocketronTest {
 		}
 
 		void Test() {
+			/*
 			var os = require<NodeModules.OS>("os");
 			Console.WriteLine(os.cpus().Stringify());
 
@@ -83,6 +82,8 @@ namespace SocketronTest {
 			//});
 
 			return;
+			//*/
+
 			/*
 			SocketronData data = new SocketronData();
 			data.Type = ProcessType.Browser;
@@ -95,6 +96,7 @@ namespace SocketronTest {
 			//string script = "console.log('Test: ' + process.type);";
 			//socketron.Main.ExecuteJavaScript(script);
 
+			/*
 			var paths = electron.dialog.showOpenDialog(new Dialog.OpenDialogOptions {
 				properties = new[] {
 					Dialog.Properties.openFile
@@ -102,6 +104,8 @@ namespace SocketronTest {
 			}, (a, b) => {
 				Console.WriteLine("showOpenDialog: {0}, {1}", JSON.Stringify(a), JSON.Stringify(b));
 			});
+			//*/
+
 			//foreach (var path in paths) {
 			//	Console.WriteLine("OpenDialog: {0}", path);
 			//}
@@ -189,20 +193,33 @@ namespace SocketronTest {
 			//options.opacity = 0.5;
 			BrowserWindow window = new BrowserWindow(options);
 			stopwatch.Stop();
-			Log(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
+			Log?.Invoke(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 			
 			window.loadURL("file:///src/html/index.html");
 
-			window.once("ready-to-show", (args) => {
+			Callback callback1 = (args) => {
 				Console.WriteLine("ready-to-show: {0}", args);
 				window.show();
 
 				setTimeout(() => {
+					Console.WriteLine("setTimeout");
 					window.capturePage(new Rectangle(100, 80), (image3) => {
-						image3.toPNG().Save("image3.png");
+						//image3.toPNG().Save("image3.png");
 					});
 				}, 500);
-			});
+			};
+			window.once("ready-to-show", callback1);
+			//window.removeListener("ready-to-show", callback1);
+			
+			/*
+			window.Execute(ScriptBuilder.Script(
+				"self.on('close', (e) => {",
+					"console.log('**************** close');",
+					"e.preventDefault();",
+				"});"
+			));
+			//*/
+
 			window.on("close", (args) => {
 				Console.WriteLine("close: {0}", args);
 			});
@@ -418,6 +435,7 @@ namespace SocketronTest {
 			if (!_client.IsConnected) {
 				return;
 			}
+			Init(_client);
 			//socketron.IsDebug = false;
 
 			//socketron.executeJavaScript("location.href='http://google.co.jp/'");

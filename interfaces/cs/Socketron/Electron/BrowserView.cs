@@ -11,11 +11,18 @@ namespace Socketron {
 		public const string Name = "BrowserView";
 
 		/// <summary>
+		/// Used Internally by the library.
+		/// </summary>
+		/// <param name="client"></param>
+		public BrowserView(SocketronClient client, int id) {
+			_client = client;
+			_id = id;
+		}
+
+		/// <summary>
 		/// *Experimental*
 		/// </summary>
 		public BrowserView(JsonObject options = null) {
-			_disposeManually = true;
-
 			if (options == null) {
 				options = new JsonObject();
 			}
@@ -23,23 +30,14 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var view = new electron.BrowserView({0});",
-					"return view.id;"
+					"return {1};"
 				),
-				options.Stringify()
+				options.Stringify(),
+				Script.AddObject("view")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			_client = client;
 			_id = result;
-		}
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		public BrowserView(SocketronClient client, int id) {
-			_disposeManually = true;
-			_client = client;
-			_id = id;
 		}
 
 		/// <summary>
@@ -50,10 +48,11 @@ namespace Socketron {
 			get {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
-						"var view = electron.BrowserView.fromId({0});",
-						"return view.webContents.id;"
+						"var webContents = {0}.webContents;",
+						"return {1};"
 					),
-					_id
+					Script.GetObject(_id),
+					Script.AddObject("webContents")
 				);
 				int result = _ExecuteBlocking<int>(script);
 				return new WebContents(_client, result);
@@ -65,7 +64,14 @@ namespace Socketron {
 		/// A Integer representing the unique ID of the view.
 		/// </summary>
 		public int id {
-			get { return _id; }
+			get {
+				string script = ScriptBuilder.Build(
+					"return {0}.id;",
+					Script.GetObject(_id)
+				);
+				return _ExecuteBlocking<int>(script);
+
+			}
 		}
 
 		/// <summary>
@@ -79,10 +85,11 @@ namespace Socketron {
 					"var result = [];",
 					"var views = electron.BrowserView.getAllViews();",
 					"for (var view of views) {{",
-						"result.push(view.id);",
+						"result.push({0});",
 					"}}",
 					"return result;"
-				)
+				),
+				Script.AddObject("view")
 			);
 			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
 			List<BrowserView> views = new List<BrowserView>();
@@ -107,14 +114,14 @@ namespace Socketron {
 			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var contents = electron.webContents.fromId({0});",
-					"var view = electron.BrowserView.fromWebContents(contents);",
+					"var view = electron.BrowserView.fromWebContents({0});",
 					"if (view == null) {{",
 						"return null;",
 					"}}",
-					"return view.id;"
+					"return {1};"
 				),
-				webContents._id
+				Script.GetObject(webContents._id),
+				Script.AddObject("view")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			BrowserView view = new BrowserView(client, result);
@@ -134,9 +141,10 @@ namespace Socketron {
 					"if (view == null) {{",
 						"return null;",
 					"}}",
-					"return view.id;"
+					"return {1};"
 				),
-				id
+				id,
+				Script.AddObject("view")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
 			BrowserView view = new BrowserView(client, result);
@@ -151,11 +159,8 @@ namespace Socketron {
 		/// </summary>
 		public void destroy() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"view.destroy();"
-				),
-				_id
+				"{0}.destroy();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -166,11 +171,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"return view.isDestroyed();"
-				),
-				_id
+				"return {0}.isDestroyed();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -188,11 +190,8 @@ namespace Socketron {
 		/// </param>
 		public void setAutoResize(bool width, bool height) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"view.setAutoResize({{width:{1},height:{2}}});"
-				),
-				_id,
+				"{0}.setAutoResize({{width:{1},height:{2}}});",
+				Script.GetObject(_id),
 				width.Escape(),
 				height.Escape()
 			);
@@ -206,11 +205,8 @@ namespace Socketron {
 		/// <param name="bounds"></param>
 		public void setBounds(Rectangle bounds) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"view.setBounds({1});"
-				),
-				_id,
+				"{0}.setBounds({1});",
+				Script.GetObject(_id),
 				bounds.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -225,11 +221,8 @@ namespace Socketron {
 		/// </param>
 		public void setBackgroundColor(string color) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = electron.BrowserView.fromId({0});",
-					"view.setBackgroundColor({1});"
-				),
-				_id,
+				"{0}.setBackgroundColor({1});",
+				Script.GetObject(_id),
 				color
 			);
 			_ExecuteJavaScript(script);

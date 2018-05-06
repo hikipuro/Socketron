@@ -9,7 +9,7 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class NativeImage : NodeModule, IDisposable {
 		public const string Name = "NativeImage";
-		protected static NativeImageClass _Class = new NativeImageClass();
+		public static NativeImageClass _Class;
 
 		/// <summary>
 		/// NativeImage converter options.

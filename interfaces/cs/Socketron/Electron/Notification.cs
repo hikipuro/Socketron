@@ -8,10 +8,7 @@ namespace Socketron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Notification : NodeModule {
-		public const string Name = "Notification";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+		public static NotificationClass _Class;
 
 		/// <summary>
 		/// Notification instance events.
@@ -92,8 +89,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Notification(SocketronClient client) {
+		/// <param name="id"></param>
+		public Notification(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -104,9 +103,10 @@ namespace Socketron {
 			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-				"var notification = new electron.Notification({0});",
-				"return {1};"
+					"var notification = new {0}({1});",
+					"return {2};"
 				),
+				Script.GetObject(_Class._id),
 				options.Stringify(),
 				Script.AddObject("notification")
 			);
@@ -120,71 +120,6 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="options"></param>
 		public Notification(string options) : this(Options.Parse(options)) {
-		}
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
-		public void on(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var notification = {0};",
-					"if (notification == null) {{",
-						"return;",
-					"}}",
-					"var listener = () => {{",
-						"emit('__event',{1},{2});",
-					"}};",
-					"this._addClientEventListener({1},{2},listener);",
-					"notification.on({3}, listener);"
-				),
-				Script.GetObject(_id),
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
-		}
-
-		public void once(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var notification = {0};",
-					"if (notification == null) {{",
-						"return;",
-					"}}",
-					"var listener = () => {{",
-						"this._removeClientEventListener({1},{2});",
-						"emit('__event',{1},{2});",
-					"}};",
-					"this._addClientEventListener({1},{2},listener);",
-					"notification.once({3}, listener);"
-				),
-				Script.GetObject(_id),
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>

@@ -5,7 +5,8 @@
 		public override void Init(SocketronClient client) {
 			base.Init(client);
 			_client = client;
-			electron = new ElectronModule(client);
+			electron = require<ElectronModule>("electron");
+			electron.Init();
 		}
 	}
 }

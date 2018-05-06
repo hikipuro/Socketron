@@ -14,8 +14,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public NotificationClass(SocketronClient client) {
+		/// <param name="id"></param>
+		public NotificationClass(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -24,9 +26,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isSupported() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.Notification.isSupported();"
-				)
+				"return {0}.isSupported();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}

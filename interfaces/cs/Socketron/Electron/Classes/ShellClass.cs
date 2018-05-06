@@ -18,8 +18,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public ShellClass(SocketronClient client) {
+		/// <param name="id"></param>
+		public ShellClass(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -41,9 +43,8 @@ namespace Socketron {
 		/// <returns>Whether the item was successfully shown.</returns>
 		public bool showItemInFolder(string fullPath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.showItemInFolder({0});"
-				),
+				"return {0}.showItemInFolder({1});",
+				Script.GetObject(_id),
 				fullPath.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -56,9 +57,8 @@ namespace Socketron {
 		/// <returns>Whether the item was successfully opened.</returns>
 		public bool openItem(string fullPath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.openItem({0});"
-				),
+				"return {0}.openItem({1});",
+				Script.GetObject(_id),
 				fullPath.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -75,9 +75,8 @@ namespace Socketron {
 		/// </returns>
 		public bool openExternal(string url) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.openExternal({0});"
-				),
+				"return {0}.openExternal({1});",
+				Script.GetObject(_id),
 				url.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -99,11 +98,12 @@ namespace Socketron {
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"return electron.shell.openExternal({0},{1},(err) => {{",
-						"var errId = {2};",
-						"emit('__event',{3},{4},errId);",
+					"return {0}.openExternal({1},{2},(err) => {{",
+						"var errId = {3};",
+						"emit('__event',{4},{5},errId);",
 					"}});"
 				),
+				Script.GetObject(_id),
 				url.Escape(),
 				options.Stringify(),
 				Script.AddObject("err"),
@@ -120,9 +120,8 @@ namespace Socketron {
 		/// <returns>Whether the item was successfully moved to the trash.</returns>
 		public bool moveItemToTrash(string fullPath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.moveItemToTrash({0});"
-				),
+				"return {0}.moveItemToTrash({1});",
+				Script.GetObject(_id),
 				fullPath.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -133,9 +132,8 @@ namespace Socketron {
 		/// </summary>
 		public void beep() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.beep();"
-				)
+				"return {0}.beep();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -149,9 +147,8 @@ namespace Socketron {
 		/// <returns>Whether the shortcut was created successfully.</returns>
 		public bool writeShortcutLink(string shortcutPath, ShortcutDetails options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.writeShortcutLink({0},{1});"
-				),
+				"return {0}.writeShortcutLink({1},{2});",
+				Script.GetObject(_id),
 				shortcutPath.Escape(),
 				options.Stringify()
 			);
@@ -168,9 +165,8 @@ namespace Socketron {
 		/// <returns>Whether the shortcut was created successfully.</returns>
 		public bool writeShortcutLink(string shortcutPath, string operation, ShortcutDetails options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.writeShortcutLink({0},{1});"
-				),
+				"return {0}.writeShortcutLink({1},{2},{3});",
+				Script.GetObject(_id),
 				shortcutPath.Escape(),
 				operation.Escape(),
 				options.Stringify()
@@ -187,9 +183,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public ShortcutDetails readShortcutLink(string shortcutPath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.shell.readShortcutLink({0});"
-				),
+				"return {0}.readShortcutLink({1});",
+				Script.GetObject(_id),
 				shortcutPath.Escape()
 			);
 			object result = _ExecuteBlocking<object>(script);

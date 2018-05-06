@@ -29,8 +29,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public ContentTracing(SocketronClient client) {
+		/// <param name="id"></param>
+		public ContentTracing(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -71,10 +73,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (categories) => {{",
-						"emit('__event',{0},{1},categories);",
+						"emit('__event',{1},{2},categories);",
 					"}};",
-					"electron.contentTracing.getCategories(callback);"
+					"{0}.getCategories(callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId
 			);
@@ -103,10 +106,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1});",
+						"emit('__event',{1},{2});",
 					"}};",
-					"electron.contentTracing.startRecording({2},callback);"
+					"{0}.startRecording({3},callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				options.Stringify()
@@ -137,10 +141,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (resultFilePath) => {{",
-						"emit('__event',{0},{1},resultFilePath);",
+						"emit('__event',{1},{2},resultFilePath);",
 					"}};",
-					"electron.contentTracing.stopRecording({2},callback);"
+					"{0}.stopRecording({3},callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				resultFilePath.Escape()
@@ -174,10 +179,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1});",
+						"emit('__event',{1},{2});",
 					"}};",
-					"electron.contentTracing.startMonitoring({2},callback);"
+					"{0}.startMonitoring({3},callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				options.Stringify()
@@ -205,10 +211,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1});",
+						"emit('__event',{1},{2});",
 					"}};",
-					"electron.contentTracing.stopMonitoring(callback);"
+					"{0}.stopMonitoring(callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId
 			);
@@ -238,10 +245,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (resultFilePath) => {{",
-						"emit('__event',{0},{1},resultFilePath);",
+						"emit('__event',{1},{2},resultFilePath);",
 					"}};",
-					"electron.contentTracing.captureMonitoringSnapshot({2},callback);"
+					"{0}.captureMonitoringSnapshot({3},callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId,
 				resultFilePath.Escape()
@@ -275,10 +283,11 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (value,percentage) => {{",
-						"emit('__event',{0},{1},value,percentage);",
+						"emit('__event',{1},{2},value,percentage);",
 					"}};",
-					"electron.contentTracing.getTraceBufferUsage(callback);"
+					"{0}.getTraceBufferUsage(callback);"
 				),
+				Script.GetObject(_id),
 				Name.Escape(),
 				_callbackListId
 			);

@@ -9,12 +9,8 @@ namespace Socketron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public partial class BrowserWindow : NodeModule {
-		public const string Name = "BrowserWindow";
-		public WebContents webContents;
-		protected static BrowserWindowClass _Class = new BrowserWindowClass();
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
+		// TODO: remove this _Class object
+		public static BrowserWindowClass _Class;
 
 		/// <summary>
 		/// BrowserWindow instance events.
@@ -171,7 +167,6 @@ namespace Socketron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public BrowserWindow(SocketronClient client, int id) {
-			_disposeManually = true;
 			_client = client;
 			_id = id;
 		}
@@ -183,36 +178,19 @@ namespace Socketron {
 			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = new electron.BrowserWindow({0});",
-					"return [window.id, window.webContents.id];"
+					"var window = new {0}({1});",
+					"return {2};"
 				),
-				options.Stringify()
+				Script.GetObject(_Class._id),
+				options.Stringify(),
+				Script.AddObject("window")
 			);
-			object[] result = client.ExecuteJavaScriptBlocking<object[]>(script);
-			int? windowId = result[0] as int?;
-			int? contentsId = result[1] as int?;
-			if (windowId != null && contentsId != null) {
-				_client = client;
-				_id = (int)windowId;
-				webContents = new WebContents(client, (int)contentsId);
-			} else {
-				throw new InvalidOperationException();
-			}
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			_client = client;
+			_id = result;
 		}
 
 		public BrowserWindow(string options) : this(Options.Parse(options)) {
-		}
-
-		/// <summary>
-		/// Used Internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
 		}
 
 		/// <summary>
@@ -322,66 +300,38 @@ namespace Socketron {
 			return _Class.getDevToolsExtensions();
 		}
 
+		/// <summary>
+		/// A Integer representing the unique ID of the window.
+		/// </summary>
 		public int id {
 			get {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"return window.id;"
-					),
-					_id
+					"return {0}.id;",
+					Script.GetObject(_id)
 				);
 				return _ExecuteBlocking<int>(script);
 			}
 		}
 
-		public void on(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
+		/// <summary>
+		/// A WebContents object this window owns.
+		/// <para>
+		/// All web page related events and operations will be done via it.
+		/// </para>
+		/// </summary>
+		public WebContents webContents {
+			get {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var webContents = {0}.webContents;",
+						"return {1};"
+					),
+					Script.GetObject(_id),
+					Script.AddObject("webContents")
+				);
+				int result = _ExecuteBlocking<int>(script);
+				return new WebContents(_client, result);
 			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.{0}.fromId({1});",
-					"var listener = () => {{",
-						"emit('__event',{2},{3});",
-					"}};",
-					"this._addClientEventListener({2},{3},listener);",
-					"window.on({4}, listener);"
-				),
-				Name,
-				_id,
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
-		}
-
-		public void once(string eventName, Callback callback) {
-			if (callback == null) {
-				return;
-			}
-			_callbackList.Add(_callbackListId, callback);
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.{0}.fromId({1});",
-					"var listener = () => {{",
-						"this._removeClientEventListener({2},{3});",
-						"emit('__event',{2},{3});",
-					"}};",
-					"this._addClientEventListener({2},{3},listener);",
-					"window.once({4}, listener);"
-				),
-				Name,
-				_id,
-				Name.Escape(),
-				_callbackListId,
-				eventName.Escape()
-			);
-			_callbackListId++;
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -394,11 +344,8 @@ namespace Socketron {
 		/// </summary>
 		public void destroy() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.destroy();"
-				),
-				_id
+				"{0}.destroy();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -412,11 +359,8 @@ namespace Socketron {
 		/// </summary>
 		public void close() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.close();"
-				),
-				_id
+				"{0}.close();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -426,11 +370,8 @@ namespace Socketron {
 		/// </summary>
 		public void focus() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.focus();"
-				),
-				_id
+				"{0}.focus();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -440,11 +381,8 @@ namespace Socketron {
 		/// </summary>
 		public void blur() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.blur();"
-				),
-				_id
+				"{0}.blur();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -455,11 +393,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isFocused() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isFocused();"
-				),
-				_id
+				"return {0}.isFocused();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -470,11 +405,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isDestroyed();"
-				),
-				_id
+				"return {0}.isDestroyed();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -484,11 +416,8 @@ namespace Socketron {
 		/// </summary>
 		public void show() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.show();"
-				),
-				_id
+				"{0}.show();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -498,11 +427,8 @@ namespace Socketron {
 		/// </summary>
 		public void showInactive() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.showInactive();"
-				),
-				_id
+				"{0}.showInactive();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -512,11 +438,8 @@ namespace Socketron {
 		/// </summary>
 		public void hide() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.hide();"
-				),
-				_id
+				"{0}.hide();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -527,11 +450,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isVisible() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isVisible();"
-				),
-				_id
+				"return {0}.isVisible();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -542,11 +462,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isModal() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isModal();"
-				),
-				_id
+				"return {0}.isModal();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -559,11 +476,8 @@ namespace Socketron {
 		/// </summary>
 		public void maximize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.maximize();"
-				),
-				_id
+				"{0}.maximize();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -573,11 +487,8 @@ namespace Socketron {
 		/// </summary>
 		public void unmaximize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.unmaximize();"
-				),
-				_id
+				"{0}.unmaximize();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -588,11 +499,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isMaximized() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMaximized();"
-				),
-				_id
+				"return {0}.isMaximized();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -605,11 +513,8 @@ namespace Socketron {
 		/// </summary>
 		public void minimize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.minimize();"
-				),
-				_id
+				"{0}.minimize();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -619,11 +524,8 @@ namespace Socketron {
 		/// </summary>
 		public void restore() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.restore();"
-				),
-				_id
+				"{0}.restore();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -634,11 +536,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isMinimized() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMinimized();"
-				),
-				_id
+				"return {0}.isMinimized();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -649,11 +548,8 @@ namespace Socketron {
 		/// <param name="flag">bool</param>
 		public void setFullScreen(bool flag) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setFullScreen({1});"
-				),
-				_id,
+				"{0}.setFullScreen({1});",
+				Script.GetObject(_id),
 				flag.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -665,11 +561,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isFullScreen() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isFullScreen();"
-				),
-				_id
+				"return {0}.isFullScreen();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -685,11 +578,8 @@ namespace Socketron {
 		/// <param name="flag">bool</param>
 		public void setSimpleFullScreen(bool flag) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSimpleFullScreen({1});"
-				),
-				_id,
+				"{0}.setSimpleFullScreen({1});",
+				Script.GetObject(_id),
 				flag.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -702,11 +592,8 @@ namespace Socketron {
 		/// <returns>bool</returns>
 		public bool isSimpleFullScreen() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isSimpleFullScreen();"
-				),
-				_id
+				"return {0}.isSimpleFullScreen();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -735,11 +622,8 @@ namespace Socketron {
 				);
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAspectRatio({1});"
-				),
-				_id,
+				"{0}.setAspectRatio({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -772,11 +656,8 @@ namespace Socketron {
 				);
 			}
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.previewFile({1});"
-				),
-				_id,
+				"{0}.previewFile({1});",
+				Script.GetObject(_id),
 				option
 			);
 			_ExecuteJavaScript(script);
@@ -788,11 +669,8 @@ namespace Socketron {
 		/// </summary>
 		public void closeFilePreview() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.closeFilePreview();"
-				),
-				_id
+				"{0}.closeFilePreview();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -803,11 +681,8 @@ namespace Socketron {
 		/// <param name="bounds">Rectangle.</param>
 		public void setBounds(Rectangle bounds) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setBounds({1});"
-				),
-				_id,
+				"{0}.setBounds({1});",
+				Script.GetObject(_id),
 				bounds.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -820,11 +695,8 @@ namespace Socketron {
 		/// <param name="animate">*macOS*</param>
 		public void setBounds(Rectangle bounds, bool animate) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setBounds({1},{2});"
-				),
-				_id,
+				"{0}.setBounds({1},{2});",
+				Script.GetObject(_id),
 				bounds.Stringify(),
 				animate.Escape()
 			);
@@ -837,11 +709,8 @@ namespace Socketron {
 		/// <returns>Rectangle.</returns>
 		public Rectangle getBounds() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getBounds();"
-				),
-				_id
+				"return {0}.getBounds();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Rectangle.FromObject(result);
@@ -853,11 +722,8 @@ namespace Socketron {
 		/// <param name="bounds">Rectangle.</param>
 		public void setContentBounds(Rectangle bounds) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setContentBounds({1});"
-				),
-				_id,
+				"{0}.setContentBounds({1});",
+				Script.GetObject(_id),
 				bounds.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -870,11 +736,8 @@ namespace Socketron {
 		/// <param name="animate">*macOS*</param>
 		public void setContentBounds(Rectangle bounds, bool animate) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setContentBounds({1},{2});"
-				),
-				_id,
+				"{0}.setContentBounds({1},{2});",
+				Script.GetObject(_id),
 				bounds.Stringify(),
 				animate.Escape()
 			);
@@ -887,11 +750,8 @@ namespace Socketron {
 		/// <returns>Rectangle.</returns>
 		public Rectangle getContentBounds() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getContentBounds();"
-				),
-				_id
+				"return {0}.getContentBounds();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return Rectangle.FromObject(result);
@@ -903,11 +763,8 @@ namespace Socketron {
 		/// <param name="enable">bool</param>
 		public void setEnabled(bool enable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setEnabled({1});"
-				),
-				_id,
+				"{0}.setEnabled({1});",
+				Script.GetObject(_id),
 				enable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -920,11 +777,8 @@ namespace Socketron {
 		/// <param name="height">int</param>
 		public void setSize(int width, int height) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSize({1},{2});"
-				),
-				_id,
+				"{0}.setSize({1},{2});",
+				Script.GetObject(_id),
 				width,
 				height
 			);
@@ -939,11 +793,8 @@ namespace Socketron {
 		/// <param name="animate">*macOS*</param>
 		public void setSize(int width, int height, bool animate) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSize({1},{2},{3});"
-				),
-				_id,
+				"{0}.setSize({1},{2},{3});",
+				Script.GetObject(_id),
 				width,
 				height,
 				animate.Escape()
@@ -957,11 +808,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Size getSize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getSize();"
-				),
-				_id
+				"return {0}.getSize();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return new Size() {
@@ -977,11 +825,8 @@ namespace Socketron {
 		/// <param name="height"></param>
 		public void setContentSize(int width, int height) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setContentSize({1},{2});"
-				),
-				_id,
+				"{0}.setContentSize({1},{2});",
+				Script.GetObject(_id),
 				width,
 				height
 			);
@@ -996,11 +841,8 @@ namespace Socketron {
 		/// <param name="animate">*macOS*</param>
 		public void setContentSize(int width, int height, bool animate) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setContentSize({1},{2},{3});"
-				),
-				_id,
+				"{0}.setContentSize({1},{2},{3});",
+				Script.GetObject(_id),
 				width,
 				height,
 				animate.Escape()
@@ -1014,11 +856,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Size getContentSize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getContentSize();"
-				),
-				_id
+				"return {0}.getContentSize();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return new Size() {
@@ -1034,11 +873,8 @@ namespace Socketron {
 		/// <param name="height"></param>
 		public void setMinimumSize(int width, int height) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMinimumSize({1},{2});"
-				),
-				_id,
+				"{0}.setMinimumSize({1},{2});",
+				Script.GetObject(_id),
 				width,
 				height
 			);
@@ -1051,11 +887,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Size getMinimumSize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getMinimumSize();"
-				),
-				_id
+				"return {0}.getMinimumSize();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return new Size() {
@@ -1071,11 +904,8 @@ namespace Socketron {
 		/// <param name="height"></param>
 		public void setMaximumSize(int width, int height) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMaximumSize({1},{2});"
-				),
-				_id,
+				"{0}.setMaximumSize({1},{2});",
+				Script.GetObject(_id),
 				width,
 				height
 			);
@@ -1088,11 +918,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Size getMaximumSize() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getMaximumSize();"
-				),
-				_id
+				"return {0}.getMaximumSize();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return new Size() {
@@ -1107,11 +934,8 @@ namespace Socketron {
 		/// <param name="resizable"></param>
 		public void setResizable(bool resizable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setResizable({1});"
-				),
-				_id,
+				"{0}.setResizable({1});",
+				Script.GetObject(_id),
 				resizable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1123,11 +947,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isResizable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isResizable();"
-				),
-				_id
+				"return {0}.isResizable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1140,11 +961,8 @@ namespace Socketron {
 		/// <param name="movable"></param>
 		public void setMovable(bool movable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMovable({1});"
-				),
-				_id,
+				"{0}.setMovable({1});",
+				Script.GetObject(_id),
 				movable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1158,11 +976,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isMovable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMovable();"
-				),
-				_id
+				"return {0}.isMovable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1175,11 +990,8 @@ namespace Socketron {
 		/// <param name="minimizable"></param>
 		public void setMinimizable(bool minimizable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMinimizable({1});"
-				),
-				_id,
+				"{0}.setMinimizable({1});",
+				Script.GetObject(_id),
 				minimizable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1193,11 +1005,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isMinimizable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMinimizable();"
-				),
-				_id
+				"return {0}.isMinimizable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1210,11 +1019,8 @@ namespace Socketron {
 		/// <param name="maximizable"></param>
 		public void setMaximizable(bool maximizable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMaximizable({1});"
-				),
-				_id,
+				"{0}.setMaximizable({1});",
+				Script.GetObject(_id),
 				maximizable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1228,11 +1034,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isMaximizable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMaximizable();"
-				),
-				_id
+				"return {0}.isMaximizable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1243,11 +1046,8 @@ namespace Socketron {
 		/// <param name="fullscreenable"></param>
 		public void setFullScreenable(bool fullscreenable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setFullScreenable({1});"
-				),
-				_id,
+				"{0}.setFullScreenable({1});",
+				Script.GetObject(_id),
 				fullscreenable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1259,11 +1059,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isFullScreenable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isFullScreenable();"
-				),
-				_id
+				"return {0}.isFullScreenable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1276,11 +1073,8 @@ namespace Socketron {
 		/// <param name="closable"></param>
 		public void setClosable(bool closable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setClosable({1});"
-				),
-				_id,
+				"{0}.setClosable({1});",
+				Script.GetObject(_id),
 				closable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1294,11 +1088,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isClosable() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isClosable();"
-				),
-				_id
+				"return {0}.isClosable();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1313,11 +1104,8 @@ namespace Socketron {
 		/// <param name="flag"></param>
 		public void setAlwaysOnTop(bool flag) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAlwaysOnTop({1});"
-				),
-				_id,
+				"{0}.setAlwaysOnTop({1});",
+				Script.GetObject(_id),
 				flag.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1342,11 +1130,8 @@ namespace Socketron {
 		/// </param>
 		public void setAlwaysOnTop(bool flag, string level, int relativeLevel = 0) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAlwaysOnTop({1},{2},{3});"
-				),
-				_id,
+				"{0}.setAlwaysOnTop({1},{2},{3});",
+				Script.GetObject(_id),
 				flag.Escape(),
 				level,
 				relativeLevel
@@ -1360,11 +1145,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isAlwaysOnTop() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isAlwaysOnTop();"
-				),
-				_id
+				"return {0}.isAlwaysOnTop();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1375,11 +1157,8 @@ namespace Socketron {
 		/// </summary>
 		public void moveTop() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.moveTop();"
-				),
-				_id
+				"{0}.moveTop();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1389,11 +1168,8 @@ namespace Socketron {
 		/// </summary>
 		public void center() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.center();"
-				),
-				_id
+				"{0}.center();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1405,11 +1181,9 @@ namespace Socketron {
 		/// <param name="y"></param>
 		public void setPosition(int x, int y) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setPosition({1},{2});"
-				),
-				_id, x, y
+				"{0}.setPosition({1},{2});",
+				Script.GetObject(_id),
+				x, y
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1422,11 +1196,9 @@ namespace Socketron {
 		/// <param name="animate">*macOS*</param>
 		public void setPosition(int x, int y, bool animate) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setPosition({1},{2},{3});"
-				),
-				_id, x, y, animate.Escape()
+				"{0}.setPosition({1},{2},{3});",
+				Script.GetObject(_id),
+				x, y, animate.Escape()
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1437,11 +1209,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public Point getPosition() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getPosition();"
-				),
-				_id
+				"return {0}.getPosition();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			return new Point() {
@@ -1456,11 +1225,8 @@ namespace Socketron {
 		/// <param name="title"></param>
 		public void setTitle(string title) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setTitle({1});"
-				),
-				_id,
+				"{0}.setTitle({1});",
+				Script.GetObject(_id),
 				title.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1475,11 +1241,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getTitle() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getTitle();"
-				),
-				_id
+				"return {0}.getTitle();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -1505,11 +1268,8 @@ namespace Socketron {
 		/// <param name="offsetY"></param>
 		public void setSheetOffset(double offsetY) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSheetOffset({1});"
-				),
-				_id,
+				"{0}.setSheetOffset({1});",
+				Script.GetObject(_id),
 				offsetY
 			);
 			_ExecuteJavaScript(script);
@@ -1517,11 +1277,8 @@ namespace Socketron {
 
 		public void setSheetOffset(double offsetY, double offsetX) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSheetOffset({1},{2});"
-				),
-				_id,
+				"{0}.setSheetOffset({1},{2});",
+				Script.GetObject(_id),
 				offsetY,
 				offsetX
 			);
@@ -1534,11 +1291,8 @@ namespace Socketron {
 		/// <param name="flag"></param>
 		public void flashFrame(bool flag) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.flashFrame({1});"
-				),
-				_id,
+				"{0}.flashFrame({1});",
+				Script.GetObject(_id),
 				flag.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1550,11 +1304,8 @@ namespace Socketron {
 		/// <param name="skip"></param>
 		public void setSkipTaskbar(bool skip) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSkipTaskbar({1});"
-				),
-				_id,
+				"{0}.setSkipTaskbar({1});",
+				Script.GetObject(_id),
 				skip.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1566,11 +1317,8 @@ namespace Socketron {
 		/// <param name="flag"></param>
 		public void setKiosk(bool flag) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setSkipTaskbar({1});"
-				),
-				_id,
+				"{0}.setSkipTaskbar({1});",
+				Script.GetObject(_id),
 				flag.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1582,11 +1330,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isKiosk() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isKiosk();"
-				),
-				_id
+				"return {0}.isKiosk();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1598,11 +1343,8 @@ namespace Socketron {
 		/// <returns>The platform-specific handle of the window.</returns>
 		public ulong getNativeWindowHandle() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getNativeWindowHandle();"
-				),
-				_id
+				"return {0}.getNativeWindowHandle();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
@@ -1624,11 +1366,8 @@ namespace Socketron {
 		/// <param name="callback">JavaScript string</param>
 		public void hookWindowMessage(int message, string callback) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.hookWindowMessage({1},{2});"
-				),
-				_id,
+				"{0}.hookWindowMessage({1},{2});",
+				Script.GetObject(_id),
 				message,
 				callback.Escape()
 			);
@@ -1643,11 +1382,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isWindowMessageHooked(int message) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isWindowMessageHooked({1});"
-				),
-				_id,
+				"return {0}.isWindowMessageHooked({1});",
+				Script.GetObject(_id),
 				message
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -1660,11 +1396,8 @@ namespace Socketron {
 		/// <param name="message"></param>
 		public void unhookWindowMessage(int message) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.unhookWindowMessage({1});"
-				),
-				_id,
+				"{0}.unhookWindowMessage({1});",
+				Script.GetObject(_id),
 				message
 			);
 			_ExecuteJavaScript(script);
@@ -1676,11 +1409,8 @@ namespace Socketron {
 		/// </summary>
 		public void unhookAllWindowMessages() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.unhookAllWindowMessages();"
-				),
-				_id
+				"{0}.unhookAllWindowMessages();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1693,11 +1423,8 @@ namespace Socketron {
 		/// <param name="filename"></param>
 		public void setRepresentedFilename(string filename) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setRepresentedFilename({1});"
-				),
-				_id,
+				"{0}.setRepresentedFilename({1});",
+				Script.GetObject(_id),
 				filename.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1710,11 +1437,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getRepresentedFilename() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getRepresentedFilename();"
-				),
-				_id
+				"return {0}.getRepresentedFilename();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -1727,11 +1451,8 @@ namespace Socketron {
 		/// <param name="edited"></param>
 		public void setDocumentEdited(bool edited) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setDocumentEdited({1});"
-				),
-				_id,
+				"{0}.setDocumentEdited({1});",
+				Script.GetObject(_id),
 				edited.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1744,11 +1465,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDocumentEdited() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isDocumentEdited();"
-				),
-				_id
+				"return {0}.isDocumentEdited();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -1758,11 +1476,8 @@ namespace Socketron {
 		/// </summary>
 		public void focusOnWebView() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.focusOnWebView();"
-				),
-				_id
+				"{0}.focusOnWebView();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1772,11 +1487,8 @@ namespace Socketron {
 		/// </summary>
 		public void blurWebView() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.blurWebView();"
-				),
-				_id
+				"{0}.blurWebView();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1791,9 +1503,10 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "capturePage";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -1803,23 +1516,30 @@ namespace Socketron {
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
 					"var callback = (image) => {{",
 						"var id = 0;",
 						"if (image != null) {{",
-							"id = {1};",
+							"id = {0};",
 						"}}",
-						"emit('__event',{2},{3},id);",
+						"emit('__event',{1},{2},{3},id);",
 					"}};",
-					"return window.capturePage({4},callback);"
+					"return {4};"
 				),
-				_id,
 				Script.AddObject("image"),
-				Name.Escape(),
-				_callbackListId,
-				rect.Stringify()
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.capturePage({1},{2});",
+				Script.GetObject(_id),
+				rect.Stringify(),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -1832,9 +1552,10 @@ namespace Socketron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "capturePage";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				object[] argsList = args as object[];
 				if (argsList == null) {
 					return;
@@ -1844,22 +1565,29 @@ namespace Socketron {
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
 					"var callback = (image) => {{",
 						"var id = 0;",
 						"if (image != null) {{",
-							"id = {1};",
+							"id = {0};",
 						"}}",
-						"emit('__event',{2},{3},id);",
+						"emit('__event',{1},{2},{3},id);",
 					"}};",
-					"return window.capturePage(callback);"
+					"return {4};"
 				),
-				_id,
 				Script.AddObject("image"),
-				Name.Escape(),
-				_callbackListId
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.capturePage({1});",
+				Script.GetObject(_id),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 
@@ -1873,11 +1601,8 @@ namespace Socketron {
 		/// <param name="url"></param>
 		public void loadURL(string url) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.loadURL({1});"
-				),
-				_id,
+				"{0}.loadURL({1});",
+				Script.GetObject(_id),
 				url.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1890,11 +1615,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void loadURL(string url, JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.loadURL({1},{2});"
-				),
-				_id,
+				"{0}.loadURL({1},{2});",
+				Script.GetObject(_id),
 				url.Escape(),
 				options.Stringify()
 			);
@@ -1911,11 +1633,8 @@ namespace Socketron {
 		/// <param name="filePath"></param>
 		public void loadFile(string filePath) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.loadFile({1});"
-				),
-				_id,
+				"{0}.loadFile({1});",
+				Script.GetObject(_id),
 				filePath.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -1926,11 +1645,8 @@ namespace Socketron {
 		/// </summary>
 		public void reload() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.reload();"
-				),
-				_id
+				"{0}.reload();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1946,20 +1662,13 @@ namespace Socketron {
 			string script = string.Empty;
 			if (menu == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"window.setMenu(null);"
-					),
-					_id
+					"{0}.setMenu(null);",
+					Script.GetObject(_id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"var menu = {1};",
-						"window.setMenu(menu);"
-					),
-					_id,
+					"{0}.setMenu({1});",
+					Script.GetObject(_id),
 					Script.GetObject(menu._id)
 				);
 			}
@@ -1972,11 +1681,8 @@ namespace Socketron {
 		/// <param name="progress"></param>
 		public void setProgressBar(double progress) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setProgressBar({1});"
-				),
-				_id,
+				"{0}.setProgressBar({1});",
+				Script.GetObject(_id),
 				progress
 			);
 			_ExecuteJavaScript(script);
@@ -1989,11 +1695,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void setProgressBar(double progress, JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setProgressBar({1},{2});"
-				),
-				_id,
+				"{0}.setProgressBar({1},{2});",
+				Script.GetObject(_id),
 				progress,
 				options.Stringify()
 			);
@@ -2014,12 +1717,8 @@ namespace Socketron {
 		/// </param>
 		public void setOverlayIcon(NativeImage overlay, string description) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var image = {1};",
-					"window.setOverlayIcon(image,{2});"
-				),
-				_id,
+				"{0}.setOverlayIcon({1},{2});",
+				Script.GetObject(_id),
 				Script.GetObject(overlay._id),
 				description.Escape()
 			);
@@ -2034,11 +1733,8 @@ namespace Socketron {
 		/// <param name="hasShadow"></param>
 		public void setHasShadow(bool hasShadow) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setHasShadow({1});"
-				),
-				_id,
+				"{0}.setHasShadow({1});",
+				Script.GetObject(_id),
 				hasShadow.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2052,11 +1748,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool hasShadow() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.hasShadow();"
-				),
-				_id
+				"return {0}.hasShadow();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -2069,11 +1762,8 @@ namespace Socketron {
 		/// <param name="opacity">between 0.0 (fully transparent) and 1.0 (fully opaque)</param>
 		public void setOpacity(double opacity) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setHasShadow({1});"
-				),
-				_id,
+				"{0}.setOpacity({1});",
+				Script.GetObject(_id),
 				opacity
 			);
 			_ExecuteJavaScript(script);
@@ -2086,11 +1776,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public double getOpacity() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.getOpacity();"
-				),
-				_id
+				"return {0}.getOpacity();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<double>(script);
 		}
@@ -2108,8 +1795,8 @@ namespace Socketron {
 			/*
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.setThumbarButtons();"
+					"var window = ({0});",
+					"return {0}.setThumbarButtons();"
 				),
 				ID
 			);
@@ -2127,11 +1814,8 @@ namespace Socketron {
 		/// <param name="region">Region of the window</param>
 		public void setThumbnailClip(Rectangle region) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setThumbnailClip({1});"
-				),
-				_id,
+				"{0}.setThumbnailClip({1});",
+				Script.GetObject(_id),
 				region.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -2145,11 +1829,8 @@ namespace Socketron {
 		/// <param name="toolTip"></param>
 		public void setThumbnailToolTip(string toolTip) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setThumbnailToolTip({1});"
-				),
-				_id,
+				"{0}.setThumbnailToolTip({1});",
+				Script.GetObject(_id),
 				toolTip.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2162,11 +1843,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void setAppDetails(JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAppDetails({1});"
-				),
-				_id,
+				"{0}.setAppDetails({1});",
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -2178,11 +1856,8 @@ namespace Socketron {
 		/// </summary>
 		public void showDefinitionForSelection() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.showDefinitionForSelection();"
-				),
-				_id
+				"{0}.showDefinitionForSelection();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2194,12 +1869,8 @@ namespace Socketron {
 		/// <param name="icon"></param>
 		public void setIcon(NativeImage icon) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var icon = {1};",
-					"window.setIcon(icon);"
-				),
-				_id,
+				"{0}.setIcon({1});",
+				Script.GetObject(_id),
 				Script.GetObject(icon._id)
 			);
 			_ExecuteJavaScript(script);
@@ -2212,11 +1883,8 @@ namespace Socketron {
 		/// <param name="hide"></param>
 		public void setAutoHideMenuBar(bool hide) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAutoHideMenuBar({1});"
-				),
-				_id,
+				"{0}.setAutoHideMenuBar({1});",
+				Script.GetObject(_id),
 				hide.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2228,11 +1896,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isMenuBarAutoHide() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMenuBarAutoHide();"
-				),
-				_id
+				"return {0}.isMenuBarAutoHide();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -2245,11 +1910,8 @@ namespace Socketron {
 		/// <param name="visible"></param>
 		public void setMenuBarVisibility(bool visible) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setMenuBarVisibility({1});"
-				),
-				_id,
+				"{0}.setMenuBarVisibility({1});",
+				Script.GetObject(_id),
 				visible.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2261,11 +1923,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isMenuBarVisible() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isMenuBarVisible();"
-				),
-				_id
+				"return {0}.isMenuBarVisible();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -2277,11 +1936,8 @@ namespace Socketron {
 		/// <param name="visible"></param>
 		public void setVisibleOnAllWorkspaces(bool visible) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setVisibleOnAllWorkspaces({1});"
-				),
-				_id,
+				"{0}.setVisibleOnAllWorkspaces({1});",
+				Script.GetObject(_id),
 				visible.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2294,11 +1950,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isVisibleOnAllWorkspaces() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"return window.isVisibleOnAllWorkspaces();"
-				),
-				_id
+				"return {0}.isVisibleOnAllWorkspaces();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -2313,11 +1966,8 @@ namespace Socketron {
 		/// <param name="ignore"></param>
 		public void setIgnoreMouseEvents(bool ignore) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setIgnoreMouseEvents({1});"
-				),
-				_id,
+				"{0}.setIgnoreMouseEvents({1});",
+				Script.GetObject(_id),
 				ignore.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2330,11 +1980,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void setIgnoreMouseEvents(bool ignore, JsonObject options) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setIgnoreMouseEvents({1},{2});"
-				),
-				_id,
+				"{0}.setIgnoreMouseEvents({1},{2});",
+				Script.GetObject(_id),
 				ignore.Escape(),
 				options.Stringify()
 			);
@@ -2352,11 +1999,8 @@ namespace Socketron {
 		/// <param name="enable"></param>
 		public void setContentProtection(bool enable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setContentProtection({1});"
-				),
-				_id,
+				"{0}.setContentProtection({1});",
+				Script.GetObject(_id),
 				enable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2369,11 +2013,8 @@ namespace Socketron {
 		/// <param name="focusable"></param>
 		public void setFocusable(bool focusable) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setFocusable({1});"
-				),
-				_id,
+				"{0}.setFocusable({1});",
+				Script.GetObject(_id),
 				focusable.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2389,21 +2030,14 @@ namespace Socketron {
 			string script = string.Empty;
 			if (parent == null) {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"window.setParentWindow(null);"
-					),
-					_id
+					"{0}.setParentWindow(null);",
+					Script.GetObject(_id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"var parent = electron.BrowserWindow.fromId({1});",
-						"window.setParentWindow(parent);"
-					),
-					_id,
-					parent._id
+					"{0}.setParentWindow({1});",
+					Script.GetObject(_id),
+					Script.GetObject(parent._id)
 				);
 			}
 			_ExecuteJavaScript(script);
@@ -2415,21 +2049,17 @@ namespace Socketron {
 		public BrowserWindow getParentWindow() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var parent = window.getParentWindow();",
+					"var parent = {0}.getParentWindow();",
 					"if (parent == null) {{",
 						"return null;",
 					"}}",
-					"return [parent.id,parent.webContents.id];"
+					"return {1};"
 				),
-				_id
+				Script.GetObject(_id),
+				Script.AddObject("parent")
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
-			int windowId = (int)result[0];
-			int contentsId = (int)result[1];
-			BrowserWindow window = new BrowserWindow(_client, windowId);
-			window.webContents = new WebContents(_client, contentsId);
-			return window;
+			int result = _ExecuteBlocking<int>(script);
+			return new BrowserWindow(_client, result);
 		}
 
 		/// <summary>
@@ -2441,22 +2071,19 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var result = [];",
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var windows = window.getChildWindows();",
-					"for (var win of windows) {{",
-						"result.push([win.id,win.webContents.id]);",
+					"var windows = {0}.getChildWindows();",
+					"for (var window of windows) {{",
+						"result.push({1});",
 					"}}",
 					"return result;"
 				),
-				_id
+				Script.GetObject(_id),
+				Script.AddObject("window")
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			List<BrowserWindow> windows = new List<BrowserWindow>();
-			foreach (object[] item in result) {
-				int windowId = (int)item[0];
-				int contentsId = (int)item[1];
-				BrowserWindow window = new BrowserWindow(_client, windowId);
-				window.webContents = new WebContents(_client, contentsId);
+			foreach (object item in result) {
+				BrowserWindow window = new BrowserWindow(_client, (int)item);
 				windows.Add(window);
 			}
 			return windows;
@@ -2469,11 +2096,8 @@ namespace Socketron {
 		/// <param name="autoHide"></param>
 		public void setAutoHideCursor(bool autoHide) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setAutoHideCursor({1});"
-				),
-				_id,
+				"{0}.setAutoHideCursor({1});",
+				Script.GetObject(_id),
 				autoHide.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2486,11 +2110,8 @@ namespace Socketron {
 		/// </summary>
 		public void selectPreviousTab() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.selectPreviousTab();"
-				),
-				_id
+				"{0}.selectPreviousTab();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2502,11 +2123,8 @@ namespace Socketron {
 		/// </summary>
 		public void selectNextTab() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.selectNextTab();"
-				),
-				_id
+				"{0}.selectNextTab();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2518,11 +2136,8 @@ namespace Socketron {
 		/// </summary>
 		public void mergeAllWindows() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.mergeAllWindows();"
-				),
-				_id
+				"{0}.mergeAllWindows();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2534,11 +2149,8 @@ namespace Socketron {
 		/// </summary>
 		public void moveTabToNewWindow() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.moveTabToNewWindow();"
-				),
-				_id
+				"{0}.moveTabToNewWindow();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2550,11 +2162,8 @@ namespace Socketron {
 		/// </summary>
 		public void toggleTabBar() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.toggleTabBar();"
-				),
-				_id
+				"{0}.toggleTabBar();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2567,13 +2176,9 @@ namespace Socketron {
 		/// <param name="browserWindow"></param>
 		public void addTabbedWindow(BrowserWindow browserWindow) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var window2 = electron.BrowserWindow.fromId({1});",
-					"window.addTabbedWindow(window2);"
-				),
-				_id,
-				browserWindow._id
+				"{0}.addTabbedWindow({1});",
+				Script.GetObject(_id),
+				Script.GetObject(browserWindow._id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2586,11 +2191,8 @@ namespace Socketron {
 		/// <param name="type"></param>
 		public void setVibrancy(string type) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"window.setVibrancy({1});"
-				),
-				_id,
+				"{0}.setVibrancy({1});",
+				Script.GetObject(_id),
 				type.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -2614,13 +2216,9 @@ namespace Socketron {
 		/// </summary>
 		public void setBrowserView(BrowserView browserView) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var view = electron.BrowserView.fromId({1});",
-					"window.setBrowserView(view);"
-				),
-				_id,
-				browserView._id
+				"{0}.setBrowserView({1});",
+				Script.GetObject(_id),
+				Script.GetObject(browserView._id)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2637,11 +2235,11 @@ namespace Socketron {
 		public BrowserView getBrowserView() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = electron.BrowserWindow.fromId({0});",
-					"var view = window.getBrowserView();",
-					"return view.id;"
+					"var view = {0}.getBrowserView();",
+					"return {1};"
 				),
-				_id
+				Script.GetObject(_id),
+				Script.AddObject("view")
 			);
 			int result = _ExecuteBlocking<int>(script);
 			return new BrowserView(_client, result);

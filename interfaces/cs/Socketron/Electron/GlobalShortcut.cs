@@ -17,8 +17,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public GlobalShortcut(SocketronClient client) {
+		/// <param name="id"></param>
+		public GlobalShortcut(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -50,10 +52,11 @@ namespace Socketron {
 						"emit('__event',{0},{1});",
 					"}};",
 					"this._addClientEventListener({0},{1},listener);",
-					"electron.globalShortcut.register({2}, listener);"
+					"{2}.register({3}, listener);"
 				),
 				Name.Escape(),
 				_callbackListId,
+				Script.GetObject(_id),
 				accelerator.Escape()
 			);
 			_callbackListId++;
@@ -67,9 +70,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isRegistered(string accelerator) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.globalShortcut.isRegistered({0});"
-				),
+				"return {0}.isRegistered({1});",
+				Script.GetObject(_id),
 				accelerator.Escape()
 			);
 			return _ExecuteBlocking<bool>(script);
@@ -81,9 +83,8 @@ namespace Socketron {
 		/// <param name="accelerator"></param>
 		public void unregister(string accelerator) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.globalShortcut.unregister({0});"
-				),
+				"{0}.unregister({1});",
+				Script.GetObject(_id),
 				accelerator.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -94,9 +95,8 @@ namespace Socketron {
 		/// </summary>
 		public void unregisterAll() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.globalShortcut.unregisterAll();"
-				)
+				"{0}.unregisterAll();",
+				Script.GetObject(_id)
 			);
 			_ExecuteJavaScript(script);
 		}

@@ -11,8 +11,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public SystemPreferences(SocketronClient client) {
+		/// <param name="id"></param>
+		public SystemPreferences(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -129,9 +131,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isDarkMode() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.isDarkMode();"
-				)
+				"return {0}.isDarkMode();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -143,9 +144,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isSwipeTrackingFromScrollEventsEnabled() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.isSwipeTrackingFromScrollEventsEnabled();"
-				)
+				"return {0}.isSwipeTrackingFromScrollEventsEnabled();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -160,9 +160,8 @@ namespace Socketron {
 		/// <param name="userInfo"></param>
 		public void postNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.postNotification({0},{1});"
-				),
+				"{0}.postNotification({1},{2});",
+				Script.GetObject(_id),
 				@event.Escape(),
 				userInfo.Stringify()
 			);
@@ -179,9 +178,8 @@ namespace Socketron {
 		/// <param name="userInfo"></param>
 		public void postLocalNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.postLocalNotification({0},{1});"
-				),
+				"{0}.postLocalNotification({1},{2});",
+				Script.GetObject(_id),
 				@event.Escape(),
 				userInfo.Stringify()
 			);
@@ -198,9 +196,8 @@ namespace Socketron {
 		/// <param name="userInfo"></param>
 		public void postWorkspaceNotification(string @event, JsonObject userInfo) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.postWorkspaceNotification({0},{1});"
-				),
+				"{0}.postWorkspaceNotification({1},{2});",
+				Script.GetObject(_id),
 				@event.Escape(),
 				userInfo.Stringify()
 			);
@@ -235,9 +232,8 @@ namespace Socketron {
 		/// <param name="id"></param>
 		public void unsubscribeNotification(int id) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.unsubscribeNotification({0});"
-				),
+				"{0}.unsubscribeNotification({1});",
+				Script.GetObject(_id),
 				id
 			);
 			_ExecuteJavaScript(script);
@@ -251,9 +247,8 @@ namespace Socketron {
 		/// <param name="id"></param>
 		public void unsubscribeLocalNotification(int id) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.unsubscribeLocalNotification({0});"
-				),
+				"{0}.unsubscribeLocalNotification({1});",
+				Script.GetObject(_id),
 				id
 			);
 			_ExecuteJavaScript(script);
@@ -267,9 +262,8 @@ namespace Socketron {
 		/// <param name="id"></param>
 		public void unsubscribeWorkspaceNotification(int id) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.unsubscribeWorkspaceNotification({0});"
-				),
+				"{0}.unsubscribeWorkspaceNotification({1});",
+				Script.GetObject(_id),
 				id
 			);
 			_ExecuteJavaScript(script);
@@ -282,9 +276,8 @@ namespace Socketron {
 		/// <param name="defaults"></param>
 		public void registerDefaults(JsonObject defaults) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.registerDefaults({0});"
-				),
+				"return {0}.registerDefaults({1});",
+				Script.GetObject(_id),
 				defaults.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -299,9 +292,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public JsonObject getUserDefault(string key, string type) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.getUserDefault({0},{1});"
-				),
+				"return {0}.getUserDefault({1},{2});",
+				Script.GetObject(_id),
 				key.Escape(),
 				type.Escape()
 			);
@@ -318,9 +310,8 @@ namespace Socketron {
 		/// <param name="value"></param>
 		public void setUserDefault(string key, string type, string value) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.setUserDefault({0},{1},{2});"
-				),
+				"{0}.setUserDefault({1},{2},{3});",
+				Script.GetObject(_id),
 				key.Escape(),
 				type.Escape(),
 				value.Escape()
@@ -337,9 +328,8 @@ namespace Socketron {
 		/// <param name="key"></param>
 		public void removeUserDefault(string key) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.systemPreferences.removeUserDefault({0});"
-				),
+				"{0}.removeUserDefault({1});",
+				Script.GetObject(_id),
 				key.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -352,9 +342,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isAeroGlassEnabled() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.isAeroGlassEnabled();"
-				)
+				"return {0}.isAeroGlassEnabled();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -366,9 +355,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getAccentColor() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.getAccentColor();"
-				)
+				"return {0}.getAccentColor();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<string>(script);
 		}
@@ -382,9 +370,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public string getColor(string color) {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.getColor({0});"
-				),
+				"return {0}.getColor({1});",
+				Script.GetObject(_id),
 				color.Escape()
 			);
 			return _ExecuteBlocking<string>(script);
@@ -398,9 +385,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isInvertedColorScheme() {
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return electron.systemPreferences.isInvertedColorScheme();"
-				)
+				"return {0}.isInvertedColorScheme();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}

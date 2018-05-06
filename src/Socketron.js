@@ -574,9 +574,9 @@ class SocketronNode {
 	}
 	
 	_sendErrorCallback(data, client, args) {
-		if (data.sequenceId == null) {
-			return;
-		}
+		//if (data.sequenceId == null) {
+		//	return;
+		//}
 		let newData = new SocketronData({
 			sequenceId: data.sequenceId,
 			status: "error",

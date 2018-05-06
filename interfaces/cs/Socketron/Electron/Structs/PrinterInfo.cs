@@ -5,6 +5,19 @@
 		public int status;
 		public bool? isDefault;
 
+		public static PrinterInfo FromObject(object obj) {
+			if (obj == null) {
+				return null;
+			}
+			JsonObject json = new JsonObject(obj);
+			return new PrinterInfo() {
+				name = json.String("name"),
+				description = json.String("description"),
+				status = json.Int32("status"),
+				isDefault = json.Bool("isDefault")
+			};
+		}
+
 		public static PrinterInfo Parse(string text) {
 			return JSON.Parse<PrinterInfo>(text);
 		}

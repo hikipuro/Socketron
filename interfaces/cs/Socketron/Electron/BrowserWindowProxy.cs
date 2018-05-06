@@ -1,17 +1,25 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	/// <summary>
 	/// Manipulate the child browser window.
 	/// <para>Process: Renderer</para>
 	/// </summary>
-	public class BrowserWindowProxy {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class BrowserWindowProxy : NodeModule {
 		/// <summary>
 		/// A Boolean that is set to true after the child window gets closed.
 		/// </summary>
 		public bool closed {
 			get {
-				return false;
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"return {0}.closed;"
+					),
+					Script.GetObject(_id)
+				);
+				return _ExecuteBlocking<bool>(script);
 			}
 		}
 
@@ -19,16 +27,26 @@ namespace Socketron {
 		/// Removes focus from the child window.
 		/// </summary>
 		public void blur() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.blur();"
+				),
+				Script.GetObject(_id)
+			);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
 		/// Forcefully closes the child window without calling its unload event.
 		/// </summary>
 		public void close() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.close();"
+				),
+				Script.GetObject(_id)
+			);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -36,24 +54,40 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="code"></param>
 		public void eval(string code) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.eval({1});"
+				),
+				Script.GetObject(_id),
+				code.Escape()
+			);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
 		/// Focuses the child window (brings the window to front).
 		/// </summary>
 		public void focus() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.focus();"
+				),
+				Script.GetObject(_id)
+			);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
 		/// Invokes the print dialog on the child window.
 		/// </summary>
 		public void print() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.print();"
+				),
+				Script.GetObject(_id)
+			);
+			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -67,8 +101,15 @@ namespace Socketron {
 		/// <param name="message"></param>
 		/// <param name="targetOrigin"></param>
 		public void postMessage(string message, string targetOrigin) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"{0}.postMessage({1},{2});"
+				),
+				Script.GetObject(_id),
+				message.Escape(),
+				targetOrigin.Escape()
+			);
+			_ExecuteJavaScript(script);
 		}
 	}
 }

@@ -34,7 +34,7 @@ namespace Socketron {
 			_client = client;
 		}
 
-		protected Buffer(SocketronClient client, int id) {
+		public Buffer(SocketronClient client, int id) {
 			_client = client;
 			_id = id;
 		}

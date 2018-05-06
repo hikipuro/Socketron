@@ -12,8 +12,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public CrashReporter(SocketronClient client) {
+		/// <param name="id"></param>
+		public CrashReporter(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -26,7 +28,8 @@ namespace Socketron {
 		/// <param name="options"></param>
 		public void start(JsonObject options) {
 			string script = ScriptBuilder.Build(
-				"electron.crashReporter.start({0});",
+				"{0}.start({1});",
+				Script.GetObject(_id),
 				options.Stringify()
 			);
 			_ExecuteJavaScript(script);
@@ -40,7 +43,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public CrashReport getLastCrashReport() {
 			string script = ScriptBuilder.Build(
-				"return electron.crashReporter.getLastCrashReport();"
+				"return {0}.getLastCrashReport();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return CrashReport.FromObject(result);
@@ -53,7 +57,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public List<CrashReport> getUploadedReports() {
 			string script = ScriptBuilder.Build(
-				"return electron.crashReporter.getUploadedReports();"
+				"return {0}.getUploadedReports();",
+				Script.GetObject(_id)
 			);
 			object[] result = _ExecuteBlocking<object[]>(script);
 			List<CrashReport> reports = new List<CrashReport>();
@@ -71,7 +76,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool getUploadToServer() {
 			string script = ScriptBuilder.Build(
-				"return electron.crashReporter.getUploadToServer();"
+				"return {0}.getUploadToServer();",
+				Script.GetObject(_id)
 			);
 			return _ExecuteBlocking<bool>(script);
 		}
@@ -86,7 +92,8 @@ namespace Socketron {
 		/// </param>
 		public void setUploadToServer(bool uploadToServer) {
 			string script = ScriptBuilder.Build(
-				"electron.crashReporter.setUploadToServer({0});",
+				"{0}.setUploadToServer({1});",
+				Script.GetObject(_id),
 				uploadToServer.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -104,7 +111,8 @@ namespace Socketron {
 		/// </param>
 		public void addExtraParameter(string key, string value) {
 			string script = ScriptBuilder.Build(
-				"electron.crashReporter.addExtraParameter({0},{1});",
+				"{0}.addExtraParameter({1},{2});",
+				Script.GetObject(_id),
 				key.Escape(),
 				value.Escape()
 			);
@@ -121,7 +129,8 @@ namespace Socketron {
 		/// </param>
 		public void removeExtraParameter(string key) {
 			string script = ScriptBuilder.Build(
-				"electron.crashReporter.removeExtraParameter({0});",
+				"{0}.removeExtraParameter({1});",
+				Script.GetObject(_id),
 				key.Escape()
 			);
 			_ExecuteJavaScript(script);
@@ -133,7 +142,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public JsonObject getParameters() {
 			string script = ScriptBuilder.Build(
-				"return electron.crashReporter.getParameters();"
+				"return {0}.getParameters();",
+				Script.GetObject(_id)
 			);
 			object result = _ExecuteBlocking<object>(script);
 			return new JsonObject(result);

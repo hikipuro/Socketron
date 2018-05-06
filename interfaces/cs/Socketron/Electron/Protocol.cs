@@ -18,8 +18,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Protocol(SocketronClient client) {
+		/// <param name="id"></param>
+		public Protocol(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>

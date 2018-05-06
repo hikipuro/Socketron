@@ -23,8 +23,10 @@ namespace Socketron {
 		/// Used Internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public PowerSaveBlocker(SocketronClient client) {
+		/// <param name="id"></param>
+		public PowerSaveBlocker(SocketronClient client, int id) {
 			_client = client;
+			_id = id;
 		}
 
 		/// <summary>
@@ -60,7 +62,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public int start(string type) {
 			string script = ScriptBuilder.Build(
-				"return electron.powerSaveBlocker.start({0});",
+				"return {0}.start({1});",
+				Script.GetObject(_id),
 				type.Escape()
 			);
 			return _ExecuteBlocking<int>(script);
@@ -74,7 +77,8 @@ namespace Socketron {
 		/// </param>
 		public void stop(int id) {
 			string script = ScriptBuilder.Build(
-				"electron.powerSaveBlocker.stop({0});",
+				"{0}.stop({1});",
+				Script.GetObject(_id),
 				id
 			);
 			_ExecuteJavaScript(script);
@@ -89,7 +93,8 @@ namespace Socketron {
 		/// <returns></returns>
 		public bool isStarted(int id) {
 			string script = ScriptBuilder.Build(
-				"return electron.powerSaveBlocker.isStarted({0});",
+				"return {0}.isStarted({1});",
+				Script.GetObject(_id),
 				id
 			);
 			return _ExecuteBlocking<bool>(script);
