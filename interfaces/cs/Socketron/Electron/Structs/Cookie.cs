@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Cookie {
 		/// <summary>
 		/// The name of the cookie.
@@ -38,6 +38,11 @@
 		/// </summary>
 		public double? expirationDate;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Cookie Parse(string text) {
 			return JSON.Parse<Cookie>(text);
 		}

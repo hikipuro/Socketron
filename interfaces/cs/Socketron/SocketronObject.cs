@@ -1,4 +1,6 @@
-﻿namespace Socketron {
+﻿using Socketron.Electron;
+
+namespace Socketron {
 	public class SocketronObject : NodeJS {
 		protected ElectronModule electron;
 

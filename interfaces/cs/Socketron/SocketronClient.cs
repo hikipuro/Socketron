@@ -379,9 +379,11 @@ namespace Socketron {
 				string eventId = list[1] as string;
 				long callbackId = Convert.ToInt64(list[2]);
 				object[] callbackParams = null;
-				if (list.Length >= 4) {
-					callbackParams = new object[list.Length - 3];
-					Array.Copy(list, 2, callbackParams, 0, list.Length - 3);
+
+				const int baseCount = 3;
+				if (list.Length > baseCount) {
+					callbackParams = new object[list.Length - baseCount];
+					Array.Copy(list, baseCount, callbackParams, 0, list.Length - baseCount);
 				}
 				/*
 				Callback callback = null;

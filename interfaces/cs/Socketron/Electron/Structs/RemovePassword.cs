@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class RemovePassword {
 		/// <summary>
 		/// password.
@@ -31,6 +31,11 @@
 		/// </summary>
 		public string password;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static RemovePassword Parse(string text) {
 			return JSON.Parse<RemovePassword>(text);
 		}

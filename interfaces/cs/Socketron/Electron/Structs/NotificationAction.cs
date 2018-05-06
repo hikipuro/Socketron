@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class NotificationAction {
 		/// <summary>
 		/// The type of action, can be button.
@@ -9,6 +9,11 @@
 		/// </summary>
 		public string text;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static NotificationAction Parse(string text) {
 			return JSON.Parse<NotificationAction>(text);
 		}

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Socketron {
+namespace Socketron.Electron {
 	public class CrashReport {
 		public DateTime date;
 		public string id;
@@ -16,6 +16,11 @@ namespace Socketron {
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static CrashReport Parse(string text) {
 			return JSON.Parse<CrashReport>(text);
 		}

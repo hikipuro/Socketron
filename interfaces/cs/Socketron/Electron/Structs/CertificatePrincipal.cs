@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class CertificatePrincipal {
 		/// <summary>
 		/// Common Name.
@@ -25,6 +25,11 @@
 		/// </summary>
 		public string country;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static CertificatePrincipal Parse(string text) {
 			return JSON.Parse<CertificatePrincipal>(text);
 		}

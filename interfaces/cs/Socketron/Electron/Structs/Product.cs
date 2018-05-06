@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Product {
 		/// <summary>
 		/// The string that identifies the product to the Apple App Store.
@@ -33,6 +33,11 @@
 		/// </summary>
 		public bool? downloadable;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Product Parse(string text) {
 			return JSON.Parse<Product>(text);
 		}

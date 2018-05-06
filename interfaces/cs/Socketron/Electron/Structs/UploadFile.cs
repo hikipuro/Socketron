@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class UploadFile {
 		/// <summary>
 		/// file.
@@ -21,6 +21,11 @@
 		/// </summary>
 		public double? modificationTime;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static UploadFile Parse(string text) {
 			return JSON.Parse<UploadFile>(text);
 		}

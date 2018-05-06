@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class ScrubberItem {
 		/// <summary>
 		/// (optional) The text to appear in this item.
@@ -9,6 +9,11 @@
 		/// </summary>
 		public NativeImage icon;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static ScrubberItem Parse(string text) {
 			return JSON.Parse<ScrubberItem>(text);
 		}

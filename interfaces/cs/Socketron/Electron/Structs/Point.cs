@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Point {
 		public int x;
 		public int y;
@@ -14,6 +14,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Point Parse(string text) {
 			return JSON.Parse<Point>(text);
 		}

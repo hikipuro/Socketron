@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Rectangle {
 		/// <summary>
 		/// The x coordinate of the origin of the rectangle (must be an integer).
@@ -45,6 +45,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Rectangle Parse(string text) {
 			return JSON.Parse<Rectangle>(text);
 		}

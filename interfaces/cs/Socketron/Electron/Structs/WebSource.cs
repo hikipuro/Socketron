@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class WebSource {
 		public string code;
 		/// <summary>
@@ -10,6 +10,11 @@
 		/// </summary>
 		public int? startLine;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static WebSource Parse(string text) {
 			return JSON.Parse<WebSource>(text);
 		}

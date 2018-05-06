@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Size {
 		public int width;
 		public int height;
@@ -14,6 +14,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Size Parse(string text) {
 			return JSON.Parse<Size>(text);
 		}

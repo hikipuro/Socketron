@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Socketron;
+using Socketron.Electron;
 
 namespace SocketronTest {
 	class TestJQuery : SocketronObject {
@@ -191,7 +192,7 @@ namespace SocketronTest {
 			//options.height = 300;
 			//options.backgroundColor = "#aaa";
 			//options.opacity = 0.5;
-			BrowserWindow window = new BrowserWindow(options);
+			BrowserWindow window = electron.BrowserWindow.Create(options);
 			stopwatch.Stop();
 			Log?.Invoke(string.Format("ElapsedMilliseconds: {0}", stopwatch.ElapsedMilliseconds));
 			
@@ -204,7 +205,9 @@ namespace SocketronTest {
 				setTimeout(() => {
 					Console.WriteLine("setTimeout");
 					window.capturePage(new Rectangle(100, 80), (image3) => {
-						//image3.toPNG().Save("image3.png");
+						var buf = image3.toPNG();
+						var buf2 = LocalBuffer.FromRemote(buf);
+						buf2.Save("image3.png");
 					});
 				}, 500);
 			};
@@ -263,10 +266,10 @@ namespace SocketronTest {
 					"}",
 				"]"
 			};
-			var menuItemOptions = Socketron.MenuItem.Options.ParseArray(string.Join("", template));
+			var menuItemOptions = MenuItem.Options.ParseArray(string.Join("", template));
 			menuItemOptions[0].submenu[0].@checked = true;
 			//Console.WriteLine(JSON.Stringify(menuItemOptions, true));
-			Socketron.Menu menu = electron.Menu.buildFromTemplate(menuItemOptions);
+			Menu menu = electron.Menu.buildFromTemplate(menuItemOptions);
 			return;
 
 			/*
@@ -330,7 +333,7 @@ namespace SocketronTest {
 			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
 			
 			Console.WriteLine("Notification.IsSupported: " + electron.Notification.isSupported());
-			var notification = new Notification(new Notification.Options {
+			var notification = electron.Notification.Create(new Notification.Options {
 				title = "Title",
 				body = "Body"
 			});

@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class DesktopCapturerSource {
 		/// <summary>
 		/// The identifier of a window or screen
@@ -27,6 +27,11 @@
 		/// </summary>
 		public string display_id;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static DesktopCapturerSource Parse(string text) {
 			return JSON.Parse<DesktopCapturerSource>(text);
 		}

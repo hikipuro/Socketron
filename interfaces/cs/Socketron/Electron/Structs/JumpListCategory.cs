@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	/// <summary>
 	/// Note: If a JumpListCategory object has neither the type
 	/// nor the name property set then its type is assumed to be tasks.
@@ -30,6 +30,11 @@
 		/// </summary>
 		public JumpListItem[] items;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static JumpListCategory Parse(string text) {
 			return JSON.Parse<JumpListCategory>(text);
 		}

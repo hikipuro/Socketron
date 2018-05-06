@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class ShortcutDetails {
 		/// <summary>
 		/// The target to launch from this shortcut.
@@ -52,6 +52,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static ShortcutDetails Parse(string text) {
 			return JSON.Parse<ShortcutDetails>(text);
 		}

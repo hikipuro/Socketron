@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class GPUFeatureStatus {
 		public class Values {
 			/// <summary>
@@ -122,6 +122,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static GPUFeatureStatus Parse(string text) {
 			return JSON.Parse<GPUFeatureStatus>(text);
 		}

@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class CPUUsage {
 		/// <summary>
 		/// Percentage of CPU used since the last call to getCPUUsage.
@@ -22,6 +22,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static CPUUsage Parse(string text) {
 			return JSON.Parse<CPUUsage>(text);
 		}

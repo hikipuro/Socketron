@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Socketron {
+namespace Socketron.Electron {
 	public class ThumbarButton {
 		public class Flags {
 			/// <summary>
@@ -47,6 +47,11 @@ namespace Socketron {
 		/// </summary>
 		public string[] flags;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static ThumbarButton Parse(string text) {
 			return JSON.Parse<ThumbarButton>(text);
 		}

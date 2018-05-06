@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Referrer {
 		/// <summary>
 		/// HTTP Referrer URL.
@@ -12,6 +12,11 @@
 		/// </summary>
 		public string policy;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Referrer Parse(string text) {
 			return JSON.Parse<Referrer>(text);
 		}

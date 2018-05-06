@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	/// <summary>
 	/// The Display object represents a physical display connected to the system.
 	/// A fake Display may exist on a headless system,
@@ -55,6 +55,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Display Parse(string text) {
 			return JSON.Parse<Display>(text);
 		}

@@ -4,7 +4,7 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class ConsoleModule : NodeModule {
 		/// <summary>
-		/// Used Internally by the library.
+		/// This constructor is used for internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
 		public ConsoleModule(SocketronClient client) {

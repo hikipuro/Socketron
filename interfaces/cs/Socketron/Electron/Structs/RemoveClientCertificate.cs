@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class RemoveClientCertificate {
 		/// <summary>
 		/// clientCertificate.
@@ -9,6 +9,11 @@
 		/// </summary>
 		public string origin;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static RemoveClientCertificate Parse(string text) {
 			return JSON.Parse<RemoveClientCertificate>(text);
 		}

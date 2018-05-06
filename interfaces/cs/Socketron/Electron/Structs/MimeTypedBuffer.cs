@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class MimeTypedBuffer {
 		/// <summary>
 		/// The mimeType of the Buffer that you are sending.
@@ -9,6 +9,11 @@
 		/// </summary>
 		public LocalBuffer data;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static MimeTypedBuffer Parse(string text) {
 			return JSON.Parse<MimeTypedBuffer>(text);
 		}

@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class TaskObject {
 		/// <summary>
 		/// Path of the program to execute,
@@ -31,6 +31,11 @@
 		/// </summary>
 		public int? iconIndex;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static TaskObject Parse(string text) {
 			return JSON.Parse<TaskObject>(text);
 		}

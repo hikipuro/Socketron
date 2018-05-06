@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class StreamProtocolResponse {
 		/// <summary>
 		/// The HTTP response code.
@@ -15,6 +15,11 @@
 		/// <returns></returns>
 		//public string data;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static StreamProtocolResponse Parse(string text) {
 			return JSON.Parse<StreamProtocolResponse>(text);
 		}

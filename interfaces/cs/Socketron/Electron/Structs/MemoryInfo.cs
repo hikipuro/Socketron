@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	/// <summary>
 	/// Note that all statistics are reported in Kilobytes.
 	/// </summary>
@@ -40,6 +40,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static MemoryInfo Parse(string text) {
 			return JSON.Parse<MemoryInfo>(text);
 		}

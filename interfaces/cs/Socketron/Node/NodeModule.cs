@@ -6,13 +6,17 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class NodeModule : IDisposable {
 		/// <summary>
-		/// Used Internally by the library.
+		/// This id is used for internally by the library.
 		/// </summary>
 		public int _id;
 		protected static List<NodeModule> _modules;
 		protected SocketronClient _client;
 		protected bool _disposeManually = false;
 
+		/// <summary>
+		/// Static constructor.
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		static NodeModule() {
 			_modules = new List<NodeModule>();
 		}
@@ -30,7 +34,7 @@ namespace Socketron {
 		}
 
 		/// <summary>
-		/// Used Internally by the library.
+		/// This method is used for internally by the library.
 		/// </summary>
 		public static void DisposeAll() {
 			foreach (NodeModule module in _modules) {
@@ -42,6 +46,9 @@ namespace Socketron {
 			_modules.Clear();
 		}
 
+		/// <summary>
+		/// This method is used for internally by the library.
+		/// </summary>
 		public void Dispose() {
 			if (_disposeManually) {
 				return;

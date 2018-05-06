@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class ProcessMetric {
 		/// <summary>
 		/// Process id of the process.
@@ -30,6 +30,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static ProcessMetric Parse(string text) {
 			return JSON.Parse<ProcessMetric>(text);
 		}

@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class JumpListItem {
 		/// <summary>
 		/// (optional) One of the following:
@@ -48,6 +48,11 @@
 		/// </summary>
 		public int? iconIndex;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static JumpListItem Parse(string text) {
 			return JSON.Parse<JumpListItem>(text);
 		}

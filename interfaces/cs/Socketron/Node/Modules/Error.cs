@@ -5,7 +5,7 @@ namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Error : NodeModule {
 		/// <summary>
-		/// Used Internally by the library.
+		/// This constructor is used for internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
 		public Error(SocketronClient client, int id) {

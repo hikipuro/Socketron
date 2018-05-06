@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class IOCounters {
 		/// <summary>
 		/// The number of I/O read operations.
@@ -40,6 +40,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static IOCounters Parse(string text) {
 			return JSON.Parse<IOCounters>(text);
 		}

@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class PrinterInfo {
 		public string name;
 		public string description;
@@ -18,6 +18,11 @@
 			};
 		}
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static PrinterInfo Parse(string text) {
 			return JSON.Parse<PrinterInfo>(text);
 		}

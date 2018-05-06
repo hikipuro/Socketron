@@ -1,4 +1,4 @@
-﻿namespace Socketron {
+﻿namespace Socketron.Electron {
 	public class Transaction {
 		/// <summary>
 		/// A string that uniquely identifies a successful payment transaction.
@@ -30,6 +30,11 @@
 		/// </summary>
 		public object payment;
 
+		/// <summary>
+		/// Parse JSON text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
 		public static Transaction Parse(string text) {
 			return JSON.Parse<Transaction>(text);
 		}
