@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class BrowserViewModule : NodeModule {
+	public class BrowserViewModule : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

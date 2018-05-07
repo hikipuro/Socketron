@@ -8,7 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public partial class BrowserWindow : NodeModule {
+	public partial class BrowserWindow : JSModule {
 		/// <summary>
 		/// BrowserWindow instance events.
 		/// </summary>
@@ -1368,6 +1368,7 @@ namespace Socketron.Electron {
 		/// <param name="message"></param>
 		/// <param name="callback">JavaScript string</param>
 		public void hookWindowMessage(int message, string callback) {
+			// TODO: fix callback
 			string script = ScriptBuilder.Build(
 				"{0}.hookWindowMessage({1},{2});",
 				Script.GetObject(_id),
@@ -1520,7 +1521,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (image) => {{",
-						"emit('__event',{0},{1},{2},{3});",
+						"this.emit('__event',{0},{1},{2},{3});",
 					"}};",
 					"return {4};"
 				),
@@ -1565,7 +1566,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (image) => {{",
-						"emit('__event',{0},{1},{2},{3});",
+						"this.emit('__event',{0},{1},{2},{3});",
 					"}};",
 					"return {4};"
 				),

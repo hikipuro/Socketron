@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class BrowserWindowProxy : NodeModule {
+	public class BrowserWindowProxy : JSModule {
 		/// <summary>
 		/// A Boolean that is set to true after the child window gets closed.
 		/// </summary>

@@ -6,7 +6,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Tray : NodeModule {
+	public class Tray : JSModule {
 		/// <summary>
 		/// Tray instance events.
 		/// </summary>

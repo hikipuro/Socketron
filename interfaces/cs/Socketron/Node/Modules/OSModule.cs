@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Socketron {
 	public partial class NodeModules {
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class OS : NodeModule {
+		public class OS : JSModule {
 			public OS() {
 				_client = SocketronClient.GetCurrent();
 			}

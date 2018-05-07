@@ -11,7 +11,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DesktopCapturer : NodeModule {
+	public class DesktopCapturer : JSModule {
 		public const string Name = "DesktopCapturer";
 
 		static ushort _callbackListId = 0;
@@ -66,7 +66,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err,sources) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId,sources);",
+						"this.emit('__event',{1},{2},errId,sources);",
 					"}};",
 					"electron.desktopCapturer.getSources({3},callback);"
 				),

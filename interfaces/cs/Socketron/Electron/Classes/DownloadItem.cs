@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DownloadItem : NodeModule {
+	public class DownloadItem : JSModule {
 		/// <summary>
 		/// DownloadItem instance events.
 		/// </summary>

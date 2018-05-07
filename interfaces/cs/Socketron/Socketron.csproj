@@ -96,6 +96,7 @@
     <Compile Include="Electron\Modules\AppModule.cs" />
     <Compile Include="Electron\Modules\ElectronModule.cs" />
     <Compile Include="Electron\Classes\WebPreferences.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Node\Buffer.cs" />
     <Compile Include="Node\Modules\Error.cs" />
     <Compile Include="Node\Modules\FileSystemModule.cs" />
@@ -115,7 +116,7 @@
     <Compile Include="Electron\Classes\Debugger.cs" />
     <Compile Include="Electron\Classes\DesktopCapturer.cs" />
     <Compile Include="Electron\Classes\DownloadItem.cs" />
-    <Compile Include="Node\NodeModule.cs" />
+    <Compile Include="Node\JSModule.cs" />
     <Compile Include="Electron\Modules\GlobalShortcutModule.cs" />
     <Compile Include="Electron\Modules\InAppPurchaseModule.cs" />
     <Compile Include="Electron\Classes\IncomingMessage.cs" />
@@ -181,7 +182,7 @@
     <Compile Include="Electron\Classes\WebRequest.cs" />
     <Compile Include="Node\Modules\NetModule.cs" />
     <Compile Include="Node\Modules\ConsoleModule.cs" />
-    <Compile Include="Node\EventEmitter.cs" />
+    <Compile Include="Node\LocalEventEmitter.cs" />
     <Compile Include="JSON\JsonObject.cs" />
     <Compile Include="JSON\JSON.cs" />
     <Compile Include="JSON\NullPropertiesConverter.cs" />
@@ -193,7 +194,7 @@
     <Compile Include="Node\Modules\PathModule.cs" />
     <Compile Include="Node\Modules\ProcessModule.cs" />
     <Compile Include="Node\Modules\URLModule.cs" />
-    <Compile Include="Packet.cs" />
+    <Compile Include="Payload.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptBuilder.cs" />
     <Compile Include="SocketronClient.cs" />

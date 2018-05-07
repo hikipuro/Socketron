@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Buffer : NodeModule, IDisposable {
+	public class Buffer : JSModule, IDisposable {
 		public class Encodings {
 			public const string ascii = "ascii";
 			public const string utf8 = "utf8";
@@ -212,7 +212,7 @@ namespace Socketron {
 			return new Buffer(client, result);
 		}
 
-		public static bool isBuffer(NodeModule obj) {
+		public static bool isBuffer(JSModule obj) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return Buffer.isBuffer({0});"

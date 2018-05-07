@@ -8,7 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ShellModule : NodeModule {
+	public class ShellModule : JSModule {
 		public const string Name = "ShellClass";
 
 		static ushort _callbackListId = 0;
@@ -100,7 +100,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"return {0}.openExternal({1},{2},(err) => {{",
 						"var errId = {3};",
-						"emit('__event',{4},{5},errId);",
+						"this.emit('__event',{4},{5},errId);",
 					"}});"
 				),
 				Script.GetObject(_id),

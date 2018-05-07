@@ -4,29 +4,29 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NodeModule : IDisposable {
+	public class JSModule : IDisposable {
 		/// <summary>
 		/// This id is used for internally by the library.
 		/// </summary>
 		public int _id;
-		protected static List<NodeModule> _modules;
+		protected static List<JSModule> _modules;
 		protected SocketronClient _client;
 		protected bool _disposeManually = false;
 
 		/// <summary>
 		/// Static constructor.
-		/// This constructor is used for internally by the library.
+		/// This method is used for internally by the library.
 		/// </summary>
-		static NodeModule() {
-			_modules = new List<NodeModule>();
+		static JSModule() {
+			_modules = new List<JSModule>();
 		}
 
-		public NodeModule() {
+		public JSModule() {
 			//Console.WriteLine("NodeModule ###: " + GetType().Name);
 			_modules.Add(this);
 		}
 
-		~NodeModule() {
+		~JSModule() {
 			if (_id <= 0) {
 				return;
 			}
@@ -37,7 +37,7 @@ namespace Socketron {
 		/// This method is used for internally by the library.
 		/// </summary>
 		public static void DisposeAll() {
-			foreach (NodeModule module in _modules) {
+			foreach (JSModule module in _modules) {
 				if (module._id <= 0) {
 					continue;
 				}
@@ -78,6 +78,75 @@ namespace Socketron {
 				script
 			);
 			_ExecuteJavaScript(code);
+		}
+
+		public T ExecuteBlocking<T>(string script) {
+			string code = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var self = {0};",
+					"{1};"
+				),
+				Script.GetObject(_id),
+				script
+			);
+			return _ExecuteBlocking<T>(code);
+		}
+
+		public object ApplyMethod(string methodName, params object[] args) {
+			string options = CreateParams(args);
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.{1}({2});"
+				),
+				Script.GetObject(_id),
+				methodName,
+				options
+			);
+			return _ExecuteBlocking<object>(script);
+		}
+
+		public T GetProperty<T>(string propertyName) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"return {0}.{1};"
+				),
+				Script.GetObject(_id),
+				propertyName
+			);
+			return _ExecuteBlocking<T>(script);
+		}
+
+		public static string CreateParams(object[] args) {
+			if (args == null) {
+				return string.Empty;
+			}
+			string[] strings = new string[args.Length];
+			for (int i = 0; i < args.Length; i++) {
+				object arg = args[i];
+				if (arg == null) {
+					strings[i] = "null";
+					continue;
+				}
+				if (arg is string) {
+					strings[i] = ((string)arg).Escape();
+					continue;
+				}
+				if (arg is bool) {
+					strings[i] = ((bool)arg).Escape();
+					continue;
+				}
+				if (arg is JsonObject) {
+					strings[i] = (arg as JsonObject).Stringify();
+					continue;
+				}
+				if (arg is JSModule) {
+					JSModule obj = arg as JSModule;
+					strings[i] = string.Format("this.getObject({0})", obj._id);
+					continue;
+				}
+				strings[i] = arg.ToString();
+			}
+			return string.Join(",", strings);
 		}
 
 		/// <summary>
@@ -173,7 +242,7 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1},{2});",
+						"this.emit('__event',{0},{1},{2});",
 					"}};",
 					"return {3};"
 				),
@@ -193,7 +262,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"var callback = () => {{",
 						"{0};",
-						"emit('__event',{1},{2},{3});",
+						"this.emit('__event',{1},{2},{3});",
 					"}};",
 					"var id = {4};",
 					"return id;"
@@ -228,14 +297,14 @@ namespace Socketron {
 		protected static ScriptHelper Script = new ScriptHelper();
 		protected class ScriptHelper {
 			public string GetObject(long id) {
-				return string.Format("this._objRefs[{0}]", id);
+				return string.Format("this.getObject({0})", id);
 			}
-			public string GetObjectList(NodeModule[] list) {
+			public string GetObjectList(JSModule[] list) {
 				if (list == null) {
 					return "null";
 				}
 				List<string> result = new List<string>();
-				foreach (NodeModule obj in list) {
+				foreach (JSModule obj in list) {
 					result.Add(GetObject(obj._id));
 				}
 				return string.Join(",", result.ToArray());
@@ -251,13 +320,13 @@ namespace Socketron {
 				return string.Join(",", result.ToArray());
 			}
 			public string AddObject(string name) {
-				return string.Format("this._addObjectReference({0})", name);
+				return string.Format("this.addObject({0})", name);
 			}
 			public string RemoveObject(long id) {
-				return string.Format("this._removeObjectReference({0})", id);
+				return string.Format("this.removeObject({0})", id);
 			}
 			public string RemoveObject(string name) {
-				return string.Format("this._removeObjectReference({0})", name);
+				return string.Format("this.removeObject({0})", name);
 			}
 		}
 	}

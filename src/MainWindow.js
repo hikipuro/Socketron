@@ -34,7 +34,7 @@ class MainWindow {
 	}
 
 	_initWindow() {
-		let preload = path.join(__dirname, "Socketron.js");
+		let preload = path.join(__dirname, "socketron/Socketron.js");
 		this.browserWindow = new Electron.BrowserWindow({
 			title: Config.Title,
 			useContentSize: true,

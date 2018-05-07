@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class MenuItem : NodeModule {
+	public class MenuItem : JSModule {
 		public const string Name = "MenuItem";
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -337,7 +337,7 @@ namespace Socketron.Electron {
 					ScriptBuilder.Script(
 						"var item = {0};",
 						"var listener = () => {{",
-							"emit('__event',{1},{2});",
+							"this.emit('__event',{1},{2});",
 						"}};",
 						"this._addClientEventListener({1},{2},listener);",
 						"item.click = listener;"

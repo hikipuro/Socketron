@@ -8,7 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ProtocolModule : NodeModule {
+	public class ProtocolModule : JSModule {
 		public const string Name = "Protocol";
 
 		static ushort _callbackListId = 0;
@@ -91,7 +91,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId);",
+						"this.emit('__event',{1},{2},errId);",
 					"}};",
 					"electron.protocol.unregisterProtocol({3},callback);"
 				),
@@ -154,7 +154,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId);",
+						"this.emit('__event',{1},{2},errId);",
 					"}};",
 					"electron.protocol.uninterceptProtocol({3},callback);"
 				),

@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ScreenModule : NodeModule {
+	public class ScreenModule : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

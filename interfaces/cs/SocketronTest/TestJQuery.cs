@@ -47,6 +47,15 @@ namespace SocketronTest {
 		}
 
 		void Test() {
+			console.log("test", 123, true, null);
+			console.log(process.cpuUsage(), process.getVersionsChrome());
+			console.ApplyMethod("log", "test", 123, true, null);
+
+			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
+			electron.globalShortcut.register(Accelerator.CmdOrCtrl + "+A", () => {
+				Console.WriteLine("Ctrl + A pressed");
+			});
+			return;
 			/*
 			var os = require<NodeModules.OS>("os");
 			Console.WriteLine(os.cpus().Stringify());
@@ -330,8 +339,6 @@ namespace SocketronTest {
 
 			return;
 
-			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
-			
 			Console.WriteLine("Notification.IsSupported: " + electron.Notification.isSupported());
 			var notification = electron.Notification.Create(new Notification.Options {
 				title = "Title",

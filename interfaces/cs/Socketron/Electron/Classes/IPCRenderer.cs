@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class IPCRenderer : NodeModule {
+	public class IPCRenderer : JSModule {
 		public const string Name = "IPCRenderer";
 
 		/// <summary>

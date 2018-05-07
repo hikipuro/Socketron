@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class AppModule : NodeModule {
+	public class AppModule : JSModule {
 		public CommandLine commandLine;
 		/// <summary>*macOS*</summary>
 		public Dock dock;
@@ -26,7 +26,7 @@ namespace Socketron.Electron {
 			dock = new Dock(client);
 		}
 
-		public class CommandLine : NodeModule {
+		public class CommandLine : JSModule {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
@@ -83,7 +83,7 @@ namespace Socketron.Electron {
 			}
 		}
 
-		public class Dock : NodeModule {
+		public class Dock : JSModule {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
@@ -442,7 +442,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (error, icon) => {{",
-						"emit('__event',{0},{1},{2},{3},{4});",
+						"this.emit('__event',{0},{1},{2},{3},{4});",
 					"}};",
 					"return {5};"
 				),
@@ -490,7 +490,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (error, icon) => {{",
-						"emit('__event',{0},{1},{2},{3},{4});",
+						"this.emit('__event',{0},{1},{2},{3},{4});",
 					"}};",
 					"return {5};"
 				),
@@ -848,7 +848,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (argv, workingDirectory) => {{",
-						"emit('__event',{0},{1},{2},argv, workingDirectory);",
+						"this.emit('__event',{0},{1},{2},argv, workingDirectory);",
 					"}};",
 					"return {3};"
 				),
@@ -997,7 +997,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (result) => {{",
-						"emit('__event',{0},{1},{2},result);",
+						"this.emit('__event',{0},{1},{2},result);",
 					"}};",
 					"return {3};"
 				),

@@ -1,22 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 
 namespace Socketron {
-	public enum DataType {
-		Text = 0,
-	}
-
-	public class ProcessType {
-		public const string Browser = "browser";
-		public const string Renderer = "renderer";
-	}
-
 	public delegate void Callback(object result);
 	public delegate void Callback<T>(T result);
 
-	public class MainProcess : EventEmitter {
+	public class MainProcess : LocalEventEmitter {
 		const string Type = ProcessType.Browser;
 
 		public MainProcess() {
@@ -37,7 +27,7 @@ namespace Socketron {
 		}
 	}
 
-	public class RendererProcess : EventEmitter {
+	public class RendererProcess : LocalEventEmitter {
 		const string Type = ProcessType.Renderer;
 
 		public RendererProcess() {
@@ -130,7 +120,7 @@ namespace Socketron {
 		//*/
 	}
 
-	public class SocketronClient: EventEmitter {
+	public class SocketronClient: LocalEventEmitter {
 		public string ID = string.Empty;
 		public Config Config = new Config();
 		public MainProcess Main;
@@ -207,7 +197,7 @@ namespace Socketron {
 
 		public void Close() {
 			ID = string.Empty;
-			NodeModule.DisposeAll();
+			JSModule.DisposeAll();
 			_socketClient.Close();
 		}
 
@@ -243,7 +233,7 @@ namespace Socketron {
 			}
 			Callbacks.RemoveInstanceEvents(id);
 			string script = string.Format(
-				"this._removeObjectReference({0});",
+				"this.removeObject({0});",
 				id
 			);
 			//Console.WriteLine("RemoveObject: " + id);

@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DialogModule : NodeModule {
+	public class DialogModule : JSModule {
 		public const string Name = "Dialog";
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -99,7 +99,7 @@ namespace Socketron.Electron {
 				script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"var callback = (filePaths, bookmarks) => {{",
-							"emit('__event',{0},{1},filePaths,bookmarks);",
+							"this.emit('__event',{0},{1},filePaths,bookmarks);",
 						"}};",
 						"return {2}.showOpenDialog({3},{4},callback);"
 					),
@@ -113,7 +113,7 @@ namespace Socketron.Electron {
 				script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
 						"var callback = (filePaths, bookmarks) => {{",
-							"emit('__event',{0},{1},filePaths,bookmarks);",
+							"this.emit('__event',{0},{1},filePaths,bookmarks);",
 						"}};",
 						"return {2}.showOpenDialog({3},callback);"
 					),

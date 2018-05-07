@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Notification : NodeModule {
+	public class Notification : JSModule {
 		/// <summary>
 		/// Notification instance events.
 		/// </summary>

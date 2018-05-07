@@ -5,17 +5,11 @@ using System.Net.Sockets;
 using System.Threading;
 
 namespace Socketron {
-	public enum ReadState {
-		Type = 0,
-		CommandLength,
-		Command
-	}
-
-	internal class SocketClient: EventEmitter {
+	internal class SocketClient: LocalEventEmitter {
 		public Config Config = new Config();
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
-		protected Packet _packet = new Packet();
+		protected Payload _payload = new Payload();
 		protected byte[] _buffer;
 		protected Thread _readThread;
 		//protected ManualResetEvent _readDone = new ManualResetEvent(false);
@@ -95,13 +89,13 @@ namespace Socketron {
 
 		public void Write(byte[] bytes) {
 			try {
-				/*
+				//*
 				_stream.BeginWrite(
 					bytes, 0, bytes.Length,
 					_writeCallback, _stream
 				);
 				//*/
-				_stream.Write(bytes, 0, bytes.Length);
+				//_stream.Write(bytes, 0, bytes.Length);
 			} catch (IOException) {
 				_DebugLog("Write IOException");
 				Close();
@@ -194,13 +188,13 @@ namespace Socketron {
 
 		protected void _OnData(byte[] data, int bytesReaded) {
 			if (data != null) {
-				_packet.Data.Write(data, 0, bytesReaded);
+				_payload.Data.Write(data, 0, bytesReaded);
 			}
 
-			uint offset = _packet.DataOffset;
-			uint remain = (uint)_packet.Data.Length - offset;
+			uint offset = _payload.DataOffset;
+			uint remain = (uint)_payload.Data.Length - offset;
 
-			switch (_packet.State) {
+			switch (_payload.State) {
 				case ReadState.Type:
 					if (remain < 1) {
 						return;
@@ -212,32 +206,32 @@ namespace Socketron {
 					}
 					break;
 				case ReadState.Command:
-					if (remain < _packet.DataLength) {
+					if (remain < _payload.DataLength) {
 						return;
 					}
 					break;
 			}
 
-			switch (_packet.State) {
+			switch (_payload.State) {
 				case ReadState.Type:
-					_packet.DataType = (DataType)_packet.Data[offset];
-					_packet.DataOffset += 1;
-					_packet.State = ReadState.CommandLength;
+					_payload.DataType = (DataType)_payload.Data[offset];
+					_payload.DataOffset += 1;
+					_payload.State = ReadState.CommandLength;
 					break;
 				case ReadState.CommandLength:
-					_packet.DataLength = _packet.Data.ReadUInt16LE(offset);
-					_packet.DataOffset += 2;
-					_packet.State = ReadState.Command;
+					_payload.DataLength = _payload.Data.ReadUInt16LE(offset);
+					_payload.DataOffset += 2;
+					_payload.State = ReadState.Command;
 					break;
 				case ReadState.Command:
-					if (_packet.DataType == DataType.Text) {
-						string text = _packet.GetStringData();
+					if (_payload.DataType == DataType.Text) {
+						string text = _payload.GetStringData();
 						_DebugLog("receive: {0}", text);
 						EmitNewThread("data", SocketronData.Parse(text));
 					}
-					_packet.Data = _packet.Data.Slice(offset + _packet.DataLength);
-					_packet.DataOffset = 0;
-					_packet.State = ReadState.Type;
+					_payload.Data = _payload.Data.Slice(offset + _payload.DataLength);
+					_payload.DataOffset = 0;
+					_payload.State = ReadState.Type;
 					break;
 			}
 

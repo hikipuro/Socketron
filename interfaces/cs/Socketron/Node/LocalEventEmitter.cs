@@ -52,10 +52,10 @@ namespace Socketron {
 		}
 	}
 
-	public class EventEmitter {
+	public class LocalEventEmitter {
 		private Dictionary<string, EventListeners> _listeners;
 
-		public EventEmitter() {
+		public LocalEventEmitter() {
 			_listeners = new Dictionary<string, EventListeners>();
 		}
 
@@ -105,7 +105,7 @@ namespace Socketron {
 		}
 		//*/
 
-		public EventEmitter On(string channel, EventListener listener) {
+		public LocalEventEmitter On(string channel, EventListener listener) {
 			channel = channel.ToLower();
 			if (!_listeners.ContainsKey(channel)) {
 				_listeners.Add(channel, new EventListeners());
@@ -114,7 +114,7 @@ namespace Socketron {
 			return this;
 		}
 
-		public EventEmitter Once(string channel, EventListener listener) {
+		public LocalEventEmitter Once(string channel, EventListener listener) {
 			channel = channel.ToLower();
 			if (!_listeners.ContainsKey(channel)) {
 				_listeners.Add(channel, new EventListeners());

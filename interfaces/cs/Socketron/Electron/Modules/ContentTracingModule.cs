@@ -19,7 +19,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ContentTracingModule : NodeModule {
+	public class ContentTracingModule : JSModule {
 		public const string Name = "ContentTracing";
 
 		static ushort _callbackListId = 0;
@@ -73,7 +73,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (categories) => {{",
-						"emit('__event',{1},{2},categories);",
+						"this.emit('__event',{1},{2},categories);",
 					"}};",
 					"{0}.getCategories(callback);"
 				),
@@ -106,7 +106,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{1},{2});",
+						"this.emit('__event',{1},{2});",
 					"}};",
 					"{0}.startRecording({3},callback);"
 				),
@@ -141,7 +141,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (resultFilePath) => {{",
-						"emit('__event',{1},{2},resultFilePath);",
+						"this.emit('__event',{1},{2},resultFilePath);",
 					"}};",
 					"{0}.stopRecording({3},callback);"
 				),
@@ -179,7 +179,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{1},{2});",
+						"this.emit('__event',{1},{2});",
 					"}};",
 					"{0}.startMonitoring({3},callback);"
 				),
@@ -211,7 +211,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{1},{2});",
+						"this.emit('__event',{1},{2});",
 					"}};",
 					"{0}.stopMonitoring(callback);"
 				),
@@ -245,7 +245,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (resultFilePath) => {{",
-						"emit('__event',{1},{2},resultFilePath);",
+						"this.emit('__event',{1},{2},resultFilePath);",
 					"}};",
 					"{0}.captureMonitoringSnapshot({3},callback);"
 				),
@@ -283,7 +283,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (value,percentage) => {{",
-						"emit('__event',{1},{2},value,percentage);",
+						"this.emit('__event',{1},{2},value,percentage);",
 					"}};",
 					"{0}.getTraceBufferUsage(callback);"
 				),

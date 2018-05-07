@@ -11,7 +11,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ClientRequest : NodeModule {
+	public class ClientRequest : JSModule {
 		public const string Name = "ClientRequest";
 		static ushort _callbackListId = 0;
 		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
@@ -297,7 +297,7 @@ namespace Socketron.Electron {
 					script = ScriptBuilder.Build(
 						ScriptBuilder.Script(
 							"var callback = () => {{",
-								"emit('__event',{0},{1});",
+								"this.emit('__event',{0},{1});",
 							"}};",
 							"{2}.write({3},{4},callback);"
 						),
@@ -363,7 +363,7 @@ namespace Socketron.Electron {
 					script = ScriptBuilder.Build(
 						ScriptBuilder.Script(
 							"var callback = () => {{",
-								"emit('__event',{0},{1});",
+								"this.emit('__event',{0},{1});",
 							"}};",
 							"{2}.end({3},{4},callback);"
 						),

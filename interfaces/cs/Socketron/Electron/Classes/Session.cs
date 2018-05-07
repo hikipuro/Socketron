@@ -8,7 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Session : NodeModule {
+	public class Session : JSModule {
 		/// <summary>
 		/// Session instance events.
 		/// </summary>

@@ -1,5 +1,5 @@
 ﻿namespace Socketron.Electron {
-	public class ElectronModule : NodeModule {
+	public class ElectronModule : JSModule {
 		public AppModule app;
 		public AutoUpdaterModule autoUpdater;
 		public BrowserViewModule BrowserView;

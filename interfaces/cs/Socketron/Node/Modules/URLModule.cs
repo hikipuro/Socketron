@@ -3,7 +3,7 @@
 namespace Socketron {
 	public partial class NodeModules {
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class URL : NodeModule {
+		public class URL : JSModule {
 			public URL() {
 				_client = SocketronClient.GetCurrent();
 			}

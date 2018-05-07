@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -7,12 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class GlobalShortcutModule : NodeModule {
-		public const string Name = "GlobalShortcut";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
+	public class GlobalShortcutModule : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -24,42 +20,42 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
-		/// <summary>
 		/// Registers a global shortcut of accelerator.
 		/// The callback is called when the registered shortcut is pressed by the user.
 		/// </summary>
 		/// <param name="accelerator"></param>
 		/// <param name="callback"></param>
-		public void register(string accelerator, Callback callback) {
+		public void register(string accelerator, Action callback) {
 			if (callback == null) {
 				return;
 			}
-			_callbackList.Add(_callbackListId, callback);
+			string eventName = "register";
+			CallbackItem item = null;
+			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+				callback?.Invoke();
+			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var listener = () => {{",
-						"emit('__event',{0},{1});",
+					"var callback = () => {{",
+						"this.emit('__event',{0},{1},{2});",
 					"}};",
-					"this._addClientEventListener({0},{1},listener);",
-					"{2}.register({3}, listener);"
+					"return {3};"
 				),
-				Name.Escape(),
-				_callbackListId,
-				Script.GetObject(_id),
-				accelerator.Escape()
+				_id,
+				eventName.Escape(),
+				item.CallbackId,
+				Script.AddObject("callback")
 			);
-			_callbackListId++;
+			long objectId = _ExecuteBlocking<long>(script);
+			item.ObjectId = objectId;
+
+			script = ScriptBuilder.Build(
+				"{0}.register({1},{2});",
+				Script.GetObject(_id),
+				accelerator.Escape(),
+				Script.GetObject(objectId)
+			);
 			_ExecuteJavaScript(script);
 		}
 

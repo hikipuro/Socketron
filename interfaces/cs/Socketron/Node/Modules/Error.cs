@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Error : NodeModule {
+	public class Error : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

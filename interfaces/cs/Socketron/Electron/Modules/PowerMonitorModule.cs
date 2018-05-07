@@ -23,7 +23,7 @@ namespace Socketron.Electron {
 	/// </code>
 	/// </example>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class PowerMonitorModule : NodeModule {
+	public class PowerMonitorModule : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -58,7 +58,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (idleState) => {{",
-						"emit('__event',{0},{1},{2},idleState);",
+						"this.emit('__event',{0},{1},{2},idleState);",
 					"}};",
 					"return {3};"
 				),
@@ -101,7 +101,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (idleTime) => {{",
-						"emit('__event',{0},{1},{2},idleTime);",
+						"this.emit('__event',{0},{1},{2},idleTime);",
 					"}};",
 					"return {3};"
 				),

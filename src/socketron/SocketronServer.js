@@ -1,0 +1,118 @@
+const net = require("net");
+const { EventEmitter } = require("events");
+
+const { DataType, ReadState } = require("./Common");
+const Client = require("./Client");
+const Clients = require("./Clients");
+const SocketronData = require("./SocketronData");
+
+class SocketronServer extends EventEmitter {
+	constructor() {
+		super();
+		this._server = null;
+		this._clients = new Clients();
+	}
+
+	listen(port) {
+		this._server = net.createServer(
+			this._onConnect.bind(this)
+		);
+		this._server.listen(port);
+	}
+	
+	broadcast(message, sender = null) {
+		this._clients.broadcast(message, sender);
+	}
+	
+	findClientById(id) {
+		return this._clients.findClientById(id);
+	}
+
+	_onConnect(socket) {
+		const client = new Client(socket);
+		this._clients.add(client);
+		this.emit("log", client, "client connected");
+
+		socket.on("error", (err) => {
+			this.emit("error", client, err);
+			this._clients.remove(client);
+			client.close();
+		});
+		socket.on("timeout", () => {
+			this.emit("timeout", client);
+			client.close();
+		});
+		socket.on("data", (data) => {
+			this._onData(client, data);
+		});
+		socket.on("close", () => {
+			this.emit("log", client, "client closed");
+			this._clients.remove(client);
+			client.close();
+		});
+		socket.on("end", () => {
+			this._clients.remove(client);
+			client.close();
+		});
+
+		let data = new SocketronData({
+			status: "ok",
+			func: "id",
+			args: client.id
+		});
+		client.writeTextData(data);
+	}
+
+	_onData(client, data) {
+		const payload = client.payload;
+		if (data != null) {
+			payload.data = Buffer.concat([payload.data, data]);
+		}
+		const offset = payload.dataOffset;
+		const remain = payload.data.length - offset;
+
+		switch (payload.state) {
+			case ReadState.Type:
+				if (remain < 1) {
+					return;
+				}
+				break;
+			case ReadState.CommandLength:
+				if (remain < 2) {
+					return;
+				}
+				break;
+			case ReadState.Command:
+				if (remain < payload.dataLength) {
+					return;
+				}
+				break;
+		}
+
+		switch (payload.state) {
+			case ReadState.Type:
+				payload.dataType = payload.data[offset];
+				payload.dataOffset += 1;
+				payload.state = ReadState.CommandLength;
+				break;
+			case ReadState.CommandLength:
+				payload.dataLength = payload.data.readUInt16LE(offset);
+				payload.dataOffset += 2;
+				payload.state = ReadState.Command;
+				break;
+			case ReadState.Command:
+				if (payload.dataType === DataType.Text) {
+					const text = payload.getStringData();
+					this.emit("data", client, JSON.parse(text));
+				}
+				payload.data = payload.data.slice(offset + payload.dataLength);
+				payload.dataOffset = 0;
+				payload.state = ReadState.Type;
+				break;
+		}
+
+		this._onData(client, null);
+	}
+}
+
+module.exports = SocketronServer;

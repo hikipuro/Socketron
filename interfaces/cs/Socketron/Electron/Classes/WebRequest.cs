@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebRequest : NodeModule {
+	public class WebRequest : JSModule {
 		public WebRequest(SocketronClient client) {
 			_client = client;
 		}

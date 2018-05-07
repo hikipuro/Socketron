@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NodeJS : NodeModule {
-		public ConsoleModule console;
-		public ProcessModule process;
+	public class NodeJS : JSModule {
+		public NodeModules.Console console;
+		public NodeModules.Process process;
 
 		public virtual void Init(SocketronClient client) {
-			console = new ConsoleModule(client);
-			process = new ProcessModule(client);
+			console = require<NodeModules.Console>("console");
+			process = require<NodeModules.Process>("process");
 		}
 
-		public T require<T>(string moduleName) where T: NodeModule, new() {
+		public T require<T>(string moduleName) where T: JSModule, new() {
 			if (moduleName == null) {
 				return null;
 			}
@@ -46,7 +45,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"var callback = () => {{",
 						"{0};",
-						"emit('__event',{1},{2},{3});",
+						"this.emit('__event',{1},{2},{3});",
 					"}};",
 					"var id = {4};",
 					"return id;"
@@ -95,7 +94,7 @@ namespace Socketron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1},{2});",
+						"this.emit('__event',{0},{1},{2});",
 					"}};",
 					"return {3};"
 				),
@@ -143,7 +142,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"var callback = () => {{",
 						"{0};",
-						"emit('__event',{1},{2},{3});",
+						"this.emit('__event',{1},{2},{3});",
 					"}};",
 					"var id = {4};",
 					"return id;"

@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class InAppPurchaseModule : NodeModule {
+	public class InAppPurchaseModule : JSModule {
 		public const string Name = "InAppPurchase";
 
 		static ushort _callbackListId = 0;
@@ -78,7 +78,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (products) => {{",
-						"emit('__event',{0},{1},products);",
+						"this.emit('__event',{0},{1},products);",
 					"}};",
 					"electron.inAppPurchase.getProducts({2},callback);"
 				),

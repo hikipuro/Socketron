@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text;
 
 namespace Socketron {
-	public class Packet {
+	public class Payload {
 		public LocalBuffer Data = null;
 		public DataType DataType = DataType.Text;
 		public uint DataLength = 0;
@@ -12,7 +11,7 @@ namespace Socketron {
 		public ReadState State = ReadState.Type;
 		public Encoding Encoding = Encoding.UTF8;
 
-		public Packet() {
+		public Payload() {
 			Data = new LocalBuffer();
 		}
 

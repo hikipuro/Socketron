@@ -12,7 +12,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Debugger : NodeModule {
+	public class Debugger : JSModule {
 		public const string Name = "Debugger";
 
 		static ushort _callbackListId = 0;
@@ -159,7 +159,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err,result) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId,result);",
+						"this.emit('__event',{1},{2},errId,result);",
 					"}};",
 					"{3}.sendCommand({4},{5});"
 				),

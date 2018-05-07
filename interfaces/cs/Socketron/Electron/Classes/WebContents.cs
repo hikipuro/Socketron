@@ -8,7 +8,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContents : NodeModule {
+	public class WebContents : JSModule {
 		/// <summary>
 		/// WebContents instance events.
 		/// </summary>
@@ -705,7 +705,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (zoomFactor) => {{",
-						"emit('__event',{0},{1},{2},zoomFactor);",
+						"this.emit('__event',{0},{1},{2},zoomFactor);",
 					"}};",
 					"return {3};"
 				),
@@ -764,7 +764,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (zoomLevel) => {{",
-						"emit('__event',{0},{1},{2},zoomLevel);",
+						"this.emit('__event',{0},{1},{2},zoomLevel);",
 					"}};",
 					"return {3};"
 				),
@@ -1030,7 +1030,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (image) => {{",
-						"emit('__event',{0},{1},{2},{3});",
+						"this.emit('__event',{0},{1},{2},{3});",
 					"}};",
 					"return {4};"
 				),
@@ -1072,7 +1072,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (image) => {{",
-						"emit('__event',{0},{1},{2},{3});",
+						"this.emit('__event',{0},{1},{2},{3});",
 					"}};",
 					"return {4};"
 				),
@@ -1113,7 +1113,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (hasWorker) => {{",
-						"emit('__event',{0},{1},{2},hasWorker);",
+						"this.emit('__event',{0},{1},{2},hasWorker);",
 					"}};",
 					"return {3};"
 				),
@@ -1153,7 +1153,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (success) => {{",
-						"emit('__event',{0},{1},{2},success);",
+						"this.emit('__event',{0},{1},{2},success);",
 					"}};",
 					"return {3};"
 				),
@@ -1228,7 +1228,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (success) => {{",
-						"emit('__event',{0},{1},{2},success);",
+						"this.emit('__event',{0},{1},{2},success);",
 					"}};",
 					"return {3};"
 				),
@@ -1270,7 +1270,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (error,data) => {{",
-						"emit('__event',{0},{1},{2},{3},{4});",
+						"this.emit('__event',{0},{1},{2},{3},{4});",
 					"}};",
 					"return {5};"
 				),
@@ -1450,7 +1450,7 @@ namespace Socketron.Electron {
 				"{0}.send({1},{2});",
 				Script.GetObject(_id),
 				channel,
-				ConsoleModule.CreateParams(args)
+				CreateParams(args)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1517,7 +1517,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (frameBuffer,dirtyRect) => {{",
-						"emit('__event',{0},{1},{2},{3},dirtyRect);",
+						"this.emit('__event',{0},{1},{2},{3},dirtyRect);",
 					"}};",
 					"return {4};"
 				),
@@ -1555,7 +1555,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (frameBuffer,dirtyRect) => {{",
-						"emit('__event',{0},{1},{2},{3},dirtyRect);",
+						"this.emit('__event',{0},{1},{2},{3},dirtyRect);",
 					"}};",
 					"return {4};"
 				),
@@ -1623,7 +1623,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = (error) => {{",
-						"emit('__event',{0},{1},{2},{3});",
+						"this.emit('__event',{0},{1},{2},{3});",
 					"}};",
 					"return {4};"
 				),

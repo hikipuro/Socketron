@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Menu : NodeModule {
+	public class Menu : JSModule {
 		/// <summary>
 		/// Menu instance events.
 		/// </summary>

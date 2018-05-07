@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Cookies : NodeModule {
+	public class Cookies : JSModule {
 		public const string Name = "Cookies";
 
 		static ushort _callbackListId = 0;
@@ -59,7 +59,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err,cookies) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId,cookies);",
+						"this.emit('__event',{1},{2},errId,cookies);",
 					"}};",
 					"{3}.get({4},callback);"
 				),
@@ -97,7 +97,7 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"var callback = (err) => {{",
 						"var errId = {0};",
-						"emit('__event',{1},{2},errId);",
+						"this.emit('__event',{1},{2},errId);",
 					"}};",
 					"{3}.set({4},callback);"
 				),
@@ -130,7 +130,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1});",
+						"this.emit('__event',{0},{1});",
 					"}};",
 					"{2}.remove({3},{4},callback);"
 				),
@@ -160,7 +160,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
-						"emit('__event',{0},{1});",
+						"this.emit('__event',{0},{1});",
 					"}};",
 					"{2}.flushStore(callback);"
 				),
