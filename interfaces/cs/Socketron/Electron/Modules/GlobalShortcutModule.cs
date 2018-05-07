@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -32,7 +31,6 @@ namespace Socketron.Electron {
 			string eventName = "register";
 			CallbackItem item = null;
 			item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(
@@ -47,7 +45,7 @@ namespace Socketron.Electron {
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			long objectId = _ExecuteBlocking<long>(script);
+			int objectId = _ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(

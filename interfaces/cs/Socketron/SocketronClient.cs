@@ -365,9 +365,9 @@ namespace Socketron {
 				}
 
 				object[] list = args as object[];
-				long instanceId = Convert.ToInt64(list[0]);
+				int instanceId = Convert.ToInt32(list[0]);
 				string eventId = list[1] as string;
-				long callbackId = Convert.ToInt64(list[2]);
+				int callbackId = Convert.ToInt32(list[2]);
 				object[] callbackParams = null;
 
 				const int baseCount = 3;

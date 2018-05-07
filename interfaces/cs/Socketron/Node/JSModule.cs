@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
@@ -56,9 +59,17 @@ namespace Socketron {
 			if (_client == null) {
 				return;
 			}
-			Console.WriteLine("NodeModule.Dispose ###: " + GetType().Name + ", " + _id);
+			Debug.WriteLine("NodeModule.Dispose ###: " + GetType().Name + ", " + _id);
 			_client.RemoveObject(_id);
 			_id = 0;
+		}
+
+		public T ConvertType<T>() where T : JSModule, new() {
+			T converted = new T();
+			converted._client = _client;
+			converted._id = _id;
+			_disposeManually = true;
+			return converted;
 		}
 
 		/// <summary>
@@ -251,7 +262,7 @@ namespace Socketron {
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			long objectId = _ExecuteBlocking<long>(script);
+			int objectId = _ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 			return item;
 		}
@@ -273,12 +284,15 @@ namespace Socketron {
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			long objectId = _ExecuteBlocking<long>(script);
+			int objectId = _ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 			return item;
 		}
 
 		protected void _ExecuteJavaScript(string script) {
+			if (_client.Config.IsDebug) {
+				script = "/* " + _GetDebugInfo() + " */\n" + script;
+			}
 			_client.Main.ExecuteJavaScript(script);
 		}
 
@@ -291,7 +305,30 @@ namespace Socketron {
 		}
 
 		protected T _ExecuteBlocking<T>(string script) {
+			if (_client.Config.IsDebug) {
+				script = "/* " + _GetDebugInfo() + " */\n" + script;
+			}
 			return _client.ExecuteJavaScriptBlocking<T>(script);
+		}
+
+		protected string _GetDebugInfo() {
+			StringBuilder builder = new StringBuilder();
+			StackTrace stackTrace = new StackTrace(true);
+
+			builder.AppendFormat("Client stack: ");
+			for (int i = 2; i < stackTrace.FrameCount && i <= 4; i++) {
+				StackFrame frame = stackTrace.GetFrame(i);
+				MethodBase method = frame.GetMethod();
+				builder.AppendFormat(
+					"\n{0}.{1} ({2}:{3}:{4})",
+					method.ReflectedType.Name,
+					method.Name,
+					frame.GetFileName(),
+					frame.GetFileLineNumber(),
+					frame.GetFileColumnNumber()
+				);
+			}
+			return builder.ToString();
 		}
 
 		protected static ScriptHelper Script = new ScriptHelper();

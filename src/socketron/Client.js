@@ -1,43 +1,84 @@
 const Payload = require("./Payload");
 const SocketronData = require("./SocketronData");
 
+class ClientContext {
+	constructor(client) {
+		this.client = client;
+		this.require = require;
+		this._objects = [];
+		this._freeIndices = [];
+		this._index = 0;
+		this._dataCache = {
+			emit: new SocketronData({
+				status: "ok",
+				func: "event",
+				args: {
+					name: null,
+					args: null
+				}
+			})
+		};
+	}
+	
+	emit(eventName, ...args) {
+		const data = this._dataCache.emit;
+		data.args.name = eventName;
+		data.args.args = args;
+		this.client.writeTextData(data);
+	}
+
+	addObject(obj) {
+		if (obj == null) {
+			return 0;
+		}
+		const index = this._getNextIndex();
+		this._objects[index] = obj;
+		return index;
+	}
+
+	removeObject(index) {
+		if (this._objects[index] == null) {
+			return;
+		}
+		this._objects[index] = undefined;
+		this._freeIndices.push(index);
+	}
+
+	getObject(index) {
+		return this._objects[index];
+	}
+
+	_getNextIndex() {
+		if (this._freeIndices.length <= 0) {
+			return ++this._index;
+		}
+		return this._freeIndices.pop();
+	}
+}
+
 class Client {
 	constructor(socket) {
 		this.socket = socket;
 		this.payload = new Payload();
-		this.context = {
-			require: require,
-			emit: (eventName, ...args) => {
-				this.emit(eventName, args);
-			},
-			addObject: (obj) => {
-				return this.addObjectReference(obj);
-			},
-			removeObject: (index) => {
-				this.removeObjectReference(index);
-			},
-			getObject: (index) => {
-				return this.getObjectReference(index);
-			}
+		this.context = new ClientContext(this);
+		this._dataCache = {
+			callback: new SocketronData({
+				status: "ok",
+				func: "callback"
+			}),
+			error: new SocketronData({
+				status: "error",
+				func: "callback"
+			}),
+			emit: new SocketronData({
+				status: "ok",
+				func: "event",
+				args: {
+					name: null,
+					args: null
+				}
+			})
 		};
-		this._objRefs = [];
-		this._objRefsIndex = 0;
-		this._callbackData = new SocketronData({
-			status: "ok",
-			func: "callback"
-		});
-		this._errorData = new SocketronData({
-			status: "error",
-			func: "callback"
-		});
-		this._emitData = new SocketronData({
-			status: "ok",
-			func: "event",
-			args: {
-				name: null,
-				args: null
-			}
-		});
 	}
 
 	get id() {
@@ -46,8 +87,7 @@ class Client {
 	}
 
 	close() {
-		this._objRefs = [];
-		this._objRefsIndex = 0;
+		this.context = null;
 		this.socket.destroy();
 	}
 
@@ -59,25 +99,8 @@ class Client {
 		this.socket.write(data.toBuffer());
 	}
 	
-	addObjectReference(obj) {
-		if (obj == null) {
-			return 0;
-		}
-		const index = ++this._objRefsIndex;
-		this._objRefs[index] = obj;
-		return index;
-	}
-
-	removeObjectReference(index) {
-		this._objRefs[index] = undefined;
-	}
-
-	getObjectReference(index) {
-		return this._objRefs[index];
-	}
-	
 	emit(eventName, args) {
-		const data = this._emitData;
+		const data = this._dataCache.emit;
 		data.args.name = eventName;
 		data.args.args = args;
 		this.writeTextData(data);
@@ -87,17 +110,17 @@ class Client {
 		if (data.sequenceId == null) {
 			return;
 		}
-		const callbackData = this._callbackData;
-		callbackData.sequenceId = data.sequenceId;
-		callbackData.args = args;
-		this.writeTextData(callbackData);
+		const data2 = this._dataCache.callback;
+		data2.sequenceId = data.sequenceId;
+		data2.args = args;
+		this.writeTextData(data2);
 	}
 	
 	sendError(data, args) {
-		const callbackData = this._errorData;
-		callbackData.sequenceId = data.sequenceId;
-		callbackData.args = args;
-		this.writeTextData(callbackData);
+		const data2 = this._dataCache.error;
+		data2.sequenceId = data.sequenceId;
+		data2.args = args;
+		this.writeTextData(data2);
 	}
 }
 

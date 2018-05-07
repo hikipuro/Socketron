@@ -43,7 +43,7 @@ class CommandProcessorNode extends EventEmitter {
 			client.sendCallback(data, result);
 		} catch (e) {
 			console.error(e);
-			client.sendError(data, e.stack);
+			client.sendError(data, data.args + "\r\n" + e.stack);
 		}
 		this._client = null;
 		this._data = null;

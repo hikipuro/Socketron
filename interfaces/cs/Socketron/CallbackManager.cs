@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace Socketron {
-	using KeyType = System.Int64;
+	using KeyType = System.Int32;
 
 	public class CallbackItem {
 		public Callback Callback;
@@ -85,13 +85,13 @@ namespace Socketron {
 	}
 
 	public class CallbackManager {
-		protected Dictionary<long, InstanceCallbacks> _classes;
+		protected Dictionary<KeyType, InstanceCallbacks> _classes;
 
 		public CallbackManager() {
-			_classes = new Dictionary<long, InstanceCallbacks>();
+			_classes = new Dictionary<KeyType, InstanceCallbacks>();
 		}
 
-		public CallbackItem Add(long instanceId, string eventName, Callback callback) {
+		public CallbackItem Add(KeyType instanceId, string eventName, Callback callback) {
 			if (!_classes.ContainsKey(instanceId)) {
 				_classes.Add(instanceId, new InstanceCallbacks());
 			}
@@ -101,7 +101,7 @@ namespace Socketron {
 			return _classes[instanceId][eventName].Add(callback);
 		}
 
-		public bool RemoveItem(long instanceId, string eventName, KeyType id) {
+		public bool RemoveItem(KeyType instanceId, string eventName, KeyType id) {
 			if (!_IsValidKey(instanceId, eventName)) {
 				return false;
 			}
@@ -117,7 +117,7 @@ namespace Socketron {
 		}
 		//*/
 
-		public void RemoveInstanceEvents(long instanceId) {
+		public void RemoveInstanceEvents(KeyType instanceId) {
 			if (!_classes.ContainsKey(instanceId)) {
 				return;
 			}
@@ -125,7 +125,7 @@ namespace Socketron {
 			_classes.Remove(instanceId);
 		}
 
-		public void RemoveEvents(long instanceId, string eventName) {
+		public void RemoveEvents(KeyType instanceId, string eventName) {
 			if (!_IsValidKey(instanceId, eventName)) {
 				return;
 			}
@@ -142,7 +142,7 @@ namespace Socketron {
 		}
 		//*/
 
-		public CallbackItem GetItem(long instanceId, string eventName, KeyType id) {
+		public CallbackItem GetItem(KeyType instanceId, string eventName, KeyType id) {
 			if (!_IsValidKey(instanceId, eventName)) {
 				return null;
 			}
@@ -152,7 +152,7 @@ namespace Socketron {
 			return _classes[instanceId][eventName][id];
 		}
 
-		public CallbackItem GetItem(long instanceId, string eventName, Callback callback) {
+		public CallbackItem GetItem(KeyType instanceId, string eventName, Callback callback) {
 			if (!_IsValidKey(instanceId, eventName)) {
 				return null;
 			}
@@ -186,7 +186,7 @@ namespace Socketron {
 		}
 		//*/
 
-		protected bool _IsValidKey(long instanceId, string eventName) {
+		protected bool _IsValidKey(KeyType instanceId, string eventName) {
 			if (!_classes.ContainsKey(instanceId)) {
 				return false;
 			}

@@ -57,7 +57,7 @@ namespace Socketron {
 
 			public void log(params object[] args) {
 				if (LocalEcho) {
-					System.Console.WriteLine(JSON.Stringify(args));
+					System.Diagnostics.Debug.WriteLine(JSON.Stringify(args));
 				}
 				string script = ScriptBuilder.Build(
 					"{0}.log({1});",
@@ -69,7 +69,7 @@ namespace Socketron {
 
 			public void table(params object[] args) {
 				if (LocalEcho) {
-					System.Console.WriteLine(JSON.Stringify(args));
+					System.Diagnostics.Debug.WriteLine(JSON.Stringify(args));
 				}
 				string script = ScriptBuilder.Build(
 					"{0}.table({1});",

@@ -16,7 +16,7 @@ namespace SocketronTest {
 			});
 			_client.On("debug", (args) => {
 #if DEBUG
-				Console.WriteLine(args[0]);
+				Debug.WriteLine(args[0]);
 #endif
 				Log?.Invoke(args[0] as string);
 			});
@@ -55,6 +55,19 @@ namespace SocketronTest {
 			electron.globalShortcut.register(Accelerator.CmdOrCtrl + "+A", () => {
 				Console.WriteLine("Ctrl + A pressed");
 			});
+
+			var b11 = Socketron.Buffer.alloc(1);
+			var b2 = Socketron.Buffer.alloc(1);
+			var b3 = Socketron.Buffer.alloc(1);
+			var b4 = Socketron.Buffer.alloc(1);
+			b2.Dispose();
+			var b5 = Socketron.Buffer.alloc(1);
+			var b6 = Socketron.Buffer.alloc(1);
+			b3.Dispose();
+			b11.Dispose();
+			var b7 = Socketron.Buffer.alloc(1);
+			var b8 = Socketron.Buffer.alloc(1);
+			var b9 = Socketron.Buffer.alloc(1);
 			return;
 			/*
 			var os = require<NodeModules.OS>("os");

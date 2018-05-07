@@ -1531,7 +1531,7 @@ namespace Socketron.Electron {
 				Script.AddObject("image"),
 				Script.AddObject("callback")
 			);
-			long objectId = _ExecuteBlocking<long>(script);
+			int objectId = _ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
@@ -1576,7 +1576,7 @@ namespace Socketron.Electron {
 				Script.AddObject("image"),
 				Script.AddObject("callback")
 			);
-			long objectId = _ExecuteBlocking<long>(script);
+			int objectId = _ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
