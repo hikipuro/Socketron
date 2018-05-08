@@ -52,10 +52,11 @@ namespace SocketronTest {
 			console.ApplyMethod("log", "test", 123, true, null);
 
 			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
-			electron.globalShortcut.register(Accelerator.CmdOrCtrl + "+A", () => {
-				Console.WriteLine("Ctrl + A pressed");
-			});
+			//electron.globalShortcut.register(Accelerator.CmdOrCtrl + "+A", () => {
+			//	Console.WriteLine("Ctrl + A pressed");
+			//});
 
+			/*
 			var b11 = Socketron.Buffer.alloc(1);
 			var b2 = Socketron.Buffer.alloc(1);
 			var b3 = Socketron.Buffer.alloc(1);
@@ -69,6 +70,8 @@ namespace SocketronTest {
 			var b8 = Socketron.Buffer.alloc(1);
 			var b9 = Socketron.Buffer.alloc(1);
 			return;
+			//*/
+
 			/*
 			var os = require<NodeModules.OS>("os");
 			Console.WriteLine(os.cpus().Stringify());
@@ -220,15 +223,23 @@ namespace SocketronTest {
 			
 			window.loadURL("file:///src/html/index.html");
 
-			Callback callback1 = (args) => {
-				Console.WriteLine("ready-to-show: {0}", args);
+			JSCallback callback1 = (args) => {
+				Console.WriteLine("ready-to-show:");
 				window.show();
+
+				/*
+				window.webContents.printToPDF(new WebContents.PrintToPDFOptions(), (er, buf) => {
+					console.log("printToPDF", er, buf.length);
+					var buf2 = LocalBuffer.From(buf);
+					buf2.Save("image3.pdf");
+				});
+				//*/
 
 				setTimeout(() => {
 					Console.WriteLine("setTimeout");
 					window.capturePage(new Rectangle(100, 80), (image3) => {
 						var buf = image3.toPNG();
-						var buf2 = LocalBuffer.FromRemote(buf);
+						var buf2 = LocalBuffer.From(buf);
 						buf2.Save("image3.png");
 					});
 				}, 500);
@@ -246,7 +257,7 @@ namespace SocketronTest {
 			//*/
 
 			window.on("close", (args) => {
-				Console.WriteLine("close: {0}", args);
+				Console.WriteLine("close:");
 			});
 			window.webContents.on("did-navigate", (args) => {
 				object[] list = args as object[];
@@ -449,7 +460,7 @@ namespace SocketronTest {
 			console.log(buf1.toString());
 			//console.log(Socketron.Buffer.isBuffer(buf1), Socketron.Buffer.concat(buf1, buf2), buffer, Socketron.Buffer.byteLength("abcdあ"));
 
-			var buf3 = LocalBuffer.FromRemote(buf1);
+			var buf3 = LocalBuffer.From(buf1);
 			Console.WriteLine(buf3.Stringify());
 			return buffer;
 		}

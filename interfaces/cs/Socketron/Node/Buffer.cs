@@ -2,6 +2,14 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
+	/// <summary>
+	/// Buffer object of the Node API.
+	/// <para>
+	/// Buffer instances will be created in the remote memory.
+	/// LocalBuffer.From() static method can be used
+	/// when you should copy a Buffer object to the local memory.
+	/// </para>
+	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Buffer : JSModule, IDisposable {
 		public class Encodings {
@@ -120,7 +128,7 @@ namespace Socketron {
 		public static long byteLength(string value, string encoding = "utf8") {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"return Buffer.byteLength({0});"
+					"return Buffer.byteLength({0},{1});"
 				),
 				value.Escape(),
 				encoding
@@ -191,6 +199,20 @@ namespace Socketron {
 					"return {1};"
 				),
 				Script.GetObject(buffer._id),
+				Script.AddObject("buf")
+			);
+			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			return new Buffer(client, result);
+		}
+
+		public static Buffer from(LocalBuffer buffer) {
+			SocketronClient client = SocketronClient.GetCurrent();
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var buf = Buffer.from({0});",
+					"return {1};"
+				),
+				buffer.Stringify(),
 				Script.AddObject("buf")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);

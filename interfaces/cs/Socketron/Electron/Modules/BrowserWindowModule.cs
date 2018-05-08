@@ -27,17 +27,17 @@ namespace Socketron.Electron {
 			if (options == null) {
 				options = new BrowserWindow.Options();
 			}
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var window = new {0}({1});",
+					"var BrowserWindow = {0};",
+					"var window = new BrowserWindow({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),
 				options.Stringify(),
 				Script.AddObject("window")
 			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
+			int result = _ExecuteBlocking<int>(script);
 			return new BrowserWindow(_client, result);
 		}
 
@@ -148,7 +148,6 @@ namespace Socketron.Electron {
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public BrowserWindow fromId(int id) {
-			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var window = {0}.fromId({1});",

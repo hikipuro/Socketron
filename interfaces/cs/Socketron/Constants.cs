@@ -1,6 +1,7 @@
 ﻿namespace Socketron {
 	public enum DataType {
-		Text = 0,
+		Text16 = 0,
+		Text32 = 1,
 	}
 
 	public enum ReadState {

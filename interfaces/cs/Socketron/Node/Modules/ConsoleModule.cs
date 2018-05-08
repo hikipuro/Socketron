@@ -2,8 +2,14 @@
 
 namespace Socketron {
 	public partial class NodeModules {
+		/// <summary>
+		/// Console module of the Node API.
+		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Console : JSModule {
+			/// <summary>
+			/// Whether the console messages write to the local console too.
+			/// </summary>
 			public bool LocalEcho = true;
 
 			/// <summary>

@@ -2,8 +2,12 @@
 
 namespace Socketron {
 	public partial class NodeModules {
+		/// <summary>
+		/// File system module of the Node API.
+		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class FS : JSModule {
+			// TODO: implement all methods
 			public FS() {
 				_client = SocketronClient.GetCurrent();
 			}

@@ -4,7 +4,7 @@ const { DataType, ReadState } = require("./Common");
 class Payload {
 	constructor() {
 		this.data = Buffer.alloc(0);
-		this.dataType = DataType.Text;
+		this.dataType = DataType.Text16;
 		this.dataLength = 0;
 		this.dataOffset = 0;
 		this.state = ReadState.Type;

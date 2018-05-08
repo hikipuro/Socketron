@@ -28,7 +28,8 @@ namespace Socketron.Electron {
 			}
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var item = new {0}({1});",
+					"var MenuItem = {0};",
+					"var item = new MenuItem({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),

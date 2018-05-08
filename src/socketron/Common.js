@@ -1,5 +1,6 @@
 const DataType = {
-	Text: 0
+	Text16: 0,
+	Text32: 1
 }
 
 const ReadState = {

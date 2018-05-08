@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -98,6 +99,12 @@ namespace Socketron {
 				//_stream.Write(bytes, 0, bytes.Length);
 			} catch (IOException) {
 				_DebugLog("Write IOException");
+				Close();
+			} catch (InvalidOperationException) {
+				_DebugLog("Write InvalidOperationException");
+				Close();
+			} catch (SocketException) {
+				_DebugLog("Write SocketException");
 				Close();
 			} catch (NullReferenceException) {
 				_DebugLog("Write NullReferenceException");
@@ -201,8 +208,17 @@ namespace Socketron {
 					}
 					break;
 				case ReadState.CommandLength:
-					if (remain < 2) {
-						return;
+					switch (_payload.DataType) {
+						case DataType.Text16:
+							if (remain < 2) {
+								return;
+							}
+							break;
+						case DataType.Text32:
+							if (remain < 4) {
+								return;
+							}
+							break;
 					}
 					break;
 				case ReadState.Command:
@@ -217,17 +233,32 @@ namespace Socketron {
 					_payload.DataType = (DataType)_payload.Data[offset];
 					_payload.DataOffset += 1;
 					_payload.State = ReadState.CommandLength;
+					//Debug.WriteLine("_payload.DataType: " + _payload.DataType);
 					break;
 				case ReadState.CommandLength:
-					_payload.DataLength = _payload.Data.ReadUInt16LE(offset);
-					_payload.DataOffset += 2;
+					switch (_payload.DataType) {
+						case DataType.Text16:
+							_payload.DataLength = _payload.Data.ReadUInt16LE(offset);
+							_payload.DataOffset += 2;
+							break;
+						case DataType.Text32:
+							_payload.DataLength = _payload.Data.ReadUInt32LE(offset);
+							_payload.DataOffset += 4;
+							break;
+					}
+					//Debug.WriteLine("_payload.DataLength: " + _payload.DataLength);
 					_payload.State = ReadState.Command;
 					break;
 				case ReadState.Command:
-					if (_payload.DataType == DataType.Text) {
-						string text = _payload.GetStringData();
-						_DebugLog("receive: {0}", text);
-						EmitNewThread("data", SocketronData.Parse(text));
+					switch (_payload.DataType) {
+						case DataType.Text16:
+						case DataType.Text32:
+							string text = _payload.GetStringData();
+							if (Config.IsDebug && Config.EnableDebugPayloads) {
+								_DebugLog("receive: {0}", text);
+							}
+							EmitNewThread("data", SocketronData.Parse(text));
+							break;
 					}
 					_payload.Data = _payload.Data.Slice(offset + _payload.DataLength);
 					_payload.DataOffset = 0;
@@ -239,10 +270,6 @@ namespace Socketron {
 		}
 
 		protected void _DebugLog(string format, params object[] args) {
-			if (!Config.IsDebug) {
-				return;
-			}
-			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
 			Emit("debug", string.Format(format, args));
 		}
 	}

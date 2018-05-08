@@ -30,7 +30,7 @@ namespace Socketron.Electron {
 			}
 			string eventName = "register";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(

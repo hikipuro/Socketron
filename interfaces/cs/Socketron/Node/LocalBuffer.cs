@@ -4,18 +4,33 @@ using System.IO;
 using System.Text;
 
 namespace Socketron {
+	/// <summary>
+	/// Local buffer object.
+	/// <para>
+	/// This object can be used in two ways:
+	/// 1. Create a binary object in the local memory.
+	/// 2. Exchange a Buffer object of the Node API between local and remote.
+	/// </para>
+	/// </summary>
 	public class LocalBuffer {
+		// TODO: implement Buffer methods
 		protected MemoryStream _data;
 
 		public LocalBuffer() {
 			_data = new MemoryStream();
 		}
 
-		public static LocalBuffer FromObject(object obj) {
-			return FromJson(new JsonObject(obj));
+		public static LocalBuffer Alloc(long size) {
+			LocalBuffer buffer = new LocalBuffer();
+			buffer._data.SetLength(size);
+			return buffer;
 		}
 
-		public static LocalBuffer FromJson(JsonObject json) {
+		public static LocalBuffer From(object obj) {
+			return From(new JsonObject(obj));
+		}
+
+		public static LocalBuffer From(JsonObject json) {
 			if (json == null) {
 				return null;
 			}
@@ -30,11 +45,17 @@ namespace Socketron {
 			return buffer;
 		}
 
-		public static LocalBuffer FromRemote(Buffer buffer) {
+		public static LocalBuffer From(Buffer buffer) {
 			if (buffer == null) {
 				return null;
 			}
-			return FromJson(buffer.toJSON());
+			return From(buffer.toJSON());
+		}
+
+		public static LocalBuffer From(string str, Encoding encoding = null) {
+			LocalBuffer buffer = new LocalBuffer();
+			buffer.Write(str, encoding);
+			return buffer;
 		}
 
 		public byte this[uint i] {
@@ -118,6 +139,10 @@ namespace Socketron {
 			LocalBuffer buffer = new LocalBuffer();
 			buffer.Write(data);
 			return buffer;
+		}
+
+		public Buffer ToBuffer() {
+			return Buffer.from(this);
 		}
 
 		public byte[] ToByteArray() {

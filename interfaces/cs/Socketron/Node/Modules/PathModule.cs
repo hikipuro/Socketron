@@ -2,6 +2,9 @@
 
 namespace Socketron {
 	public partial class NodeModules {
+		/// <summary>
+		/// Path module of the Node API.
+		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Path : JSModule {
 			public Path() {

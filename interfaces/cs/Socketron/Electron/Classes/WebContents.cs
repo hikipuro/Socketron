@@ -190,6 +190,43 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
+		/// savePage() save types.
+		/// </summary>
+		public class SaveTypes {
+			public const string HTMLOnly = "HTMLOnly";
+			public const string HTMLComplete = "HTMLComplete";
+			public const string MHTML = "MHTML";
+		}
+
+		/// <summary>
+		/// printToPDF() options.
+		/// </summary>
+		public class PrintToPDFOptions {
+			public int? marginsType;
+			public string pageSize;
+			public bool? printBackground;
+			public bool? printSelectionOnly;
+			public bool? landscape;
+
+			/// <summary>
+			/// Parse JSON text.
+			/// </summary>
+			/// <param name="text"></param>
+			/// <returns></returns>
+			public static PrintToPDFOptions Parse(string text) {
+				return JSON.Parse<PrintToPDFOptions>(text);
+			}
+
+			/// <summary>
+			/// Create JSON text.
+			/// </summary>
+			/// <returns></returns>
+			public string Stringify() {
+				return JSON.Stringify(this);
+			}
+		}
+
+		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
@@ -694,12 +731,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "getZoomFactor";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				double zoomFactor = (double)argsList[0];
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				double zoomFactor = (double)args[0];
 				callback?.Invoke(zoomFactor);
 			});
 			string script = ScriptBuilder.Build(
@@ -753,12 +786,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "getZoomLevel";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				double zoomLevel = (double)argsList[0];
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				double zoomLevel = (double)args[0];
 				callback?.Invoke(zoomLevel);
 			});
 			string script = ScriptBuilder.Build(
@@ -1019,12 +1048,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "capturePage";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				NativeImage image = new NativeImage(_client, (int)args[0]);
 				callback?.Invoke(image);
 			});
 			string script = ScriptBuilder.Build(
@@ -1061,12 +1086,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "capturePage";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				NativeImage image = new NativeImage(_client, (int)args[0]);
 				callback?.Invoke(image);
 			});
 			string script = ScriptBuilder.Build(
@@ -1103,12 +1124,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "hasServiceWorker";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				callback?.Invoke((bool)argsList[0]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				callback?.Invoke((bool)args[0]);
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -1143,12 +1160,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "unregisterServiceWorker";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				callback?.Invoke((bool)argsList[0]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				callback?.Invoke((bool)args[0]);
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -1218,12 +1231,8 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "print";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				callback?.Invoke((bool)argsList[0]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				callback?.Invoke((bool)args[0]);
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -1253,38 +1262,21 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void printToPDF(JsonObject options, Action<Error, Buffer> callback) {
+		public void printToPDF(PrintToPDFOptions options, Action<Error, Buffer> callback) {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "printToPDF";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
+			string eventName = "_printToPDF";
+			CallbackItem item = null;
+			item = _CreateCallbackItem(eventName, (object[] args) => {
+				Error error = null;
+				if (args[0] != null) {
+					error = new Error(_client, (int)args[0]);
 				}
-				Error error = new Error(_client, (int)argsList[0]);
-				Buffer data = new Buffer(_client, (int)argsList[1]);
+				Buffer data = new Buffer(_client, (int)args[1]);
 				callback?.Invoke(error, data);
 			});
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (error,data) => {{",
-						"this.emit('__event',{0},{1},{2},{3},{4});",
-					"}};",
-					"return {5};"
-				),
-				_id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("error"),
-				Script.AddObject("data"),
-				Script.AddObject("callback")
-			);
-			int objectId = _ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
 				"{0}.printToPDF({1},{2});",
 				Script.GetObject(_id),
 				options.Stringify(),
@@ -1505,13 +1497,9 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "beginFrameSubscription";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Buffer frameBuffer = new Buffer(_client, (int)argsList[0]);
-				Rectangle dirtyRect = Rectangle.FromObject(argsList[1]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				Buffer frameBuffer = new Buffer(_client, (int)args[0]);
+				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
 			string script = ScriptBuilder.Build(
@@ -1543,13 +1531,9 @@ namespace Socketron.Electron {
 				return;
 			}
 			string eventName = "beginFrameSubscription";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Buffer frameBuffer = new Buffer(_client, (int)argsList[0]);
-				Rectangle dirtyRect = Rectangle.FromObject(argsList[1]);
+			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+				Buffer frameBuffer = new Buffer(_client, (int)args[0]);
+				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
 			string script = ScriptBuilder.Build(
@@ -1611,32 +1595,21 @@ namespace Socketron.Electron {
 		/// <param name="callback"></param>
 		/// <returns></returns>
 		public bool savePage(string fullPath, string saveType, Action<Error> callback) {
-			string eventName = "savePage";
-			CallbackItem item = _client.Callbacks.Add(_id, eventName, (object args) => {
-				object[] argsList = args as object[];
-				if (argsList == null) {
+			if (callback == null) {
+				return false;
+			}
+			string eventName = "_savePage";
+			CallbackItem item = null;
+			item = _CreateCallbackItem(eventName, (object[] args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+				if (args[0] == null) {
+					callback?.Invoke(null);
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
+				Error error = new Error(_client, (int)args[0]);
 				callback?.Invoke(error);
 			});
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (error) => {{",
-						"this.emit('__event',{0},{1},{2},{3});",
-					"}};",
-					"return {4};"
-				),
-				_id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("error"),
-				Script.AddObject("callback")
-			);
-			int objectId = _ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
 				"{0}.savePage({1},{2},{3});",
 				Script.GetObject(_id),
 				fullPath.Escape(),

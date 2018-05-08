@@ -5,7 +5,7 @@ using System.Text;
 namespace Socketron {
 	public class Payload {
 		public LocalBuffer Data = null;
-		public DataType DataType = DataType.Text;
+		public DataType DataType = DataType.Text16;
 		public uint DataLength = 0;
 		public uint DataOffset = 0;
 		public ReadState State = ReadState.Type;

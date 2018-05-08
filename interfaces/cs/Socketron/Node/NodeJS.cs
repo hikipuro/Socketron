@@ -2,6 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
+	/// <summary>
+	/// Node.js object.
+	/// This object provides the Node APIs at global scope.
+	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class NodeJS : JSModule {
 		public NodeModules.Console console;
@@ -37,7 +41,7 @@ namespace Socketron {
 			}
 			string eventName = "setTimeout";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
 				callback?.Invoke();
 			});
@@ -84,7 +88,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public int setInterval(Callback callback, int delay) {
+		public int setInterval(JSCallback callback, int delay) {
 			if (callback == null) {
 				return -1;
 			}
@@ -131,7 +135,7 @@ namespace Socketron {
 			_ExecuteJavaScript(script);
 		}
 
-		public int setImmediate(Callback callback) {
+		public int setImmediate(JSCallback callback) {
 			if (callback == null) {
 				return -1;
 			}

@@ -28,7 +28,8 @@ namespace Socketron.Electron {
 			SocketronClient client = SocketronClient.GetCurrent();
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var view = new {0}({1});",
+					"var BrowserView = {0};",
+					"var view = new BrowserView({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),

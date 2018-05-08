@@ -77,6 +77,7 @@
     <Compile Include="Electron\Classes\Dialog.cs" />
     <Compile Include="Electron\Classes\InAppPurchase.cs" />
     <Compile Include="Electron\Classes\Tray.cs" />
+    <Compile Include="Electron\Classes\Win32.cs" />
     <Compile Include="Electron\Modules\AutoUpdaterModule.cs" />
     <Compile Include="Electron\Modules\BrowserViewModule.cs" />
     <Compile Include="Electron\Modules\BrowserWindowModule.cs" />

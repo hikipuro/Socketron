@@ -19,12 +19,19 @@ class SocketronData {
 		return Object.assign(new SocketronData(), data);
 	}
 	
-	toBuffer(type = DataType.Text) {
+	toBuffer() {
 		const buffer = Buffer.from(this.toJson(), Config.Encoding);
-		let header = new Buffer(3);
-		header.writeUInt8(type, 0);
-		header.writeUInt16LE(buffer.length, 1);
-		return Buffer.concat([header, buffer]);
+		if (buffer.length <= 0xFFFF) {
+			let header = new Buffer(3);
+			header.writeUInt8(DataType.Text16, 0);
+			header.writeUInt16LE(buffer.length, 1);
+			return Buffer.concat([header, buffer]);
+		} else {
+			let header = new Buffer(5);
+			header.writeUInt8(DataType.Text32, 0);
+			header.writeUInt32LE(buffer.length, 1);
+			return Buffer.concat([header, buffer]);
+		}
 	}
 
 	toJson() {

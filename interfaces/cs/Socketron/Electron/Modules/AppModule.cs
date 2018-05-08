@@ -429,14 +429,10 @@ namespace Socketron.Electron {
 			}
 			string eventName = "getFileIcon";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(_client, (int)argsList[0]);
-				NativeImage image = new NativeImage(_client, (int)argsList[1]);
+				Error error = new Error(_client, (int)args[0]);
+				NativeImage image = new NativeImage(_client, (int)args[1]);
 				callback?.Invoke(error, image);
 			});
 			string script = ScriptBuilder.Build(
@@ -477,14 +473,10 @@ namespace Socketron.Electron {
 			}
 			string eventName = "getFileIcon";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(_client, (int)argsList[0]);
-				NativeImage image = new NativeImage(_client, (int)argsList[1]);
+				Error error = new Error(_client, (int)args[0]);
+				NativeImage image = new NativeImage(_client, (int)args[1]);
 				callback?.Invoke(error, image);
 			});
 			string script = ScriptBuilder.Build(
@@ -832,16 +824,12 @@ namespace Socketron.Electron {
 			}
 			string eventName = "makeSingleInstance";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
 				string[] commandLine = null;
-				string workingDirectory = argsList[1] as string;
-				if (argsList[0] != null) {
-					commandLine = (argsList[0] as object[]).Cast<string>().ToArray();
+				string workingDirectory = args[1] as string;
+				if (args[0] != null) {
+					commandLine = (args[0] as object[]).Cast<string>().ToArray();
 				}
 				callback?.Invoke(commandLine, workingDirectory);
 			});
@@ -986,13 +974,9 @@ namespace Socketron.Electron {
 			}
 			string eventName = "importCertificate";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				callback?.Invoke((int)argsList[0]);
+				callback?.Invoke((int)args[0]);
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(

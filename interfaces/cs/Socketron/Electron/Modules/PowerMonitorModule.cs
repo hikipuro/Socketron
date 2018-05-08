@@ -46,13 +46,9 @@ namespace Socketron.Electron {
 			}
 			string eventName = "querySystemIdleState";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				string idleState = argsList[0] as string;
+				string idleState = args[0] as string;
 				callback?.Invoke(idleState);
 			});
 			string script = ScriptBuilder.Build(
@@ -89,13 +85,9 @@ namespace Socketron.Electron {
 			}
 			string eventName = "querySystemIdleTime";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				int idleTime = (int)argsList[0];
+				int idleTime = (int)args[0];
 				callback?.Invoke(idleTime);
 			});
 			string script = ScriptBuilder.Build(

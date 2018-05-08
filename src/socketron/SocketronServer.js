@@ -78,8 +78,17 @@ class SocketronServer extends EventEmitter {
 				}
 				break;
 			case ReadState.CommandLength:
-				if (remain < 2) {
-					return;
+				switch (payload.dataType) {
+					case DataType.Text16:
+						if (remain < 2) {
+							return;
+						}
+						break;
+					case DataType.Text32:
+						if (remain < 4) {
+							return;
+						}
+						break;
 				}
 				break;
 			case ReadState.Command:
@@ -96,12 +105,24 @@ class SocketronServer extends EventEmitter {
 				payload.state = ReadState.CommandLength;
 				break;
 			case ReadState.CommandLength:
-				payload.dataLength = payload.data.readUInt16LE(offset);
-				payload.dataOffset += 2;
+				switch (payload.dataType) {
+					case DataType.Text16:
+						payload.dataLength = payload.data.readUInt16LE(offset);
+						payload.dataOffset += 2;
+						break;
+					case DataType.Text32:
+						payload.dataLength = payload.data.readUInt32LE(offset);
+						payload.dataOffset += 4;
+						break;
+				}
 				payload.state = ReadState.Command;
 				break;
 			case ReadState.Command:
-				if (payload.dataType === DataType.Text) {
+				if (payload.dataType === DataType.Text16) {
+					const text = payload.getStringData();
+					this.emit("data", client, JSON.parse(text));
+				}
+				if (payload.dataType === DataType.Text32) {
 					const text = payload.getStringData();
 					this.emit("data", client, JSON.parse(text));
 				}

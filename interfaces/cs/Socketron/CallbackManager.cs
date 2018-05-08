@@ -2,13 +2,16 @@
 
 namespace Socketron {
 	using KeyType = System.Int32;
+	using CallbackType = JSCallback;
+
+	public delegate void JSCallback(object[] result);
 
 	public class CallbackItem {
-		public Callback Callback;
+		public CallbackType Callback;
 		public KeyType CallbackId;
 		public KeyType ObjectId;
 
-		public CallbackItem(Callback callback, KeyType callbackId) {
+		public CallbackItem(CallbackType callback, KeyType callbackId) {
 			Callback = callback;
 			CallbackId = callbackId;
 		}
@@ -17,19 +20,19 @@ namespace Socketron {
 	public class CallbackList {
 		protected KeyType _nextId;
 		protected Dictionary<KeyType, CallbackItem> _items;
-		protected Dictionary<Callback, KeyType> _index;
+		protected Dictionary<CallbackType, KeyType> _index;
 
 		public CallbackList() {
 			_nextId = 1;
 			_items = new Dictionary<KeyType, CallbackItem>();
-			_index = new Dictionary<Callback, KeyType>();
+			_index = new Dictionary<CallbackType, KeyType>();
 		}
 
 		public CallbackItem this[KeyType key] {
 			get { return _items[key]; }
 		}
 
-		public CallbackItem Add(Callback callback) {
+		public CallbackItem Add(CallbackType callback) {
 			KeyType currentId = _nextId++;
 			CallbackItem item = new CallbackItem(callback, currentId);
 			_items.Add(currentId, item);
@@ -46,7 +49,7 @@ namespace Socketron {
 			return _items.Remove(id);
 		}
 
-		public bool Remove(Callback callback) {
+		public bool Remove(CallbackType callback) {
 			if (!_index.ContainsKey(callback)) {
 				return false;
 			}
@@ -58,14 +61,14 @@ namespace Socketron {
 			_index.Clear();
 		}
 
-		public KeyType GetKey(Callback callback) {
+		public KeyType GetKey(CallbackType callback) {
 			if (!_index.ContainsKey(callback)) {
 				return -1;
 			}
 			return _index[callback];
 		}
 
-		public CallbackItem GetItem(Callback callback) {
+		public CallbackItem GetItem(CallbackType callback) {
 			if (!_index.ContainsKey(callback)) {
 				return null;
 			}
@@ -76,7 +79,7 @@ namespace Socketron {
 			return _items.ContainsKey(id);
 		}
 
-		public bool ContainsValue(Callback callback) {
+		public bool ContainsValue(CallbackType callback) {
 			return _index.ContainsKey(callback);
 		}
 	}
@@ -91,7 +94,7 @@ namespace Socketron {
 			_classes = new Dictionary<KeyType, InstanceCallbacks>();
 		}
 
-		public CallbackItem Add(KeyType instanceId, string eventName, Callback callback) {
+		public CallbackItem Add(KeyType instanceId, string eventName, CallbackType callback) {
 			if (!_classes.ContainsKey(instanceId)) {
 				_classes.Add(instanceId, new InstanceCallbacks());
 			}
@@ -152,7 +155,7 @@ namespace Socketron {
 			return _classes[instanceId][eventName][id];
 		}
 
-		public CallbackItem GetItem(KeyType instanceId, string eventName, Callback callback) {
+		public CallbackItem GetItem(KeyType instanceId, string eventName, CallbackType callback) {
 			if (!_IsValidKey(instanceId, eventName)) {
 				return null;
 			}

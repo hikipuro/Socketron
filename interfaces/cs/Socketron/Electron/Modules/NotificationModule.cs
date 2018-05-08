@@ -29,7 +29,8 @@ namespace Socketron.Electron {
 		public Notification Create(Notification.Options options) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var notification = new {0}({1});",
+					"var Notification = {0};",
+					"var notification = new Notification({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),

@@ -168,10 +168,7 @@ namespace Socketron {
 		public SocketronClient() {
 			_socketClient = new SocketClient(Config);
 			_socketClient.On("debug", (args) => {
-				if (!Config.IsDebug) {
-					return;
-				}
-				Emit("debug", args[0]);
+				_DebugLog(args[0] as string, null);
 			});
 			_socketClient.On("connect", _OnConnect);
 			_socketClient.On("data", _OnData);
@@ -197,7 +194,7 @@ namespace Socketron {
 
 		public void Close() {
 			ID = string.Empty;
-			JSModule.DisposeAll();
+			//JSModule.DisposeAll();
 			_socketClient.Close();
 		}
 
@@ -224,7 +221,7 @@ namespace Socketron {
 				_successList[_sequenceId++] = callback;
 			}
 			//Console.WriteLine("data: " + data.Stringify());
-			Write(data.ToBuffer(DataType.Text, Config.Encoding));
+			Write(data.ToBuffer(DataType.Text16, Config.Encoding));
 		}
 
 		public void RemoveObject(int id) {
@@ -291,10 +288,10 @@ namespace Socketron {
 				}
 				_sequenceId++;
 			}
-			if (Config.IsDebug) {
+			if (Config.IsDebug && Config.EnableDebugPayloads) {
 				_DebugLog("send: {0}", data.Stringify());
 			}
-			Write(data.ToBuffer(DataType.Text, Config.Encoding));
+			Write(data.ToBuffer(DataType.Text16, Config.Encoding));
 		}
 
 		protected void _OnData(object[] args) {
@@ -432,7 +429,15 @@ namespace Socketron {
 			if (!Config.IsDebug) {
 				return;
 			}
+			int MaxLetters = 1000;
 			format = string.Format("[{0}] {1}", typeof(SocketronClient).Name, format);
+			if (format.Length > MaxLetters) {
+				format = format.Substring(0, MaxLetters) + " ...";
+			}
+			if (args == null) {
+				Emit("debug", format);
+				return;
+			}
 			Emit("debug", string.Format(format, args));
 		}
 	}

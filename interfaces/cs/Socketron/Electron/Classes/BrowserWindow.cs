@@ -1367,13 +1367,20 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="message"></param>
 		/// <param name="callback">JavaScript string</param>
-		public void hookWindowMessage(int message, string callback) {
-			// TODO: fix callback
+		public void hookWindowMessage(int message, Action callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "_hookWindowMessage";
+			CallbackItem item = null;
+			item = _CreateCallbackItem(eventName, (object[] args) => {
+				callback?.Invoke();
+			});
 			string script = ScriptBuilder.Build(
 				"{0}.hookWindowMessage({1},{2});",
 				Script.GetObject(_id),
 				message,
-				callback.Escape()
+				Script.GetObject(item.ObjectId)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1507,38 +1514,18 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "capturePage";
+			string eventName = "_capturePage";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _CreateCallbackItem(eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+				NativeImage image = new NativeImage(_client, (int)args[0]);
 				callback?.Invoke(image);
 			});
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (image) => {{",
-						"this.emit('__event',{0},{1},{2},{3});",
-					"}};",
-					"return {4};"
-				),
-				_id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("image"),
-				Script.AddObject("callback")
-			);
-			int objectId = _ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
 				"{0}.capturePage({1},{2});",
 				Script.GetObject(_id),
 				rect.Stringify(),
-				Script.GetObject(objectId)
+				Script.GetObject(item.ObjectId)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -1552,37 +1539,18 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "capturePage";
+			string eventName = "_capturePage";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object args) => {
+			item = _CreateCallbackItem(eventName, (object[] args) => {
 				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				NativeImage image = new NativeImage(_client, (int)argsList[0]);
+				NativeImage image = new NativeImage(_client, (int)args[0]);
 				callback?.Invoke(image);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (image) => {{",
-						"this.emit('__event',{0},{1},{2},{3});",
-					"}};",
-					"return {4};"
-				),
-				_id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("image"),
-				Script.AddObject("callback")
-			);
-			int objectId = _ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
 
-			script = ScriptBuilder.Build(
+			string script = ScriptBuilder.Build(
 				"{0}.capturePage({1});",
 				Script.GetObject(_id),
-				Script.GetObject(objectId)
+				Script.GetObject(item.ObjectId)
 			);
 			_ExecuteJavaScript(script);
 		}
@@ -2061,9 +2029,8 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// All child windows.
 		/// </summary>
-		/// <param name="callback"></param>
 		/// <returns></returns>
-		public List<BrowserWindow> getChildWindows(Action<bool> callback) {
+		public List<BrowserWindow> getChildWindows() {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var result = [];",

@@ -24,7 +24,8 @@ namespace Socketron.Electron {
 		public Tray Create(NativeImage image) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var tray = new {0}({1});",
+					"var Tray = {0};",
+					"var tray = new Tray({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),
@@ -42,7 +43,8 @@ namespace Socketron.Electron {
 		public Tray Create(string image) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var tray = new {0}({1});",
+					"var Tray = {0};",
+					"var tray = new Tray({1});",
 					"return {2};"
 				),
 				Script.GetObject(_id),

@@ -373,7 +373,7 @@ namespace Socketron.Electron {
 			);
 			object result = _ExecuteBlocking<object>(script);
 			JsonObject json = new JsonObject(result);
-			return LocalBuffer.FromJson(json);
+			return LocalBuffer.From(json);
 		}
 
 		/// <summary>

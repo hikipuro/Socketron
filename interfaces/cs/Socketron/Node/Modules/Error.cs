@@ -2,6 +2,9 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
+	/// <summary>
+	/// Error object of the Node API.
+	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Error : JSModule {
 		/// <summary>

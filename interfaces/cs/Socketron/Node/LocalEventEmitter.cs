@@ -4,6 +4,10 @@ using System.Threading;
 
 namespace Socketron {
 	public delegate void EventListener(params object[] args);
+
+	/// <summary>
+	/// Local event listeners.
+	/// </summary>
 	class EventListeners {
 		public List<EventListener> _listeners;
 		public Dictionary<EventListener, bool> _isOnce;
@@ -52,6 +56,10 @@ namespace Socketron {
 		}
 	}
 
+	/// <summary>
+	/// Local event emitter.
+	/// This object is used in local only.
+	/// </summary>
 	public class LocalEventEmitter {
 		private Dictionary<string, EventListeners> _listeners;
 
