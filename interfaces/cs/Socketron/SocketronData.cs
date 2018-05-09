@@ -22,6 +22,10 @@ namespace Socketron {
 			get { return this["args"] as object; }
 			set { this["args"] = value; }
 		}
+		public int WebContentsId {
+			get { return (int)this["webContents"]; }
+			set { this["webContents"] = value; }
+		}
 
 		public SocketronData() {
 		}

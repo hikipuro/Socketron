@@ -1,5 +1,5 @@
-const Electron = require("electron");
-const BrowserWindow = Electron.BrowserWindow;
+const electron = require("electron");
+const BrowserWindow = electron.BrowserWindow;
 const MainWindow = require("./MainWindow");
 const Socketron = require("./socketron/Socketron");
 
@@ -44,4 +44,4 @@ class NodeMain {
 	}
 }
 
-const nodeMain = new NodeMain(Electron.app);
+const nodeMain = new NodeMain(electron.app);

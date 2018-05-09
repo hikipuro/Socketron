@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Socketron {
 	internal class SocketClient: LocalEventEmitter {
-		public Config Config = new Config();
+		public LocalConfig Config = new LocalConfig();
 		protected TcpClient _tcpClient;
 		protected NetworkStream _stream;
 		protected Payload _payload = new Payload();
@@ -16,11 +16,11 @@ namespace Socketron {
 		//protected ManualResetEvent _readDone = new ManualResetEvent(false);
 		protected AsyncCallback _writeCallback;
 
-		public SocketClient(Config config = null) {
+		public SocketClient(LocalConfig config = null) {
 			if (config != null) {
 				Config = config;
 			}
-			_buffer = new byte[Config.ReadBufferSize];
+			_buffer = new byte[LocalConfig.ReadBufferSize];
 			_writeCallback = new AsyncCallback(_OnWrite);
 		}
 

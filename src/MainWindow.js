@@ -1,8 +1,8 @@
 const path = require("path");
 const url = require("url");
 const fs = require("fs");
-const Electron = require("electron");
-const ipcMain = Electron.ipcMain;
+const electron = require("electron");
+const ipcMain = electron.ipcMain;
 
 class Config {
 	static get Title() {
@@ -35,7 +35,7 @@ class MainWindow {
 
 	_initWindow() {
 		let preload = path.join(__dirname, "socketron/Socketron.js");
-		this.browserWindow = new Electron.BrowserWindow({
+		this.browserWindow = new electron.BrowserWindow({
 			title: Config.Title,
 			useContentSize: true,
 			//width: this._config.window.width,

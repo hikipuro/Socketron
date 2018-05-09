@@ -271,6 +271,20 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
+		/// A Boolean property that returns true if the app is packaged, false otherwise.
+		/// For many apps, this property can be used to distinguish development and production environments.
+		/// </summary>
+		public bool isPackaged {
+			get {
+				string script = ScriptBuilder.Build(
+					"return {0}.isPackaged;",
+					Script.GetObject(_id)
+				);
+				return _ExecuteBlocking<bool>(script);
+			}
+		}
+
+		/// <summary>
 		/// Try to close all windows.
 		/// <para>
 		/// The before-quit event will be emitted first.

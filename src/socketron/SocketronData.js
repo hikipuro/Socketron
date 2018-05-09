@@ -8,6 +8,7 @@ class SocketronData {
 		this.type = "";
 		this.func = "";
 		this.args = null;
+		this.webContents = null;
 
 		if (options != null) {
 			Object.assign(this, options);
@@ -20,7 +21,7 @@ class SocketronData {
 	}
 	
 	toBuffer() {
-		const buffer = Buffer.from(this.toJson(), Config.Encoding);
+		const buffer = Buffer.from(this.toJson(), Config.encoding);
 		if (buffer.length <= 0xFFFF) {
 			let header = new Buffer(3);
 			header.writeUInt8(DataType.Text16, 0);

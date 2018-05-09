@@ -1,17 +1,12 @@
 class Config {
-	static get Name() {
-		return "Socketron";
-	}
-	static get IpcEventPrefix() {
-		return "_Socketron.";
-	}
-	static get MaxDataSize() {
+	constructor() {
+		this.path = "";
+		this.name = "Socketron";
+		this.ipcEventPrefix = "_Socketron.";
 		// 512 KB
-		return 512 * 1024;
-	}
-	static get Encoding() {
-		return "utf8";
+		this.maxDataSize = 512 * 1024;
+		this.encoding = "utf8";
 	}
 }
 
-module.exports = Config;
+module.exports = new Config();

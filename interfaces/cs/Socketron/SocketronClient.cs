@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Socketron.DOM;
 
 namespace Socketron {
 	public delegate void Callback(object result);
@@ -33,17 +34,44 @@ namespace Socketron {
 		public RendererProcess() {
 		}
 
-		public void ExecuteJavaScript(string script, Callback success = null, Callback error = null) {
+		public void ExecuteJavaScript(int webContentsId, string script, Callback success = null, Callback error = null) {
 			SocketronData data = new SocketronData() {
 				Func = "executeJavaScript",
-				Params = new object[] { script }
+				Params = new object[] { script },
+				WebContentsId = webContentsId
 			};
 			Emit("text", data, success, error);
 		}
 
-		public void ExecuteJavaScript(string[] scriptList, Callback success = null, Callback error = null) {
+		public void ExecuteJavaScript(int webContentsId, string[] scriptList, Callback success = null, Callback error = null) {
 			string script = string.Join("\n", scriptList);
-			ExecuteJavaScript(script, success, error);
+			ExecuteJavaScript(webContentsId, script, success, error);
+		}
+
+		public T ExecuteJavaScriptBlocking<T>(int webContentsId, string script) {
+			ManualResetEvent resetEvent = new ManualResetEvent(false);
+			T value = default(T);
+			Type typeofT = typeof(T);
+
+			ExecuteJavaScript(webContentsId, script, (result) => {
+				if (result == null) {
+					resetEvent.Set();
+					return;
+				}
+				if (typeofT == typeof(object)) {
+					value = (T)result;
+					resetEvent.Set();
+					return;
+				}
+				value = (T)Convert.ChangeType(result, typeofT);
+				resetEvent.Set();
+			}, (result) => {
+				Console.Error.WriteLine("error: " + GetType().Name + ".ExecuteJavaScriptBlocking");
+				throw new InvalidOperationException(result as string);
+			});
+
+			resetEvent.WaitOne();
+			return value;
 		}
 
 		public void InsertJavaScript(string url, Callback success = null) {
@@ -122,7 +150,8 @@ namespace Socketron {
 
 	public class SocketronClient: LocalEventEmitter {
 		public string ID = string.Empty;
-		public Config Config = new Config();
+		public LocalConfig LocalConfig = new LocalConfig();
+		public JsonObject RemoteConfig = new JsonObject();
 		public MainProcess Main;
 		public RendererProcess Renderer;
 		public CallbackManager Callbacks;
@@ -166,7 +195,7 @@ namespace Socketron {
 		}
 
 		public SocketronClient() {
-			_socketClient = new SocketClient(Config);
+			_socketClient = new SocketClient(LocalConfig);
 			_socketClient.On("debug", (args) => {
 				_DebugLog(args[0] as string, null);
 			});
@@ -221,20 +250,28 @@ namespace Socketron {
 				_successList[_sequenceId++] = callback;
 			}
 			//Console.WriteLine("data: " + data.Stringify());
-			Write(data.ToBuffer(DataType.Text16, Config.Encoding));
+			Write(data.ToBuffer(DataType.Text16, LocalConfig.Encoding));
 		}
 
-		public void RemoveObject(int id) {
-			if (id <= 0) {
+		public void RemoveObject(JSModule module) {
+			if (module == null) {
 				return;
 			}
-			Callbacks.RemoveInstanceEvents(id);
+			if (module._id <= 0) {
+				return;
+			}
+			Callbacks.RemoveInstanceEvents(module._id);
 			string script = string.Format(
 				"this.removeObject({0});",
-				id
+				module._id
 			);
 			//Console.WriteLine("RemoveObject: " + id);
-			Main.ExecuteJavaScript(script);
+			if (module is DOMModule) {
+				DOMModule domModule = module as DOMModule;
+				Renderer.ExecuteJavaScript(domModule._webContentsId, script);
+			} else {
+				Main.ExecuteJavaScript(script);
+			}
 		}
 
 		public T ExecuteJavaScriptBlocking<T>(string script) {
@@ -288,10 +325,10 @@ namespace Socketron {
 				}
 				_sequenceId++;
 			}
-			if (Config.IsDebug && Config.EnableDebugPayloads) {
+			if (LocalConfig.IsDebug && LocalConfig.EnableDebugPayloads) {
 				_DebugLog("send: {0}", data.Stringify());
 			}
-			Write(data.ToBuffer(DataType.Text16, Config.Encoding));
+			Write(data.ToBuffer(DataType.Text16, LocalConfig.Encoding));
 		}
 
 		protected void _OnData(object[] args) {
@@ -308,6 +345,11 @@ namespace Socketron {
 			switch (data.Func) {
 				case "id":
 					ID = data.Params as string;
+					//DebugLog("ID: {0}", ID);
+					break;
+				case "config":
+					RemoteConfig = new JsonObject(data.Params);
+					_DebugLog(RemoteConfig.Stringify());
 					//DebugLog("ID: {0}", ID);
 					break;
 				case "callback":
@@ -426,7 +468,7 @@ namespace Socketron {
 		}
 
 		protected void _DebugLog(string format, params object[] args) {
-			if (!Config.IsDebug) {
+			if (!LocalConfig.IsDebug) {
 				return;
 			}
 			int MaxLetters = 1000;
@@ -434,7 +476,7 @@ namespace Socketron {
 			if (format.Length > MaxLetters) {
 				format = format.Substring(0, MaxLetters) + " ...";
 			}
-			if (args == null) {
+			if (args == null || args.Length <= 0) {
 				Emit("debug", format);
 				return;
 			}

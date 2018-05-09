@@ -17,6 +17,7 @@ class SocketronNode {
 		});
 		this._createServer();
 		this._createProcessor();
+		this._addIpcEvents();
 	}
 
 	listen(port = 3000) {
@@ -36,19 +37,7 @@ class SocketronNode {
 		if (client == null) {
 			return;
 		}
-		let data = new SocketronData({
-			status: "ok",
-			func: "event",
-			args: {
-				name: eventName,
-				args: args
-			}
-		});
-		client.writeTextData(data);
-	}
-
-	quit() {
-		Electron.app.quit();
+		client.emit(eventName, args);
 	}
 
 	_createServer() {
@@ -57,6 +46,20 @@ class SocketronNode {
 			const args = [client.id, message];
 			console.log.apply(this, args);
 			this._ipcLog.apply(this, args);
+		});
+		this._server.on("connect", (client) => {
+			let data = new SocketronData({
+				status: "ok",
+				func: "id",
+				args: client.id
+			});
+			client.writeTextData(data);
+			data = new SocketronData({
+				status: "ok",
+				func: "config",
+				args: this.config
+			});
+			client.writeTextData(data);
 		});
 		this._server.on("error", (client, err) => {
 			const args = [client.id, "socket error", err];
@@ -69,7 +72,6 @@ class SocketronNode {
 			this._ipcWarn.apply(this, args);
 		});
 		this._server.on("data", this._onData.bind(this));
-		this._addIpcEvents();
 	}
 
 	_createProcessor() {
@@ -140,7 +142,7 @@ class SocketronNode {
 	}
 
 	_addIpcEvent(channel, handler) {
-		channel = Config.IpcEventPrefix + channel;
+		channel = Config.ipcEventPrefix + channel;
 		ipcMain.on(channel, handler);
 	}
 
@@ -158,11 +160,25 @@ class SocketronNode {
 			this.emitToClient(clientId, eventName, args);
 		});
 		this._addIpcEvent("quit", (e) => {
-			this.quit();
+			electron.app.quit();
+		});
+		ipcMain.on("_Socketron.initRenderer", (e) => {
+			e.returnValue = this.config;
 		});
 	}
 	
-	_ipcSend(channel, ...args) {
+	_ipcSend(channel, data, ...args) {
+		if (data.webContents == null) {
+			return;
+		}
+		const id = data.webContents;
+		const webContents = electron.webContents.fromId(id);
+		if (webContents == null) {
+			return;
+		}
+		channel = this.config.ipcEventPrefix + channel;
+		webContents.send(channel, data, ...args);
+		/*
 		if (this.browserWindow == null) {
 			return;
 		}
@@ -170,7 +186,8 @@ class SocketronNode {
 			return;
 		}
 		const webContents = this.browserWindow.webContents;
-		webContents.send(Config.IpcEventPrefix + channel, ...args);
+		webContents.send(Config.ipcEventPrefix + channel, ...args);
+		*/
 	}
 
 	_ipcLog(...args) {

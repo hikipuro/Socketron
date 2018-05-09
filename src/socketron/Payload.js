@@ -12,7 +12,7 @@ class Payload {
 	
 	getStringData() {
 		return this.data.toString(
-			Config.Encoding,
+			Config.encoding,
 			this.dataOffset,
 			this.dataOffset + this.dataLength
 		);

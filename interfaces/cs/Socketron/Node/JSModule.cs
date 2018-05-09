@@ -88,7 +88,7 @@ namespace Socketron {
 				return;
 			}
 			//Debug.WriteLine("NodeModule.Dispose ###: " + GetType().Name + ", " + _id);
-			_client.RemoveObject(_id);
+			_client.RemoveObject(this);
 			_id = 0;
 		}
 
@@ -403,23 +403,23 @@ namespace Socketron {
 			return item;
 		}
 
-		protected void _ExecuteJavaScript(string script) {
-			if (_client.Config.IsDebug) {
+		protected virtual void _ExecuteJavaScript(string script) {
+			if (_client.LocalConfig.IsDebug) {
 				script = script + "\n/* " + _GetDebugInfo() + " */";
 			}
 			_client.Main.ExecuteJavaScript(script);
 		}
 
-		protected void _ExecuteJavaScript(string script, Callback success) {
+		protected virtual void _ExecuteJavaScript(string script, Callback success) {
 			_client.Main.ExecuteJavaScript(script, success);
 		}
 
-		protected void _ExecuteJavaScript(string script, Callback success, Callback error) {
+		protected virtual void _ExecuteJavaScript(string script, Callback success, Callback error) {
 			_client.Main.ExecuteJavaScript(script, success, error);
 		}
 
-		protected T _ExecuteBlocking<T>(string script) {
-			if (_client.Config.IsDebug) {
+		protected virtual T _ExecuteBlocking<T>(string script) {
+			if (_client.LocalConfig.IsDebug) {
 				script = script + "\n/* " + _GetDebugInfo() + " */";
 			}
 			return _client.ExecuteJavaScriptBlocking<T>(script);

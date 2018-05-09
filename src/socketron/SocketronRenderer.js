@@ -7,9 +7,20 @@ const CommandProcessorRenderer = require("./CommandProcessorRenderer");
 
 class SocketronRenderer {
 	constructor() {
-		this.config = Config;
+		this.config = ipcRenderer.sendSync("_Socketron.initRenderer");
+		this._createProcessor();
 		this._addIpcEvents();
-		
+	}
+
+	send(client, buffer) {
+		this._ipcSend("send", client, buffer);
+	}
+
+	emitToClient(clientId, eventName, args) {
+		this._ipcSend("event", clientId, eventName, args);
+	}
+	
+	_createProcessor() {
 		this._processor = new CommandProcessorRenderer();
 		this._processor.socketron = this;
 		this._processor.on("error", (sequenceId, clientId, message) => {
@@ -28,26 +39,9 @@ class SocketronRenderer {
 		});
 		this._processor.on("callback", this._sendCallback.bind(this));
 	}
-
-	get exports() {
-		return this._processor.exports;
-	}
-
-	broadcast(message, sender = null) {
-		const data = Payload.createData(DataType.Log, 0, message);
-		this._ipcSend("broadcast", data, sender);
-	}
-
-	send(client, buffer) {
-		this._ipcSend("send", client, buffer);
-	}
-
-	emitToClient(clientId, eventName, args) {
-		this._ipcSend("event", clientId, eventName, args);
-	}
 	
 	_ipcEventId(id) {
-		return Config.IpcEventPrefix + id;
+		return this.config.ipcEventPrefix + id;
 	}
 	
 	_addIpcEvent(channel, handler) {

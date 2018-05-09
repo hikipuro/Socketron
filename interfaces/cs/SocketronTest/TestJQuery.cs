@@ -477,7 +477,6 @@ namespace SocketronTest {
 			//Console.WriteLine("Test: " + t);
 			//*
 			_client.Main.ExecuteJavaScript("console.log('TestJQuery')");
-			_client.Renderer.ExecuteJavaScript("console.log('TestJQuery')");
 
 			//socketron.Main.ExecuteJavaScript("return process.type;", (arg) => {
 			//	Console.WriteLine("Test: " + arg);
@@ -505,88 +504,73 @@ namespace SocketronTest {
 			});
 			//*/
 
-			Test();
+			//Test();
 			//for (var i = 0; i < 10000; i++) {
 			//	Test2();
 			//}
-			return;
-			/*socketron.Renderer.GetUserAgent((data) => {
-				Console.WriteLine("UserAgent: {0}", data);
-			});*/
-			/*socketron.GetProcessType((data) => {
-				Console.WriteLine("ProcessType: {0}", data.Arguments[0]);
-			});
-			socketron.GetProcessMemoryInfo((data) => {
-				Console.WriteLine("ProcessMemoryInfo: {0}", data.Arguments[0]);
-			});
-			socketron.GetNavigator((data) => {
-				Console.WriteLine("Navigator: {0}", data.Arguments[0]);
-			});*/
-			//socketron.WriteTextData(ProcessType.Browser, "exports.test.testFunc", JsonObject.Array(123, "abc"));
+
+			//_client.ExecuteJavaScriptBlocking<string>("return Function.prototype.toString(self);");
 			//return;
 
-			//socketron.Main.App.Quit();
-			//socketron.Main.App.GetLocale((result) => {
-			//	Console.WriteLine("GetLocale: {0}", result);
-			//});
-			_client.Main.ExecuteJavaScript(new[] {
-				"electron.app.on('window-all-closed', () => {",
-				"emit('aaabbb', 12345);",
-				"});",
-				//"return this.process"
-			}, (result) => {
-				Console.WriteLine("error: {0}", result);
-			});
-			_client.Renderer.ExecuteJavaScript(new[] {
-				"emit('aaabbb', 445566);",
-				"return window.navigator.userAgent",
-			}, (result) => {
-				Console.WriteLine("userAgent: {0}", result);
-			});
-			//string path = (string)await socketron.Main.ExecuteJavaScriptAsync(new[] {
-			//	"return electron.app.getAppPath()",
-			//});
-			//Console.WriteLine("# getAppPath: {0}", path);
+			BrowserWindow.Options options = new BrowserWindow.Options();
+			//options.webPreferences.nodeIntegration = false;
+			//options.show = false;
+			//options.width = 400;
+			//options.height = 300;
+			//options.backgroundColor = "#aaa";
+			//options.opacity = 0.5;
+			options.webPreferences.preload = _client.RemoteConfig.String("path");
+			BrowserWindow window = electron.BrowserWindow.Create(options);
+			window.loadURL("file:///src/html/index.html");
+			window.webContents.openDevTools();
 
-			//socketron.WriteTextData(ProcessType.Browser, "exports.test.testFunc2", JsonObject.Array(123, "abc"), (result) => {
-			//	Console.WriteLine("error: {0}", result);
-			//});
-			//return;
+			window.webContents.on(WebContents.Events.DomReady, (args) => {
+				string[] css = {
+					"* {",
+					"	font-family: sans-serif;",
+					"	font-size: 24px;",
+					"}",
+				};
+				window.webContents.insertCSS(string.Join("", css));
+				window.webContents.executeJavaScript(
+					string.Join("", new string[] {
+						"window.nodeRequire = require;",
+						"delete window.require;",
+						"delete window.exports;",
+						"delete window.module;"
+					})
+				);
+				window.webContents.executeJavaScript(
+					string.Join("", new string[] {
+						"var script = document.createElement('script');",
+						"script.src = 'https://code.jquery.com/jquery-3.3.1.min.js';",
+						"document.head.appendChild(script);"
+					})
+				).then((args2) => {
+					window.webContents.executeJavaScript("console.log($);");
+					window.webContents.executeJavaScript("$(document.body).empty()");
+					window.webContents.executeJavaScript("$(document.body).append('<div>Test</div>')");
+					window.webContents.executeJavaScript("$(document.body).append('<button id=button1>button</button>')");
+					window.webContents.executeJavaScript("$('#button1').click(() => { console.log('click button !'); })");
+					window.webContents.executeJavaScript("$(document.body).append('<button id=button2>button</button>')");
 
-			string[] css = {
-				"* {",
-				"	font-family: sans-serif;",
-				"	font-size: 20px;",
-				"}",
-			};
-			_client.Renderer.InsertCSS(string.Join("\n", css));
+					string[] scriptList = {
+						"var electron = nodeRequire('electron');",
+						"$('#button1').click(() => {",
+						"	console.log(electron);",
+						"	electron.ipcRenderer.send('_Socketron.quit');",
+						"})"
+					};
+					window.webContents.executeJavaScript(string.Join("", scriptList));
 
-			_client.Renderer.InsertJavaScript("https://code.jquery.com/jquery-3.3.1.min.js", (result) => {
-				_client.Renderer.ExecuteJavaScript("console.log($)", (data2) => {
-					Console.WriteLine("Test: console.log($)");
+					RendererTest renderer = new RendererTest();
+					renderer.Init(_client, window.webContents);
+					renderer.Start();
+
+					//string ua = _client.Renderer.ExecuteJavaScriptBlocking<string>("return window.navigator.userAgent;");
+					//Console.WriteLine(ua);
 				});
-				_client.Renderer.ExecuteJavaScript("$(document.body).empty()");
-				_client.Renderer.ExecuteJavaScript("$(document.body).append('<div>Test</div>')");
-				_client.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button1>button</button>')");
-				_client.Renderer.ExecuteJavaScript("$('#button1').click(() => { console.log('click button !'); })");
-				_client.Renderer.ExecuteJavaScript("$(document.body).append('<button id=button2>button</button>')");
-
-				string[] scriptList = {
-				"$('#button1').click(() => {",
-				"	emit('aaabbb', 123);",
-				"})"
-			};
-				_client.Renderer.ExecuteJavaScript(scriptList);
-
-				scriptList = new[] {
-				"$('#button2').click(() => {",
-				"	emit('aaabbbccc', '222', true, 111);",
-				"})"
- 			};
-				_client.Renderer.ExecuteJavaScript(scriptList);
-
 			});
-
 		}
 	}
 }

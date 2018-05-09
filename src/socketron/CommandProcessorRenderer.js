@@ -1,12 +1,57 @@
 const { EventEmitter } = require("events");
+const SocketronData = require("./SocketronData");
+
+class RendererContext extends EventEmitter {
+	constructor() {
+		super();
+		this.clientId = "";
+		this.require = require;
+		this._objects = [];
+		this._freeIndices = [];
+		this._index = 0;
+	}
+	
+	emit(eventName, ...args) {
+		super.emit("emit", this.clientId, eventName, args);
+	}
+
+	addObject(obj) {
+		if (obj == null) {
+			return 0;
+		}
+		const index = this._getNextIndex();
+		this._objects[index] = obj;
+		return index;
+	}
+
+	removeObject(index) {
+		if (this._objects[index] == null) {
+			return;
+		}
+		this._objects[index] = undefined;
+		this._freeIndices.push(index);
+	}
+
+	getObject(index) {
+		return this._objects[index];
+	}
+
+	_getNextIndex() {
+		if (this._freeIndices.length <= 0) {
+			return ++this._index;
+		}
+		return this._freeIndices.pop();
+	}
+}
 
 class CommandProcessorRenderer extends EventEmitter {
 	constructor() {
 		super();
 		this.socketron = null;
-		this.exports = {};
-		this.window = window;
-		this.console = console;
+		this.context = new RendererContext();
+		this.context.on("emit", (clientId, eventName, args) => {
+			this.socketron.emitToClient(clientId, eventName, args);
+		});
 		this._data = null;
 		this._clientId = null;
 	}
@@ -41,10 +86,9 @@ class CommandProcessorRenderer extends EventEmitter {
 		this._data = data;
 		this._clientId = clientId;
 		try {
+			this.context.clientId = clientId;
 			let result = func[1].apply(func[0], data.args);
-			if (result != null) {
-				this._sendCallback(data.sequenceId, clientId, result);
-			}
+			this._sendCallback(data.sequenceId, clientId, result);
 		} catch (e) {
 			console.error(e);
 			this._sendError(data.sequenceId, clientId, e.stack);
@@ -59,18 +103,8 @@ class CommandProcessorRenderer extends EventEmitter {
 		}
 		//console.log(script);
 		const clientId = this._clientId;
-		const emit = (eventName, ...args) => {
-			this.socketron.emitToClient(clientId, eventName, args);
-		};
-		const func = Function(
-			"electron",
-			"emit",
-			 script
-		);
-		const result = func.call(this,
-			this.electron,
-			emit
-		);
+		const func = Function(script);
+		const result = func.call(this.context);
 		return result;
 	}
 

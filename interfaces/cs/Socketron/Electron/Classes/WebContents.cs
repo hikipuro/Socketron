@@ -653,19 +653,63 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// 
+		/// Evaluates code in page.
 		/// </summary>
 		/// <param name="code"></param>
-		public void executeJavaScript(string code) {
-			if (code == null) {
-				return;
-			}
+		/// <returns>
+		/// A promise that resolves with the result
+		/// of the executed code or is rejected if the result
+		/// of the code is a rejected promise.
+		/// </returns>
+		public Promise executeJavaScript(string code) {
 			string script = ScriptBuilder.Build(
-				"{0}.executeJavaScript({1});",
+				ScriptBuilder.Script(
+					"var promise = {0}.executeJavaScript({1});",
+					"return {2};"
+				),
 				Script.GetObject(_id),
-				code.Escape()
+				code.Escape(),
+				Script.AddObject("promise")
 			);
-			_ExecuteJavaScript(script);
+			int result = _ExecuteBlocking<int>(script);
+			return new Promise(_client, result);
+		}
+
+		public Promise executeJavaScript(string code, bool userGesture) {
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var promise = {0}.executeJavaScript({1},{2});",
+					"return {3};"
+				),
+				Script.GetObject(_id),
+				code.Escape(),
+				userGesture.Escape(),
+				Script.AddObject("promise")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Promise(_client, result);
+		}
+
+		public Promise executeJavaScript(string code, bool userGesture, Action<object> callback) {
+			string eventName = "_executeJavaScript";
+			CallbackItem item = null;
+			item = _CreateCallbackItem(eventName, (args) => {
+				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+				callback?.Invoke(args[0]);
+			});
+			string script = ScriptBuilder.Build(
+				ScriptBuilder.Script(
+					"var promise = {0}.executeJavaScript({1},{2},{3});",
+					"return {4};"
+				),
+				Script.GetObject(_id),
+				code.Escape(),
+				userGesture.Escape(),
+				Script.GetObject(item.ObjectId),
+				Script.AddObject("promise")
+			);
+			int result = _ExecuteBlocking<int>(script);
+			return new Promise(_client, result);
 		}
 
 		/// <summary>

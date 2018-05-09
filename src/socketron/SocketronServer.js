@@ -54,13 +54,7 @@ class SocketronServer extends EventEmitter {
 			this._clients.remove(client);
 			client.close();
 		});
-
-		let data = new SocketronData({
-			status: "ok",
-			func: "id",
-			args: client.id
-		});
-		client.writeTextData(data);
+		this.emit("connect", client);
 	}
 
 	_onData(client, data) {

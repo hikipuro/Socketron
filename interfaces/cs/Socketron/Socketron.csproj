@@ -74,6 +74,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CallbackManager.cs" />
+    <Compile Include="DOM\Document.cs" />
+    <Compile Include="DOM\DOMModule.cs" />
+    <Compile Include="DOM\Element.cs" />
+    <Compile Include="DOM\Event.cs" />
+    <Compile Include="DOM\EventTarget.cs" />
+    <Compile Include="DOM\Navigator.cs" />
+    <Compile Include="DOM\Node.cs" />
+    <Compile Include="DOM\Window.cs" />
     <Compile Include="Electron\Classes\Dialog.cs" />
     <Compile Include="Electron\Classes\InAppPurchase.cs" />
     <Compile Include="Electron\Classes\Tray.cs" />
@@ -109,7 +117,7 @@
     <Compile Include="Electron\Classes\BrowserWindowProxy.cs" />
     <Compile Include="Electron\Classes\ClientRequest.cs" />
     <Compile Include="Electron\Modules\ClipboardModule.cs" />
-    <Compile Include="Config.cs" />
+    <Compile Include="LocalConfig.cs" />
     <Compile Include="Electron\Classes\CommandLineSwitches.cs" />
     <Compile Include="Electron\Modules\ContentTracingModule.cs" />
     <Compile Include="Electron\Classes\Cookies.cs" />
@@ -195,8 +203,10 @@
     <Compile Include="Node\Modules\PathModule.cs" />
     <Compile Include="Node\Modules\ProcessModule.cs" />
     <Compile Include="Node\Modules\URLModule.cs" />
+    <Compile Include="Node\Promise.cs" />
     <Compile Include="Payload.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RendererObject.cs" />
     <Compile Include="ScriptBuilder.cs" />
     <Compile Include="SocketronClient.cs" />
     <Compile Include="SocketClient.cs" />
