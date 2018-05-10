@@ -39,31 +39,31 @@ namespace Socketron {
 		}
 
 		protected Buffer(SocketronClient client) {
-			_client = client;
+			API.client = client;
 		}
 
 		public Buffer(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		public byte this[int index] {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}[{1}];",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					index
 				);
-				return _ExecuteBlocking<byte>(script);
+				return API._ExecuteBlocking<byte>(script);
 			}
 			set {
 				string script = ScriptBuilder.Build(
 					"{0}[{1}] = {2};",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					index,
 					value
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return Buffer.byteLength({0});"
 				),
-				Script.GetObject(value._id)
+				Script.GetObject(value.API.id)
 			);
 			return SocketronClient.ExecuteBlocking<long>(script);
 		}
@@ -151,8 +151,8 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return Buffer.compare({0},{1});"
 				),
-				Script.GetObject(buf1._id),
-				Script.GetObject(buf2._id)
+				Script.GetObject(buf1.API.id),
+				Script.GetObject(buf2.API.id)
 			);
 			return SocketronClient.ExecuteBlocking<long>(script);
 		}
@@ -198,7 +198,7 @@ namespace Socketron {
 					"var buf = Buffer.from({0});",
 					"return {1};"
 				),
-				Script.GetObject(buffer._id),
+				Script.GetObject(buffer.API.id),
 				Script.AddObject("buf")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
@@ -239,7 +239,7 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return Buffer.isBuffer({0});"
 				),
-				Script.GetObject(obj._id)
+				Script.GetObject(obj.API.id)
 			);
 			return SocketronClient.ExecuteBlocking<bool>(script);
 		}
@@ -273,7 +273,7 @@ namespace Socketron {
 					Script.GetObject(id),
 					Script.AddObject("b")
 				);
-				int result = _ExecuteJavaScriptBlocking<int>(script);
+				int result = API.ExecuteJavaScriptBlocking<int>(script);
 				return new Buffer(_socketron, result);
 			}
 		}
@@ -282,19 +282,19 @@ namespace Socketron {
 		public int compare(Buffer target) {
 			string script = ScriptBuilder.Build(
 				"return {0}.compare({1});",
-				Script.GetObject(_id),
-				Script.GetObject(target._id)
+				Script.GetObject(API.id),
+				Script.GetObject(target.API.id)
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int copy(Buffer target) {
 			string script = ScriptBuilder.Build(
 				"return {0}.copy({1});",
-				Script.GetObject(_id),
-				Script.GetObject(target._id)
+				Script.GetObject(API.id),
+				Script.GetObject(target.API.id)
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public void entries() {
@@ -305,10 +305,10 @@ namespace Socketron {
 		public bool equals(Buffer otherBuffer) {
 			string script = ScriptBuilder.Build(
 				"return {0}.equals({1});",
-				Script.GetObject(_id),
-				Script.GetObject(otherBuffer._id)
+				Script.GetObject(API.id),
+				Script.GetObject(otherBuffer.API.id)
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		public Buffer fill(string value) {
@@ -317,12 +317,12 @@ namespace Socketron {
 					"var b = {0}.fill({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value.Escape(),
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public bool includes(string value) {
@@ -330,10 +330,10 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.includes({1});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		public int indexOf(string value) {
@@ -341,10 +341,10 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.indexOf({1});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public void keys() {
@@ -357,19 +357,19 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.lastIndexOf({1});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int length {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.length;",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				return _ExecuteBlocking<int>(script);
+				return API._ExecuteBlocking<int>(script);
 			}
 		}
 
@@ -380,174 +380,174 @@ namespace Socketron {
 						"var b = {0}.parent;",
 						"return {1};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Script.AddObject("b")
 				);
-				int result = _ExecuteBlocking<int>(script);
-				return new Buffer(_client, result);
+				int result = API._ExecuteBlocking<int>(script);
+				return new Buffer(API.client, result);
 			}
 		}
 
 		public double readDoubleBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readDoubleBE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<double>(script);
+			return API._ExecuteBlocking<double>(script);
 		}
 
 		public double readDoubleLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readDoubleLE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<double>(script);
+			return API._ExecuteBlocking<double>(script);
 		}
 
 		public float readFloatBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatBE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<float>(script);
+			return API._ExecuteBlocking<float>(script);
 		}
 
 		public float readFloatLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatLE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<float>(script);
+			return API._ExecuteBlocking<float>(script);
 		}
 
 		public sbyte readInt8(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readFloatLE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<sbyte>(script);
+			return API._ExecuteBlocking<sbyte>(script);
 		}
 
 		public short readInt16BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt16BE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<short>(script);
+			return API._ExecuteBlocking<short>(script);
 		}
 
 		public short readInt16LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt16LE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<short>(script);
+			return API._ExecuteBlocking<short>(script);
 		}
 
 		public int readInt32BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt32BE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int readInt32LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readInt32LE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public long readIntBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readIntBE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<long>(script);
+			return API._ExecuteBlocking<long>(script);
 		}
 
 		public long readIntLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readIntLE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<long>(script);
+			return API._ExecuteBlocking<long>(script);
 		}
 
 		public byte readUInt8(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt8({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<byte>(script);
+			return API._ExecuteBlocking<byte>(script);
 		}
 
 		public ushort readUInt16BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt16BE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<ushort>(script);
+			return API._ExecuteBlocking<ushort>(script);
 		}
 
 		public ushort readUInt16LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt16LE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<ushort>(script);
+			return API._ExecuteBlocking<ushort>(script);
 		}
 
 		public uint readUInt32BE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt32BE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<uint>(script);
+			return API._ExecuteBlocking<uint>(script);
 		}
 
 		public uint readUInt32LE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUInt32LE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<uint>(script);
+			return API._ExecuteBlocking<uint>(script);
 		}
 
 		public ulong readUIntBE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUIntBE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<ulong>(script);
+			return API._ExecuteBlocking<ulong>(script);
 		}
 
 		public ulong readUIntLE(int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readUIntLE({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<ulong>(script);
+			return API._ExecuteBlocking<ulong>(script);
 		}
 
 		public Buffer slice() {
@@ -556,11 +556,11 @@ namespace Socketron {
 					"var b = {0}.slice();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public Buffer slice(int start) {
@@ -569,12 +569,12 @@ namespace Socketron {
 					"var b = {0}.slice({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				start,
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public Buffer slice(int start, int end) {
@@ -583,13 +583,13 @@ namespace Socketron {
 					"var b = {0}.slice({1},{2});",
 					"return {3};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				start,
 				end,
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public Buffer swap16() {
@@ -598,11 +598,11 @@ namespace Socketron {
 					"var b = {0}.swap16();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public Buffer swap32() {
@@ -611,11 +611,11 @@ namespace Socketron {
 					"var b = {0}.swap32();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public Buffer swap64() {
@@ -624,11 +624,11 @@ namespace Socketron {
 					"var b = {0}.swap64();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("b")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		public JsonObject toJSON() {
@@ -636,9 +636,9 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toJSON();"
 				),
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -647,11 +647,11 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toString({1},{2});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				encoding.Escape(),
 				start
 			);
-			return _ExecuteBlocking<string>(script);
+			return API._ExecuteBlocking<string>(script);
 		}
 
 		public string toString(string encoding, int start, int end) {
@@ -659,12 +659,12 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.toString({1},{2});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				encoding.Escape(),
 				start,
 				end
 			);
-			return _ExecuteBlocking<string>(script);
+			return API._ExecuteBlocking<string>(script);
 		}
 
 		public void values() {
@@ -677,11 +677,11 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.write({1},{2});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				str.Escape(),
 				offset
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int write(string str, int offset, int length, string encoding = "utf8") {
@@ -689,175 +689,175 @@ namespace Socketron {
 				ScriptBuilder.Script(
 					"return {0}.write({1},{2},{3},{4});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				str.Escape(),
 				offset,
 				length,
 				encoding.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeDoubleBE(double value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeDoubleBE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeDoubleLE(double value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeDoubleLE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeFloatBE(float value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeFloatBE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeFloatLE(float value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeFloatLE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeInt8(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt8({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeInt16BE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt16BE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeInt16LE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt16LE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeInt32BE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt32BE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeInt32LE(int value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeInt32LE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeIntBE(long value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeIntBE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeIntLE(long value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeIntLE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUInt8(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt8({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUInt16BE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt16BE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUInt16LE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt16LE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUInt32BE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt32BE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUInt32LE(uint value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUInt32LE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUIntBE(ulong value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUIntBE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public int writeUIntLE(ulong value, int offset, bool noAssert = false) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeUIntLE({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				value, offset, noAssert.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public static int INSPECT_MAX_BYTES {
@@ -880,7 +880,7 @@ namespace Socketron {
 			}
 			string script = ScriptBuilder.Build(
 				"return this.require('buffer').transcode({0},{1},{2});",
-				Script.GetObject(source._id),
+				Script.GetObject(source.API.id),
 				fromEnc.Escape(),
 				toEnc.Escape()
 			);

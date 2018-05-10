@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -32,7 +31,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="client"></param>
 		public InAppPurchaseModule(SocketronClient client) {
-			_client = client;
+			API.client = client;
 		}
 
 		/// <summary>
@@ -48,7 +47,7 @@ namespace Socketron.Electron {
 				"electron.inAppPurchase.purchaseProduct({0});",
 				productID.Escape()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -72,7 +71,10 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Product[] products = (argsList[0] as object[]).Cast<Product>().ToArray();
+				Product[] products = Array.ConvertAll(
+					argsList[0] as object[],
+					value => Product.Parse(value as string)
+				);
 				callback?.Invoke(products);
 			});
 			string script = ScriptBuilder.Build(
@@ -87,7 +89,7 @@ namespace Socketron.Electron {
 				productIDs.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -98,7 +100,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				"return electron.inAppPurchase.canMakePayments();"
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -109,7 +111,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				"return electron.inAppPurchase.getReceiptURL();"
 			);
-			return _ExecuteBlocking<string>(script);
+			return API._ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -119,7 +121,7 @@ namespace Socketron.Electron {
 			string script = ScriptBuilder.Build(
 				"electron.inAppPurchase.finishAllTransactions();"
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -133,7 +135,7 @@ namespace Socketron.Electron {
 				"electron.inAppPurchase.finishTransactionByDate({0});",
 				date.Escape()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

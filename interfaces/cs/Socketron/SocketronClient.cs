@@ -30,8 +30,22 @@ namespace Socketron {
 
 	public class RendererProcess : LocalEventEmitter {
 		const string Type = ProcessType.Renderer;
+		HashSet<ManualResetEvent> _resetEvents;
 
 		public RendererProcess() {
+			_resetEvents = new HashSet<ManualResetEvent>();
+		}
+
+		public void Close() {
+			Thread thread = new Thread(() => {
+				var events = new ManualResetEvent[_resetEvents.Count];
+				_resetEvents.CopyTo(events);
+				foreach (var resetEvent in events) {
+					resetEvent.Set();
+				}
+			});
+			thread.Name = "RendererProcess.Close: ";
+			thread.Start();
 		}
 
 		public void ExecuteJavaScript(int webContentsId, string script, Callback success = null, Callback error = null) {
@@ -50,6 +64,7 @@ namespace Socketron {
 
 		public T ExecuteJavaScriptBlocking<T>(int webContentsId, string script) {
 			ManualResetEvent resetEvent = new ManualResetEvent(false);
+			_resetEvents.Add(resetEvent);
 			T value = default(T);
 			Type typeofT = typeof(T);
 
@@ -71,6 +86,63 @@ namespace Socketron {
 			});
 
 			resetEvent.WaitOne();
+			_resetEvents.Remove(resetEvent);
+			return value;
+		}
+
+		public int CacheScript(int webContentsId, string script) {
+			ManualResetEvent resetEvent = new ManualResetEvent(false);
+			_resetEvents.Add(resetEvent);
+			int value = 0;
+
+			SocketronData data = new SocketronData() {
+				Func = "cacheScript",
+				Params = new object[] { script },
+				WebContentsId = webContentsId
+			};
+			Emit("text", data, (Callback)((result) => {
+				value = Convert.ToInt32(result);
+				resetEvent.Set();
+			}), (Callback)((result) => {
+				Console.Error.WriteLine("error: " + GetType().Name + ".CacheScript");
+				throw new InvalidOperationException(result as string);
+			}));
+
+			resetEvent.WaitOne();
+			_resetEvents.Remove(resetEvent);
+			return value;
+		}
+
+		public T ExecuteCachedScript<T>(int webContentsId, int script) {
+			ManualResetEvent resetEvent = new ManualResetEvent(false);
+			_resetEvents.Add(resetEvent);
+			T value = default(T);
+			Type typeofT = typeof(T);
+
+			SocketronData data = new SocketronData() {
+				Func = "executeCachedScript",
+				Params = new object[] { script },
+				WebContentsId = webContentsId
+			};
+			Emit("text", data, (Callback)((result) => {
+				if (result == null) {
+					resetEvent.Set();
+					return;
+				}
+				if (typeofT == typeof(object)) {
+					value = (T)result;
+					resetEvent.Set();
+					return;
+				}
+				value = (T)Convert.ChangeType(result, typeofT);
+				resetEvent.Set();
+			}), (Callback)((result) => {
+				Console.Error.WriteLine("error: " + GetType().Name + ".ExecuteCachedScript");
+				throw new InvalidOperationException(result as string);
+			}));
+
+			resetEvent.WaitOne();
+			_resetEvents.Remove(resetEvent);
 			return value;
 		}
 
@@ -156,10 +228,11 @@ namespace Socketron {
 		public RendererProcess Renderer;
 		public CallbackManager Callbacks;
 		SocketClient _socketClient;
-		Dictionary<ushort, Callback> _successList;
-		Dictionary<ushort, Callback> _errorList;
-		ushort _sequenceId = 0;
+		Dictionary<int, Callback> _successList;
+		Dictionary<int, Callback> _errorList;
+		int _sequenceId = 1;
 		static Dictionary<Thread, SocketronClient> _Clients;
+		Stack<int> _freeIds = new Stack<int>();
 
 		static SocketronClient() {
 			_Clients = new Dictionary<Thread, SocketronClient>();
@@ -202,8 +275,8 @@ namespace Socketron {
 			_socketClient.On("connect", _OnConnect);
 			_socketClient.On("data", _OnData);
 
-			_successList = new Dictionary<ushort, Callback>();
-			_errorList = new Dictionary<ushort, Callback>();
+			_successList = new Dictionary<int, Callback>();
+			_errorList = new Dictionary<int, Callback>();
 			Callbacks = new CallbackManager();
 
 			Main = new MainProcess();
@@ -224,6 +297,7 @@ namespace Socketron {
 		public void Close() {
 			ID = string.Empty;
 			//JSModule.DisposeAll();
+			Renderer.Close();
 			_socketClient.Close();
 		}
 
@@ -246,8 +320,14 @@ namespace Socketron {
 				Params = args
 			};
 			if (callback != null) {
-				data.SequenceId = _sequenceId;
-				_successList[_sequenceId++] = callback;
+				if (_freeIds.Count > 0) {
+					int id = _freeIds.Pop();
+					data.SequenceId = id;
+					_successList[id] = callback;
+				} else {
+					data.SequenceId = _sequenceId;
+					_successList[_sequenceId++] = callback;
+				}
 			}
 			//Console.WriteLine("data: " + data.Stringify());
 			Write(data.ToBuffer(DataType.Text16, LocalConfig.Encoding));
@@ -257,18 +337,18 @@ namespace Socketron {
 			if (module == null) {
 				return;
 			}
-			if (module._id <= 0) {
+			if (module.API.id <= 0) {
 				return;
 			}
-			Callbacks.RemoveInstanceEvents(module._id);
+			Callbacks.RemoveInstanceEvents(module.API.id);
 			string script = string.Format(
 				"this.removeObject({0});",
-				module._id
+				module.API.id
 			);
 			//Console.WriteLine("RemoveObject: " + id);
 			if (module is DOMModule) {
 				DOMModule domModule = module as DOMModule;
-				Renderer.ExecuteJavaScript(domModule._webContentsId, script);
+				//Renderer.ExecuteJavaScript(domModule.API.webContentsId, script);
 			} else {
 				Main.ExecuteJavaScript(script);
 			}
@@ -318,12 +398,17 @@ namespace Socketron {
 			Callback success = args[1] as Callback;
 			Callback error = args[2] as Callback;
 			if (success != null) {
-				data.SequenceId = _sequenceId;
-				_successList[_sequenceId] = success;
-				if (error != null) {
-					_errorList[_sequenceId] = error;
+				int id = _sequenceId;
+				if (_freeIds.Count > 0) {
+					id = _freeIds.Pop();
+				} else {
+					_sequenceId++;
 				}
-				_sequenceId++;
+				data.SequenceId = id;
+				_successList[id] = success;
+				if (error != null) {
+					_errorList[id] = error;
+				}
 			}
 			if (LocalConfig.IsDebug && LocalConfig.EnableDebugPayloads) {
 				_DebugLog("send: {0}", data.Stringify());
@@ -368,7 +453,7 @@ namespace Socketron {
 				}
 				return;
 			}
-			ushort sequenceId = (ushort)data.SequenceId;
+			int sequenceId = (int)data.SequenceId;
 
 			if (data.Status == "error") {
 				if (_errorList.ContainsKey(sequenceId)) {
@@ -379,6 +464,7 @@ namespace Socketron {
 				} else {
 					throw new InvalidOperationException(data.Params as string);
 				}
+				_freeIds.Push(sequenceId);
 				return;
 			}
 			if (_successList.ContainsKey(sequenceId)) {
@@ -387,6 +473,7 @@ namespace Socketron {
 				_successList.Remove(sequenceId);
 				_errorList.Remove(sequenceId);
 			}
+			_freeIds.Push(sequenceId);
 		}
 
 		protected void _OnEvent(SocketronData data) {

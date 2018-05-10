@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -30,8 +29,10 @@ namespace Socketron.Electron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		/// <param name="client"></param>
-		public Cookies(SocketronClient client) {
-			_client = client;
+		/// <param name="id"></param>
+		public Cookies(SocketronClient client, int id) {
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -51,8 +52,11 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
-				Cookie[] cookies = (argsList[1] as object[]).Cast<Cookie>().ToArray();
+				Error error = new Error(API.client, (int)argsList[0]);
+				Cookie[] cookies = Array.ConvertAll(
+					argsList[1] as object[],
+					value => Cookie.Parse(value as string)
+				);
 				callback?.Invoke(error, cookies);
 			});
 			string script = ScriptBuilder.Build(
@@ -66,11 +70,11 @@ namespace Socketron.Electron {
 				Script.AddObject("err"),
 				Name.Escape(),
 				_callbackListId,
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				filter.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -90,7 +94,7 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
+				Error error = new Error(API.client, (int)argsList[0]);
 				callback?.Invoke(error);
 			});
 			string script = ScriptBuilder.Build(
@@ -104,11 +108,11 @@ namespace Socketron.Electron {
 				Script.AddObject("err"),
 				Name.Escape(),
 				_callbackListId,
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				details.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -136,12 +140,12 @@ namespace Socketron.Electron {
 				),
 				Name.Escape(),
 				_callbackListId,
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				url.Escape(),
 				name.Escape()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -166,10 +170,10 @@ namespace Socketron.Electron {
 				),
 				Name.Escape(),
 				_callbackListId,
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

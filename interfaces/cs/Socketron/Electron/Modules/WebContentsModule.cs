@@ -11,11 +11,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public WebContentsModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public WebContentsModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -36,14 +42,14 @@ namespace Socketron.Electron {
 					"}}",
 					"return result;"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("contents")
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
+			object[] result = API._ExecuteBlocking<object[]>(script);
 			List<WebContents> contentsList = new List<WebContents>();
 			foreach (object[] item in result) {
 				int id = (int)item[0];
-				WebContents contents = new WebContents(_client, id);
+				WebContents contents = new WebContents(API.client, id);
 				contentsList.Add(contents);
 			}
 			return contentsList;
@@ -59,10 +65,10 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"return {0}.getFocusedWebContents();"
 				),
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new WebContents(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new WebContents(API.client, result);
 		}
 
 		/// <summary>
@@ -76,12 +82,12 @@ namespace Socketron.Electron {
 					"var contents = {0}.fromId({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id,
 				Script.AddObject("contents")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new WebContents(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new WebContents(API.client, result);
 		}
 	}
 }

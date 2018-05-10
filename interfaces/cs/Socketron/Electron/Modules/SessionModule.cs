@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public SessionModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public SessionModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -27,11 +33,11 @@ namespace Socketron.Electron {
 						"var session = {0}.defaultSession;",
 						"return {1};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Script.AddObject("session")
 				);
-				int result = _ExecuteBlocking<int>(script);
-				return new Session(_client, result);
+				int result = API._ExecuteBlocking<int>(script);
+				return new Session(API.client, result);
 			}
 		}
 
@@ -43,7 +49,7 @@ namespace Socketron.Electron {
 						"var session = {0}.fromPartition({1});",
 						"return {2};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					partition.Escape(),
 					Script.AddObject("session")
 				);
@@ -53,14 +59,14 @@ namespace Socketron.Electron {
 						"var session = {0}.fromPartition({1},{2});",
 						"return {3};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					partition.Escape(),
 					options.Stringify(),
 					Script.AddObject("session")
 				);
 			}
-			int result = _ExecuteBlocking<int>(script);
-			return new Session(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Session(API.client, result);
 		}
 	}
 }

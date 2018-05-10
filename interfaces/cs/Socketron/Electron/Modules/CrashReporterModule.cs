@@ -11,11 +11,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public CrashReporterModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public CrashReporterModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -27,12 +33,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void start(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				"{0}.start({1});",
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("start", options);
 		}
 
 		/// <summary>
@@ -44,9 +45,9 @@ namespace Socketron.Electron {
 		public CrashReport getLastCrashReport() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getLastCrashReport();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return CrashReport.FromObject(result);
 		}
 
@@ -58,9 +59,9 @@ namespace Socketron.Electron {
 		public List<CrashReport> getUploadedReports() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getUploadedReports();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
+			object[] result = API._ExecuteBlocking<object[]>(script);
 			List<CrashReport> reports = new List<CrashReport>();
 			foreach (object item in result) {
 				reports.Add(CrashReport.FromObject(item));
@@ -75,11 +76,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool getUploadToServer() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getUploadToServer();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("getUploadToServer");
 		}
 
 		/// <summary>
@@ -91,12 +88,7 @@ namespace Socketron.Electron {
 		/// *macOS* Whether reports should be submitted to the server.
 		/// </param>
 		public void setUploadToServer(bool uploadToServer) {
-			string script = ScriptBuilder.Build(
-				"{0}.setUploadToServer({1});",
-				Script.GetObject(_id),
-				uploadToServer.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setUploadToServer", uploadToServer);
 		}
 
 		/// <summary>
@@ -110,13 +102,7 @@ namespace Socketron.Electron {
 		/// Parameter value, must be less than 64 characters long.
 		/// </param>
 		public void addExtraParameter(string key, string value) {
-			string script = ScriptBuilder.Build(
-				"{0}.addExtraParameter({1},{2});",
-				Script.GetObject(_id),
-				key.Escape(),
-				value.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("addExtraParameter", key, value);
 		}
 
 		/// <summary>
@@ -128,12 +114,7 @@ namespace Socketron.Electron {
 		/// Parameter key, must be less than 64 characters long.
 		/// </param>
 		public void removeExtraParameter(string key) {
-			string script = ScriptBuilder.Build(
-				"{0}.removeExtraParameter({1});",
-				Script.GetObject(_id),
-				key.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("removeExtraParameter", key);
 		}
 
 		/// <summary>
@@ -143,9 +124,9 @@ namespace Socketron.Electron {
 		public JsonObject getParameters() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getParameters();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 	}

@@ -16,15 +16,15 @@ namespace Socketron {
 			/// This constructor is used for internally by the library.
 			/// </summary>
 			public Console() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			public void clear() {
 				string script = ScriptBuilder.Build(
 					"{0}.clear();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void count(string label = null) {
@@ -32,16 +32,16 @@ namespace Socketron {
 				if (label == null) {
 					script = ScriptBuilder.Build(
 						"{0}.count();",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 				} else {
 					script = ScriptBuilder.Build(
 						"{0}.count({1});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						label.Escape()
 					);
 				}
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void countReset(string label = null) {
@@ -49,16 +49,16 @@ namespace Socketron {
 				if (label == null) {
 					script = ScriptBuilder.Build(
 						"{0}.countReset();",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 				} else {
 					script = ScriptBuilder.Build(
 						"{0}.countReset({1});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						label.Escape()
 					);
 				}
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void log(params object[] args) {
@@ -67,10 +67,10 @@ namespace Socketron {
 				}
 				string script = ScriptBuilder.Build(
 					"{0}.log({1});",
-					Script.GetObject(_id),
-					CreateParams(args)
+					Script.GetObject(API.id),
+					API.CreateParams(args)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void table(params object[] args) {
@@ -79,19 +79,19 @@ namespace Socketron {
 				}
 				string script = ScriptBuilder.Build(
 					"{0}.table({1});",
-					Script.GetObject(_id),
-					CreateParams(args)
+					Script.GetObject(API.id),
+					API.CreateParams(args)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void trace(params object[] args) {
 				string script = ScriptBuilder.Build(
 					"{0}.trace({1});",
-					Script.GetObject(_id),
-					CreateParams(args)
+					Script.GetObject(API.id),
+					API.CreateParams(args)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void time(string label = null) {
@@ -99,16 +99,16 @@ namespace Socketron {
 				if (label == null) {
 					script = ScriptBuilder.Build(
 						"{0}.time();",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 				} else {
 					script = ScriptBuilder.Build(
 						"{0}.time({1});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						label.Escape()
 					);
 				}
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			public void timeEnd(string label = null) {
@@ -116,16 +116,16 @@ namespace Socketron {
 				if (label == null) {
 					script = ScriptBuilder.Build(
 						"{0}.timeEnd();",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 				} else {
 					script = ScriptBuilder.Build(
 						"{0}.timeEnd({1});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						label.Escape()
 					);
 				}
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 		}
 	}

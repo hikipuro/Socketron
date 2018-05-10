@@ -2,17 +2,19 @@
 using Socketron.Electron;
 
 namespace Socketron {
-	public class RendererObject : DOMModule {
-		protected Window window;
-		protected Navigator navigator;
-		protected Document document;
-
+	public class RendererObject : Window {
 		public void Init(SocketronClient client, WebContents webContents) {
-			_client = client;
-			_webContentsId = webContents.id;
-			window = GetObject<Window>("window");
-			navigator = window.navigator;
-			document = window.document;
+			API.client = client;
+			(API as SocketronDOMAPI).webContentsId = webContents.id;
+			API.id = _GetWindowObjectId();
+		}
+
+		private int _GetWindowObjectId() {
+			string script = ScriptBuilder.Build(
+				"return {0};",
+				Script.AddObject("window")
+			);
+			return API._ExecuteBlocking<int>(script);
 		}
 	}
 }

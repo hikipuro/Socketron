@@ -157,7 +157,12 @@ class SocketronNode {
 			}
 		});
 		this._addIpcEvent("event", (e, clientId, eventName, args) => {
-			this.emitToClient(clientId, eventName, args);
+			//this.emitToClient(clientId, eventName, args);
+			const client = this._server.findClientById(clientId);
+			if (client == null) {
+				return;
+			}
+			client.emit(eventName, args);
 		});
 		this._addIpcEvent("quit", (e) => {
 			electron.app.quit();

@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DownloadItem : JSModule {
+	public class DownloadItem: JSModule {
 		/// <summary>
 		/// DownloadItem instance events.
 		/// </summary>
@@ -32,14 +32,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="path"></param>
 		public void setSavePath(string path) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setSavePath({1});"
-				),
-				Script.GetObject(_id),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setSavePath", path);
 		}
 
 		/// <summary>
@@ -51,24 +44,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getSavePath() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.getSavePath();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getSavePath");
 		}
 
 		/// <summary>
 		/// Pauses the download.
 		/// </summary>
 		public void pause() {
-			string script = ScriptBuilder.Build(
-				"{0}.pause();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("pause");
 		}
 
 		/// <summary>
@@ -76,22 +59,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isPaused() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isPaused();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isPaused");
 		}
 
 		/// <summary>
 		/// Resumes the download that has been paused.
 		/// </summary>
 		public void resume() {
-			string script = ScriptBuilder.Build(
-				"{0}.resume();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("resume");
 		}
 
 		/// <summary>
@@ -99,22 +74,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool canResume() {
-			string script = ScriptBuilder.Build(
-				"return {0}.canResume();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("canResume");
 		}
 
 		/// <summary>
 		/// Cancels the download operation.
 		/// </summary>
 		public void cancel() {
-			string script = ScriptBuilder.Build(
-				"{0}.cancel();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("cancel");
 		}
 
 		/// <summary>
@@ -122,11 +89,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getURL() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getURL();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getURL");
 		}
 
 		/// <summary>
@@ -134,11 +97,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getMimeType() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getMimeType();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getMimeType");
 		}
 
 		/// <summary>
@@ -146,11 +105,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool hasUserGesture() {
-			string script = ScriptBuilder.Build(
-				"return {0}.hasUserGesture();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("hasUserGesture");
 		}
 
 		/// <summary>
@@ -158,11 +113,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getFilename() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getFilename();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getFilename");
 		}
 
 		/// <summary>
@@ -170,24 +121,16 @@ namespace Socketron.Electron {
 		/// If the size is unknown, it returns 0.
 		/// </summary>
 		/// <returns></returns>
-		public int getTotalBytes() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getTotalBytes();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<int>(script);
+		public long getTotalBytes() {
+			return API.Apply<long>("getTotalBytes");
 		}
 
 		/// <summary>
 		/// Returns Integer - The received bytes of the download item.
 		/// </summary>
 		/// <returns></returns>
-		public int getReceivedBytes() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getReceivedBytes();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<int>(script);
+		public long getReceivedBytes() {
+			return API.Apply<long>("getReceivedBytes");
 		}
 
 		/// <summary>
@@ -195,11 +138,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getContentDisposition() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getContentDisposition();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getContentDisposition");
 		}
 
 		/// <summary>
@@ -208,11 +147,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getState() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getState();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getState");
 		}
 
 		/// <summary>
@@ -222,10 +157,10 @@ namespace Socketron.Electron {
 		public string[] getURLChain() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getURLChain();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
-			return result.Cast<string>().ToArray();
+			object[] result = API._ExecuteBlocking<object[]>(script);
+			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 
 		/// <summary>
@@ -233,11 +168,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getLastModifiedTime() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getLastModifiedTime();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getLastModifiedTime");
 		}
 
 		/// <summary>
@@ -245,11 +176,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getETag() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getETag();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getETag");
 		}
 
 		/// <summary>
@@ -257,11 +184,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public double getStartTime() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getStartTime();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<double>(script);
+			return API.Apply<double>("getStartTime");
 		}
 	}
 }

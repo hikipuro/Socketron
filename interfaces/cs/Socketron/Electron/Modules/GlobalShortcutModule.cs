@@ -11,11 +11,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public GlobalShortcutModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public GlobalShortcutModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -30,7 +36,7 @@ namespace Socketron.Electron {
 			}
 			string eventName = "register";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(
@@ -40,21 +46,21 @@ namespace Socketron.Electron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.register({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				accelerator.Escape(),
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -65,10 +71,10 @@ namespace Socketron.Electron {
 		public bool isRegistered(string accelerator) {
 			string script = ScriptBuilder.Build(
 				"return {0}.isRegistered({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				accelerator.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -78,10 +84,10 @@ namespace Socketron.Electron {
 		public void unregister(string accelerator) {
 			string script = ScriptBuilder.Build(
 				"{0}.unregister({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				accelerator.Escape()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -90,9 +96,9 @@ namespace Socketron.Electron {
 		public void unregisterAll() {
 			string script = ScriptBuilder.Build(
 				"{0}.unregisterAll();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

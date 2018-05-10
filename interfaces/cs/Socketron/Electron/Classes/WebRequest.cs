@@ -8,8 +8,12 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class WebRequest : JSModule {
-		public WebRequest(SocketronClient client) {
-			_client = client;
+		public WebRequest() {
+		}
+
+		public WebRequest(SocketronClient client, int id) {
+			API.client = client;
+			API.id = id;
 		}
 
 		public void onBeforeRequest(Action listener) {

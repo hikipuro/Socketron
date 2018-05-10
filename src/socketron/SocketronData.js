@@ -21,17 +21,21 @@ class SocketronData {
 	}
 	
 	toBuffer() {
-		const buffer = Buffer.from(this.toJson(), Config.encoding);
-		if (buffer.length <= 0xFFFF) {
-			let header = new Buffer(3);
-			header.writeUInt8(DataType.Text16, 0);
-			header.writeUInt16LE(buffer.length, 1);
-			return Buffer.concat([header, buffer]);
+		const text = this.toJson();
+		const length = Buffer.byteLength(text, Config.encoding);
+		//const buffer = Buffer.from(this.toJson(), Config.encoding);
+		if (length <= 0xFFFF) {
+			let data = Buffer.allocUnsafe(3 + length);
+			data.writeUInt8(DataType.Text16, 0);
+			data.writeUInt16LE(length, 1);
+			data.write(text, 3);
+			return data;
 		} else {
-			let header = new Buffer(5);
-			header.writeUInt8(DataType.Text32, 0);
-			header.writeUInt32LE(buffer.length, 1);
-			return Buffer.concat([header, buffer]);
+			let data = Buffer.allocUnsafe(5 + length);
+			data.writeUInt8(DataType.Text32, 0);
+			data.writeUInt32LE(length, 1);
+			data.write(text, 5);
+			return data;
 		}
 	}
 

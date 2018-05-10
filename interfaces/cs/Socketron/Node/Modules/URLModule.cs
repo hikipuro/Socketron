@@ -8,7 +8,7 @@ namespace Socketron {
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class URL : JSModule {
 			public URL() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*

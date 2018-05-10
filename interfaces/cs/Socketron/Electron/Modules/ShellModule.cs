@@ -17,11 +17,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public ShellModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public ShellModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -44,10 +50,10 @@ namespace Socketron.Electron {
 		public bool showItemInFolder(string fullPath) {
 			string script = ScriptBuilder.Build(
 				"return {0}.showItemInFolder({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				fullPath.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -58,10 +64,10 @@ namespace Socketron.Electron {
 		public bool openItem(string fullPath) {
 			string script = ScriptBuilder.Build(
 				"return {0}.openItem({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				fullPath.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -76,10 +82,10 @@ namespace Socketron.Electron {
 		public bool openExternal(string url) {
 			string script = ScriptBuilder.Build(
 				"return {0}.openExternal({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				url.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		public bool openExternal(string url, JsonObject options, Action<Error> callback) {
@@ -93,7 +99,7 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
+				Error error = new Error(API.client, (int)argsList[0]);
 				callback?.Invoke(error);
 			});
 			string script = ScriptBuilder.Build(
@@ -103,14 +109,14 @@ namespace Socketron.Electron {
 						"this.emit('__event',{4},{5},errId);",
 					"}});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				url.Escape(),
 				options.Stringify(),
 				Script.AddObject("err"),
 				Name.Escape(),
 				_callbackListId
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -121,10 +127,10 @@ namespace Socketron.Electron {
 		public bool moveItemToTrash(string fullPath) {
 			string script = ScriptBuilder.Build(
 				"return {0}.moveItemToTrash({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				fullPath.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -133,9 +139,9 @@ namespace Socketron.Electron {
 		public void beep() {
 			string script = ScriptBuilder.Build(
 				"return {0}.beep();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -148,11 +154,11 @@ namespace Socketron.Electron {
 		public bool writeShortcutLink(string shortcutPath, ShortcutDetails options) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeShortcutLink({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				shortcutPath.Escape(),
 				options.Stringify()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -166,12 +172,12 @@ namespace Socketron.Electron {
 		public bool writeShortcutLink(string shortcutPath, string operation, ShortcutDetails options) {
 			string script = ScriptBuilder.Build(
 				"return {0}.writeShortcutLink({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				shortcutPath.Escape(),
 				operation.Escape(),
 				options.Stringify()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -184,10 +190,10 @@ namespace Socketron.Electron {
 		public ShortcutDetails readShortcutLink(string shortcutPath) {
 			string script = ScriptBuilder.Build(
 				"return {0}.readShortcutLink({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				shortcutPath.Escape()
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return ShortcutDetails.FromObject(result);
 		}
 	}

@@ -49,11 +49,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public Debugger() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public Debugger(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -63,26 +69,11 @@ namespace Socketron.Electron {
 		/// (optional) Requested debugging protocol version.
 		/// </param>
 		public void attach(string protocolVersion = null) {
-			string script = string.Empty;
 			if (protocolVersion == null) {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var debugger = {0};",
-						"debugger.attach();"
-					),
-					Script.GetObject(_id)
-				);
+				API.Apply("attach");
 			} else {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var debugger = {0};",
-						"debugger.attach({1});"
-					),
-					Script.GetObject(_id),
-					protocolVersion.Escape()
-				);
+				API.Apply("attach", protocolVersion);
 			}
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -90,28 +81,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isAttached() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var debugger = {0};",
-					"return debugger.isAttached();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isAttached");
 		}
 
 		/// <summary>
 		/// Detaches the debugger from the webContents.
 		/// </summary>
 		public void detach() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var debugger = {0};",
-					"debugger.detach();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("detach");
 		}
 
 		/// <summary>
@@ -119,28 +96,11 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="method"></param>
 		public void sendCommand(string method) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var debugger = {0};",
-					"debugger.sendCommand({1});"
-				),
-				Script.GetObject(_id),
-				method.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("sendCommand", method);
 		}
 
 		public void sendCommand(string method, JsonObject commandParams) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var debugger = {0};",
-					"debugger.sendCommand({1},{2});"
-				),
-				Script.GetObject(_id),
-				method.Escape(),
-				commandParams.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("sendCommand", method, commandParams);
 		}
 
 		public void sendCommand(string method, JsonObject commandParams, Action<Error, JsonObject> callback) {
@@ -151,7 +111,7 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
+				Error error = new Error(API.client, (int)argsList[0]);
 				JsonObject json = new JsonObject(argsList[1]);
 				callback?.Invoke(error, json);
 			});
@@ -166,12 +126,12 @@ namespace Socketron.Electron {
 				Script.AddObject("err"),
 				Name.Escape(),
 				_callbackListId,
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				method.Escape(),
 				commandParams.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

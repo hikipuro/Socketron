@@ -9,7 +9,7 @@ namespace Socketron {
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class OS : JSModule {
 			public OS() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*
@@ -22,7 +22,7 @@ namespace Socketron {
 					"os".Escape(),
 					Script.AddObject("module")
 				);
-				_id = SocketronClient.ExecuteBlocking<int>(script);
+				API.id = SocketronClient.ExecuteBlocking<int>(script);
 			}
 			//*/
 
@@ -30,7 +30,7 @@ namespace Socketron {
 				get {
 					string script = ScriptBuilder.Build(
 						"return {0}.EOL;",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 					return SocketronClient.ExecuteBlocking<string>(script);
 				}
@@ -39,7 +39,7 @@ namespace Socketron {
 			public string arch() {
 				string script = ScriptBuilder.Build(
 					"return {0}.arch();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -48,7 +48,7 @@ namespace Socketron {
 				get {
 					string script = ScriptBuilder.Build(
 						"return {0}.constants;",
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 					object result = SocketronClient.ExecuteBlocking<object>(script);
 					return new JsonObject(result);
@@ -58,7 +58,7 @@ namespace Socketron {
 			public List<JsonObject> cpus() {
 				string script = ScriptBuilder.Build(
 					"return {0}.cpus();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				object[] result = SocketronClient.ExecuteBlocking<object[]>(script);
 				return JsonObject.FromArray(result);
@@ -67,7 +67,7 @@ namespace Socketron {
 			public string endianness() {
 				string script = ScriptBuilder.Build(
 					"return {0}.endianness();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -75,7 +75,7 @@ namespace Socketron {
 			public long freemem() {
 				string script = ScriptBuilder.Build(
 					"return {0}.freemem();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<long>(script);
 			}
@@ -83,7 +83,7 @@ namespace Socketron {
 			public string homedir() {
 				string script = ScriptBuilder.Build(
 					"return {0}.homedir();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -91,7 +91,7 @@ namespace Socketron {
 			public string hostname() {
 				string script = ScriptBuilder.Build(
 					"return {0}.hostname();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -99,7 +99,7 @@ namespace Socketron {
 			public List<JsonObject> loadavg() {
 				string script = ScriptBuilder.Build(
 					"return {0}.loadavg();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				object[] result = SocketronClient.ExecuteBlocking<object[]>(script);
 				return JsonObject.FromArray(result);
@@ -108,7 +108,7 @@ namespace Socketron {
 			public JsonObject networkInterfaces() {
 				string script = ScriptBuilder.Build(
 					"return {0}.networkInterfaces();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				object result = SocketronClient.ExecuteBlocking<object>(script);
 				return new JsonObject(result);
@@ -117,7 +117,7 @@ namespace Socketron {
 			public string platform() {
 				string script = ScriptBuilder.Build(
 					"return {0}.platform();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -125,7 +125,7 @@ namespace Socketron {
 			public string release() {
 				string script = ScriptBuilder.Build(
 					"return {0}.release();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -133,7 +133,7 @@ namespace Socketron {
 			public string tmpdir() {
 				string script = ScriptBuilder.Build(
 					"return {0}.tmpdir();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -141,7 +141,7 @@ namespace Socketron {
 			public long totalmem() {
 				string script = ScriptBuilder.Build(
 					"return {0}.totalmem();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<long>(script);
 			}
@@ -149,7 +149,7 @@ namespace Socketron {
 			public string type() {
 				string script = ScriptBuilder.Build(
 					"return {0}.type();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
@@ -157,7 +157,7 @@ namespace Socketron {
 			public long uptime() {
 				string script = ScriptBuilder.Build(
 					"return {0}.uptime();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				return SocketronClient.ExecuteBlocking<long>(script);
 			}
@@ -165,7 +165,7 @@ namespace Socketron {
 			public JsonObject userInfo() {
 				string script = ScriptBuilder.Build(
 					"return {0}.userInfo();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 				object result = SocketronClient.ExecuteBlocking<object>(script);
 				return new JsonObject(result);
@@ -174,7 +174,7 @@ namespace Socketron {
 			public JsonObject userInfo(JsonObject options) {
 				string script = ScriptBuilder.Build(
 					"return {0}.userInfo({1});",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					options.Stringify()
 				);
 				object result = SocketronClient.ExecuteBlocking<object>(script);

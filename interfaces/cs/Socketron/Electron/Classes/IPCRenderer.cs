@@ -16,8 +16,8 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public IPCRenderer(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>

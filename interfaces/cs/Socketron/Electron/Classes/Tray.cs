@@ -90,6 +90,12 @@ namespace Socketron.Electron {
 
 		/// <summary>
 		/// This constructor is used for internally by the library.
+		/// </summary>
+		public Tray() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
 		/// <para>
 		/// If you are looking for the Tray constructors,
 		/// please use electron.Tray.Create() method instead.
@@ -98,24 +104,15 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public Tray(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
 		/// Destroys the tray icon immediately.
 		/// </summary>
 		public void destroy() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var tray = {0};",
-					"tray.destroy();",
-					"{1};"
-				),
-				Script.GetObject(_id),
-				Script.RemoveObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("destroy");
 		}
 
 		/// <summary>
@@ -130,10 +127,10 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"{0}.setImage({1});"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(image._id)
+				Script.GetObject(API.id),
+				Script.GetObject(image.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -141,14 +138,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="image"></param>
 		public void setImage(string image) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setImage({1});"
-				),
-				Script.GetObject(_id),
-				image.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setImage", image);
 		}
 
 		/// <summary>
@@ -164,10 +154,10 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"{0}.setPressedImage({1});"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(image._id)
+				Script.GetObject(API.id),
+				Script.GetObject(image.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -175,14 +165,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="toolTip"></param>
 		public void setToolTip(string toolTip) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setToolTip({1});"
-				),
-				Script.GetObject(_id),
-				toolTip.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setToolTip", toolTip);
 		}
 
 		/// <summary>
@@ -191,14 +174,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="title"></param>
 		public void setTitle(string title) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setToolTip({1});"
-				),
-				Script.GetObject(_id),
-				title.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setTitle", title);
 		}
 
 		/// <summary>
@@ -207,14 +183,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="mode"></param>
 		public void setHighlightMode(string mode) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setHighlightMode({1});"
-				),
-				Script.GetObject(_id),
-				mode.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setHighlightMode", mode);
 		}
 
 		/// <summary>
@@ -223,14 +192,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="mode"></param>
 		public void displayBalloon(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.displayBalloon({1});"
-				),
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("displayBalloon", options);
 		}
 
 		/// <summary>
@@ -242,13 +204,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void popUpContextMenu() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.popUpContextMenu();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("popUpContextMenu");
 		}
 
 		/// <summary>
@@ -268,10 +224,10 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"{0}.popUpContextMenu({1});"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(menu._id)
+				Script.GetObject(API.id),
+				Script.GetObject(menu.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -292,11 +248,11 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"{0}.popUpContextMenu({1},{2});"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(menu._id),
+				Script.GetObject(API.id),
+				Script.GetObject(menu.API.id),
 				position.Stringify()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -311,10 +267,10 @@ namespace Socketron.Electron {
 				ScriptBuilder.Script(
 					"{0}.setContextMenu({1});"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(menu._id)
+				Script.GetObject(API.id),
+				Script.GetObject(menu.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -323,13 +279,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public Rectangle getBounds() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.getBounds();"
-				),
-				Script.GetObject(_id)
-			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API.Apply<object>("getBounds");
 			return Rectangle.FromObject(result);
 		}
 
@@ -338,13 +288,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isDestroyed() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.isDestroyed();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isDestroyed");
 		}
 	}
 }

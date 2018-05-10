@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public NativeImageModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public NativeImageModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -27,11 +33,11 @@ namespace Socketron.Electron {
 					"var image = {0}.createEmpty();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -47,12 +53,12 @@ namespace Socketron.Electron {
 					"var image = {0}.createFromPath({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				path.Escape(),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -67,12 +73,12 @@ namespace Socketron.Electron {
 					"var image = {0}.createFromBuffer({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(buffer._id),
+				Script.GetObject(API.id),
+				Script.GetObject(buffer.API.id),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -86,12 +92,12 @@ namespace Socketron.Electron {
 					"var image = {0}.createFromDataURL({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				dataURL.Escape(),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -108,12 +114,12 @@ namespace Socketron.Electron {
 					"var image = {0}.createFromNamedImage({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				imageName.Escape(),
 				Script.AddObject("image")
 			);
 			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			return new NativeImage(API.client, result);
 		}
 	}
 }

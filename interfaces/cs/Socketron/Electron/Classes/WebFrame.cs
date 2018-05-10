@@ -7,107 +7,86 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebFrame {
+	public class WebFrame: JSModule {
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public WebFrame() {
+		}
+
 		public WebFrame top {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetObject<WebFrame>("top"); }
 		}
 
 		public WebFrame opener {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetObject<WebFrame>("opener"); }
 		}
 
 		public WebFrame parent {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetObject<WebFrame>("parent"); }
 		}
 
 		public WebFrame firstChild {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetObject<WebFrame>("firstChild"); }
 		}
 
 		public WebFrame nextSibling {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetObject<WebFrame>("nextSibling"); }
 		}
 
 		public int routingId {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+			get { return API.GetProperty<int>("routingId"); }
 		}
 
 		public void setZoomFactor(double factor) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setZoomFactor", factor);
 		}
 
 		public double getZoomFactor() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			return API.Apply<double>("getZoomFactor");
 		}
 
 		public void setZoomLevel(double level) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setZoomLevel", level);
 		}
 
 		public double getZoomLevel() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			return API.Apply<double>("getZoomLevel");
 		}
 
 		public void setVisualZoomLevelLimits(double minimumLevel, double maximumLevel) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setVisualZoomLevelLimits", minimumLevel, maximumLevel);
 		}
 
 		public void setLayoutZoomLevelLimits(double minimumLevel, double maximumLevel) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setLayoutZoomLevelLimits", minimumLevel, maximumLevel);
 		}
 
 		public void setSpellCheckProvider(string language, bool autoCorrectWord, JsonObject provider) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setSpellCheckProvider", language, autoCorrectWord, provider);
 		}
 
 		public void registerURLSchemeAsSecure(string scheme) {
 			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("registerURLSchemeAsSecure", scheme);
 		}
 
 		public void registerURLSchemeAsBypassingCSP(string scheme) {
 			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("registerURLSchemeAsBypassingCSP", scheme);
 		}
 
 		public void registerURLSchemeAsPrivileged(string scheme) {
 			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("registerURLSchemeAsPrivileged", scheme);
 		}
 
 		public void insertText(string text) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("insertText", text);
 		}
 
 		public void executeJavaScript(string code) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("executeJavaScript", code);
 		}
 
 		public void executeJavaScriptInIsolatedWorld(int worldId) {
@@ -131,13 +110,12 @@ namespace Socketron.Electron {
 		}
 
 		public JsonObject getResourceUsage() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			object result = API.Apply<object>("getResourceUsage");
+			return new JsonObject(result);
 		}
 
 		public void clearCache() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("clearCache");
 		}
 
 		public WebFrame getFrameForSelector(string selector) {

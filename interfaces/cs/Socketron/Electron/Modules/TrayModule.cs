@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public TrayModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public TrayModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -28,12 +34,12 @@ namespace Socketron.Electron {
 					"var tray = new Tray({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(image._id),
+				Script.GetObject(API.id),
+				Script.GetObject(image.API.id),
 				Script.AddObject("tray")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Tray(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Tray(API.client, result);
 		}
 
 		/// <summary>
@@ -47,12 +53,12 @@ namespace Socketron.Electron {
 					"var tray = new Tray({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				image.Escape(),
 				Script.AddObject("tray")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Tray(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Tray(API.client, result);
 		}
 	}
 }

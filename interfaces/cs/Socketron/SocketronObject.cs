@@ -6,7 +6,7 @@ namespace Socketron {
 
 		public override void Init(SocketronClient client) {
 			base.Init(client);
-			_client = client;
+			API.client = client;
 			electron = require<ElectronModule>("electron");
 			electron.Init();
 		}

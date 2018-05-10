@@ -60,6 +60,7 @@ class SocketronServer extends EventEmitter {
 	_onData(client, data) {
 		const payload = client.payload;
 		if (data != null) {
+			console.log(typeof data);
 			payload.data = Buffer.concat([payload.data, data]);
 		}
 		const offset = payload.dataOffset;
@@ -120,7 +121,9 @@ class SocketronServer extends EventEmitter {
 					const text = payload.getStringData();
 					this.emit("data", client, JSON.parse(text));
 				}
-				payload.data = payload.data.slice(offset + payload.dataLength);
+				var newData = payload.data.slice(offset + payload.dataLength);
+				//delete payload.data;
+				payload.data = newData;
 				payload.dataOffset = 0;
 				payload.state = ReadState.Type;
 				break;

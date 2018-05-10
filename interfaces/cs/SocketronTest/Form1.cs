@@ -35,9 +35,12 @@ namespace SocketronTest {
 			if (IsDisposed) {
 				return;
 			}
-			textBox1.Invoke((MethodInvoker)(() => {
-				textBox1.AppendText(text + Environment.NewLine);
-			}));
+			try {
+				textBox1.Invoke((MethodInvoker)(() => {
+					textBox1.AppendText(text + Environment.NewLine);
+				}));
+			} catch (Exception) {
+			}
 			//*/
 		}
 	}

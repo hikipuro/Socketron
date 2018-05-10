@@ -31,11 +31,11 @@
 		/// <summary>
 		/// Start date of the certificate being valid in seconds.
 		/// </summary>
-		public ulong validStart;
+		public ulong? validStart;
 		/// <summary>
 		/// End date of the certificate being valid in seconds.
 		/// </summary>
-		public ulong validExpiry;
+		public ulong? validExpiry;
 		/// <summary>
 		/// Fingerprint of the certificate.
 		/// </summary>

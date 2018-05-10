@@ -11,10 +11,16 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public BrowserViewModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		public BrowserViewModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -32,12 +38,12 @@ namespace Socketron.Electron {
 					"var view = new BrowserView({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.AddObject("view")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
-			return new BrowserView(_client, result);
+			return new BrowserView(API.client, result);
 		}
 
 
@@ -55,17 +61,11 @@ namespace Socketron.Electron {
 					"}}",
 					"return result;"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("view")
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
-			List<BrowserView> views = new List<BrowserView>();
-			foreach (object item in result) {
-				int id = (int)item;
-				BrowserView view = new BrowserView(_client, id);
-				views.Add(view);
-			}
-			return views;
+			object[] result = API._ExecuteBlocking<object[]>(script);
+			return API.CreateObjectList<BrowserView>(result);
 		}
 
 		/// <summary>
@@ -86,12 +86,12 @@ namespace Socketron.Electron {
 					"}}",
 					"return {1};"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(webContents._id),
+				Script.GetObject(API.id),
+				Script.GetObject(webContents.API.id),
 				Script.AddObject("view")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserView(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserView(API.client, result);
 		}
 
 		/// <summary>
@@ -108,12 +108,12 @@ namespace Socketron.Electron {
 					"}}",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id,
 				Script.AddObject("view")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserView(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserView(API.client, result);
 		}
 	}
 }

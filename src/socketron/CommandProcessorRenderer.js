@@ -4,6 +4,7 @@ const SocketronData = require("./SocketronData");
 class RendererContext extends EventEmitter {
 	constructor() {
 		super();
+		this.processor = null;
 		this.clientId = "";
 		this.require = require;
 		this._objects = [];
@@ -12,7 +13,8 @@ class RendererContext extends EventEmitter {
 	}
 	
 	emit(eventName, ...args) {
-		super.emit("emit", this.clientId, eventName, args);
+		//super.emit("emit", this.clientId, eventName, args);
+		this.processor.socketron.emitToClient(this.clientId, eventName, args);
 	}
 
 	addObject(obj) {
@@ -49,14 +51,30 @@ class CommandProcessorRenderer extends EventEmitter {
 		super();
 		this.socketron = null;
 		this.context = new RendererContext();
+		this.context.processor = this;
 		this.context.on("emit", (clientId, eventName, args) => {
 			this.socketron.emitToClient(clientId, eventName, args);
 		});
 		this._data = null;
 		this._clientId = null;
+		this._cache = [""];
 	}
 
 	run(data, clientId) {
+		//this._data = data;
+		//this._clientId = clientId;
+		try {
+			this.context.clientId = clientId;
+			let result = this[data.func].apply(this, data.args);
+			this._sendCallback(data.sequenceId, clientId, result);
+		} catch (e) {
+			console.error(e);
+			this._sendError(data.sequenceId, clientId, e.stack);
+		}
+		//this._data = null;
+		//this._clientId = null;
+		return;
+
 		const func = this._getFunction(data.func);
 		if (func == null) {
 			this._sendCallback(data.sequenceId, clientId, "function not found: " + data.func);
@@ -104,8 +122,18 @@ class CommandProcessorRenderer extends EventEmitter {
 		//console.log(script);
 		const clientId = this._clientId;
 		const func = Function(script);
-		const result = func.call(this.context);
-		return result;
+		return func.call(this.context);
+	}
+
+	cacheScript(script) {
+		const func = Function(script);
+		this._cache.push(func);
+		return this._cache.length - 1;
+	}
+	
+	executeCachedScript(script) {
+		const func = this._cache[script];
+		return func.call(this.context);
 	}
 
 	insertJavaScript(url) {

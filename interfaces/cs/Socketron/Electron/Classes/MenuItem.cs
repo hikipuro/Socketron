@@ -233,11 +233,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public MenuItem() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public MenuItem(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -245,21 +251,8 @@ namespace Socketron.Electron {
 		/// this property can be dynamically changed.
 		/// </summary>
 		public bool enabled {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.enabled;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<bool>(script);
-			}
-			set {
-				string script = ScriptBuilder.Build(
-					"{0}.enabled = {1};",
-					Script.GetObject(_id),
-					value.Escape()
-				);
-				_ExecuteJavaScript(script);
-			}
+			get { return API.GetProperty<bool>("enabled"); }
+			set { API.SetProperty("enabled", value); }
 		}
 
 		/// <summary>
@@ -267,21 +260,8 @@ namespace Socketron.Electron {
 		/// this property can be dynamically changed.
 		/// </summary>
 		public bool visible {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.visible;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<bool>(script);
-			}
-			set {
-				string script = ScriptBuilder.Build(
-					"{0}.visible = {1};",
-					Script.GetObject(_id),
-					value.Escape()
-				);
-				_ExecuteJavaScript(script);
-			}
+			get { return API.GetProperty<bool>("visible"); }
+			set { API.SetProperty("visible", value); }
 		}
 
 		/// <summary>
@@ -289,42 +269,16 @@ namespace Socketron.Electron {
 		/// this property can be dynamically changed.
 		/// </summary>
 		public bool @checked {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.checked;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<bool>(script);
-			}
-			set {
-				string script = ScriptBuilder.Build(
-					"{0}.checked = {1};",
-					Script.GetObject(_id),
-					value.Escape()
-				);
-				_ExecuteJavaScript(script);
-			}
+			get { return API.GetProperty<bool>("checked"); }
+			set { API.SetProperty("checked", value); }
 		}
 
 		/// <summary>
 		/// A String representing the menu items visible label.
 		/// </summary>
 		public string label {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.label;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<string>(script);
-			}
-			set {
-				string script = ScriptBuilder.Build(
-					"{0}.label = {1};",
-					Script.GetObject(_id),
-					value.Escape()
-				);
-				_ExecuteJavaScript(script);
-			}
+			get { return API.GetProperty<string>("label"); }
+			set { API.SetProperty("label", value); }
 		}
 
 		/// <summary>
@@ -342,12 +296,12 @@ namespace Socketron.Electron {
 						"this._addClientEventListener({1},{2},listener);",
 						"item.click = listener;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Name.Escape(),
 					_callbackListId
 				);
 				_callbackListId++;
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 		}
 	}

@@ -14,7 +14,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		/// <returns></returns>
 		public static bool isDefaultApp(this NodeModules.Process process) {
-			return process.GetProperty<bool>("defaultApp");
+			return process.API.GetProperty<bool>("defaultApp");
 		}
 
 		/// <summary>
@@ -30,7 +30,7 @@ namespace Socketron.Electron {
 				"}",
 				"return self.mas;"
 			);
-			return process.ExecuteBlocking<bool>(script);
+			return process.API.ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -47,7 +47,7 @@ namespace Socketron.Electron {
 				"}",
 				"return self.noAsar;"
 			);
-			return process.ExecuteBlocking<bool>(script);
+			return process.API.ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -56,7 +56,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		/// <returns></returns>
 		public static string getResourcesPath(this NodeModules.Process process) {
-			return process.GetProperty<string>("resourcesPath");
+			return process.API.GetProperty<string>("resourcesPath");
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace Socketron.Electron {
 				"}",
 				"return self.traceProcessWarnings;"
 			);
-			return process.ExecuteBlocking<bool>(script);
+			return process.API.ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -84,7 +84,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		/// <returns></returns>
 		public static string getType(this NodeModules.Process process) {
-			return process.GetProperty<string>("type");
+			return process.API.GetProperty<string>("type");
 		}
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		/// <returns></returns>
 		public static string getVersionsChrome(this NodeModules.Process process) {
-			return process.GetProperty<string>("versions.chrome");
+			return process.API.GetProperty<string>("versions.chrome");
 		}
 
 		/// <summary>
@@ -102,7 +102,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		/// <returns></returns>
 		public static string getVersionsElectron(this NodeModules.Process process) {
-			return process.GetProperty<string>("versions.electron");
+			return process.API.GetProperty<string>("versions.electron");
 		}
 
 		/// <summary>
@@ -118,7 +118,7 @@ namespace Socketron.Electron {
 				"}",
 				"return self.windowsStore;"
 			);
-			return process.ExecuteBlocking<bool>(script);
+			return process.API.ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -127,7 +127,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		public static void crash(this NodeModules.Process process) {
 			string script = "self.crash();";
-			process.Execute(script);
+			process.API.Execute(script);
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public static CPUUsage getCPUUsage(this NodeModules.Process process) {
 			string script = "return self.getCPUUsage();";
-			object result = process.ExecuteBlocking<object>(script);
+			object result = process.API.ExecuteBlocking<object>(script);
 			return CPUUsage.FromObject(result);
 		}
 
@@ -148,7 +148,7 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public static IOCounters getIOCounters(this NodeModules.Process process) {
 			string script = "return self.getIOCounters();";
-			object result = process.ExecuteBlocking<object>(script);
+			object result = process.API.ExecuteBlocking<object>(script);
 			return IOCounters.FromObject(result);
 		}
 
@@ -160,7 +160,7 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public static MemoryInfo getProcessMemoryInfo(this NodeModules.Process process) {
 			string script = "return self.getProcessMemoryInfo();";
-			object result = process.ExecuteBlocking<object>(script);
+			object result = process.API.ExecuteBlocking<object>(script);
 			return MemoryInfo.FromObject(result);
 		}
 
@@ -172,7 +172,7 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public static JsonObject getSystemMemoryInfo(this NodeModules.Process process) {
 			string script = "return self.getSystemMemoryInfo();";
-			object result = process.ExecuteBlocking<object>(script);
+			object result = process.API.ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -182,7 +182,7 @@ namespace Socketron.Electron {
 		/// <param name="process"></param>
 		public static void hang(this NodeModules.Process process) {
 			string script = "self.hang();";
-			process.Execute(script);
+			process.API.Execute(script);
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace Socketron.Electron {
 				"self.setFdLimit({0});",
 				maxDescriptors
 			);
-			process.Execute(script);
+			process.API.Execute(script);
 		}
 
 	}

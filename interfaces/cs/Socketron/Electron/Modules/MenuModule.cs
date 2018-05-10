@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public MenuModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public MenuModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -34,10 +40,10 @@ namespace Socketron.Electron {
 			}
 			string script = ScriptBuilder.Build(
 				"{0}.setApplicationMenu({1});",
-				Script.GetObject(_id),
-				Script.GetObject(menu._id)
+				Script.GetObject(API.id),
+				Script.GetObject(menu.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -54,14 +60,14 @@ namespace Socketron.Electron {
 					"var menu = {0}.getApplicationMenu();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("menu")
 			);
-			int result = _ExecuteBlocking<int>(script);
+			int result = API._ExecuteBlocking<int>(script);
 			if (result <= 0) {
 				return null;
 			}
-			return new Menu(_client, result);
+			return new Menu(API.client, result);
 		}
 
 		/// <summary>
@@ -79,10 +85,10 @@ namespace Socketron.Electron {
 		public void sendActionToFirstResponder(string action) {
 			string script = ScriptBuilder.Build(
 				"{0}.sendActionToFirstResponder({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				action.Escape()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -102,15 +108,15 @@ namespace Socketron.Electron {
 					"var menu = {0}.buildFromTemplate({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				templateText,
 				Script.AddObject("menu")
 			);
-			int result = _ExecuteBlocking<int>(script);
+			int result = API._ExecuteBlocking<int>(script);
 			if (result <= 0) {
 				return null;
 			}
-			return new Menu(_client, result);
+			return new Menu(API.client, result);
 		}
 
 		/// <summary>

@@ -90,18 +90,20 @@ namespace Socketron {
 		}
 
 		public void EmitNewThread(string channel, params object[] args) {
-			/*
+			//int i1, i2;
+			//ThreadPool.GetAvailableThreads(out i1, out i2);
+			//Console.WriteLine("GetMinThreads: {0}, {1}", i1, i2);
 			WaitCallback callback = new WaitCallback((state) => {
 				Thread.CurrentThread.Name = "EventEmitter.EmitNewThread: " + channel;
 				Emit(channel, args);
 			});
 			ThreadPool.QueueUserWorkItem(callback);
 			//*/
-			Thread thread = new Thread(() => {
-				Emit(channel, args);
-			});
-			thread.Name = "EventEmitter.EmitNewThread: " + channel;
-			thread.Start();
+			//Thread thread = new Thread(() => {
+			//	Emit(channel, args);
+			//});
+			//thread.Name = "EventEmitter.EmitNewThread: " + channel;
+			//thread.Start();
 		}
 
 		/*

@@ -4,7 +4,6 @@ namespace Socketron.DOM {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class EventTarget : DOMModule {
 		public EventTarget() {
-			_client = SocketronClient.GetCurrent();
 		}
 
 		public void addEventListener(string eventName, JSCallback listener) {
@@ -12,16 +11,16 @@ namespace Socketron.DOM {
 				return;
 			}
 			CallbackItem item = null;
-			item = _CreateCallbackItem(eventName, (object[] args) => {
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				listener?.Invoke(args);
 			});
 			string script = ScriptBuilder.Build(
 				"{0}.addEventListener({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				eventName.Escape(),
 				Script.GetObject(item.ObjectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/*

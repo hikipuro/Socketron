@@ -155,8 +155,8 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public ClientRequest(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		public ClientRequest(Options options) {
@@ -173,8 +173,8 @@ namespace Socketron.Electron {
 				Script.AddObject("request")
 			);
 			int result = client.ExecuteJavaScriptBlocking<int>(script);
-			_client = client;
-			_id = result;
+			API.client = client;
+			API.id = result;
 		}
 
 		/// <summary>
@@ -183,13 +183,7 @@ namespace Socketron.Electron {
 		/// Defaults to false. 
 		/// </summary>
 		public bool chunkedEncoding {
-			get {
-				string script = ScriptBuilder.Build(
-					"{0}.chunkedEncoding;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<bool>(script);
-			}
+			get { return API.GetProperty<bool>("chunkedEncoding"); }
 		}
 
 		/// <summary>
@@ -205,13 +199,7 @@ namespace Socketron.Electron {
 		/// <param name="name">An extra HTTP header name.</param>
 		/// <param name="value">An extra HTTP header value.</param>
 		public void setHeader(string name, string value) {
-			string script = ScriptBuilder.Build(
-				"{0}.setHeader({1},{2});",
-				Script.GetObject(_id),
-				name.Escape(),
-				value.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setHeader", name, value);
 		}
 
 		/// <summary>
@@ -222,10 +210,10 @@ namespace Socketron.Electron {
 		public JsonObject getHeader(string name) {
 			string script = ScriptBuilder.Build(
 				"{0}.getHeader({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				name.Escape()
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -238,12 +226,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="name">Specify an extra header name.</param>
 		public void removeHeader(string name) {
-			string script = ScriptBuilder.Build(
-				"{0}.removeHeader({1});",
-				Script.GetObject(_id),
-				name.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("removeHeader", name);
 		}
 
 		/// <summary>
@@ -277,14 +260,14 @@ namespace Socketron.Electron {
 			if (encoding == null) {
 				script = ScriptBuilder.Build(
 					"{0}.write({1});",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					chunk.Escape()
 				);
 			} else {
 				if (callback == null) {
 					script = ScriptBuilder.Build(
 						"{0}.write({1},{2});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						chunk.Escape(),
 						encoding.Escape()
 					);
@@ -303,14 +286,14 @@ namespace Socketron.Electron {
 						),
 						Name.Escape(),
 						_callbackListId,
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						chunk.Escape(),
 						encoding.Escape()
 					);
 					_callbackListId++;
 				}
 			}
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -321,11 +304,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void end() {
-			string script = ScriptBuilder.Build(
-				"{0}.end();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("end");
 		}
 
 		/// <summary>
@@ -343,14 +322,14 @@ namespace Socketron.Electron {
 			if (encoding == null) {
 				script = ScriptBuilder.Build(
 					"{0}.end({1});",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					chunk.Escape()
 				);
 			} else {
 				if (callback == null) {
 					script = ScriptBuilder.Build(
 						"{0}.end({1},{2});",
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						chunk.Escape(),
 						encoding.Escape()
 					);
@@ -369,36 +348,28 @@ namespace Socketron.Electron {
 						),
 						Name.Escape(),
 						_callbackListId,
-						Script.GetObject(_id),
+						Script.GetObject(API.id),
 						chunk.Escape(),
 						encoding.Escape()
 					);
 					_callbackListId++;
 				}
 			}
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
 		/// Cancels an ongoing HTTP transaction.
 		/// </summary>
 		public void abort() {
-			string script = ScriptBuilder.Build(
-				"{0}.abort();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("abort");
 		}
 
 		/// <summary>
 		/// Continues any deferred redirection request when the redirection mode is manual.
 		/// </summary>
 		public void followRedirect() {
-			string script = ScriptBuilder.Build(
-				"{0}.followRedirect();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("followRedirect");
 		}
 	}
 }

@@ -28,10 +28,10 @@ namespace Socketron {
 				moduleName.Escape(),
 				Script.AddObject("module")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			T module = new T() {
-				_id = result
-			};
+			int result = API._ExecuteBlocking<int>(script);
+			T module = new T();
+			module.API.client = API.client;
+			module.API.id = result;
 			return module;
 		}
 
@@ -41,8 +41,8 @@ namespace Socketron {
 			}
 			string eventName = "setTimeout";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(
@@ -55,12 +55,12 @@ namespace Socketron {
 					"return id;"
 				),
 				Script.RemoveObject("id"),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
@@ -72,7 +72,7 @@ namespace Socketron {
 				delay,
 				Script.AddObject("timer")
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public void clearTimeout(int timeoutObject) {
@@ -85,7 +85,7 @@ namespace Socketron {
 				Script.GetObject(timeoutObject),
 				Script.RemoveObject(timeoutObject)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		public int setInterval(JSCallback callback, int delay) {
@@ -94,7 +94,7 @@ namespace Socketron {
 			}
 			string eventName = "setInterval";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, callback);
+			item = API.client.Callbacks.Add(API.id, eventName, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
@@ -102,12 +102,12 @@ namespace Socketron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
@@ -119,7 +119,7 @@ namespace Socketron {
 				delay,
 				Script.AddObject("timer")
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public void clearInterval(int intervalObject) {
@@ -132,7 +132,7 @@ namespace Socketron {
 				Script.GetObject(intervalObject),
 				Script.RemoveObject(intervalObject)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		public int setImmediate(JSCallback callback) {
@@ -141,7 +141,7 @@ namespace Socketron {
 			}
 			string eventName = "setImmediate";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, callback);
+			item = API.client.Callbacks.Add(API.id, eventName, callback);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var callback = () => {{",
@@ -152,12 +152,12 @@ namespace Socketron {
 					"return id;"
 				),
 				Script.RemoveObject("id"),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
@@ -168,7 +168,7 @@ namespace Socketron {
 				Script.GetObject(objectId),
 				Script.AddObject("timer")
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		public void clearImmediate(int immediate) {
@@ -181,7 +181,7 @@ namespace Socketron {
 				Script.GetObject(immediate),
 				Script.RemoveObject(immediate)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

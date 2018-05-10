@@ -8,13 +8,13 @@ namespace SocketronTest {
 		public event Action<string> Log;
 
 		public TestJQuery() {
-			_client = new SocketronClient();
+			API.client = new SocketronClient();
 			//socketron.IsDebug = false;
-			_client.On("connect", (args) => {
+			API.client.On("connect", (args) => {
 				//Console.WriteLine("Connected");
 				Run();
 			});
-			_client.On("debug", (args) => {
+			API.client.On("debug", (args) => {
 #if DEBUG
 				Debug.WriteLine(args[0]);
 #endif
@@ -24,18 +24,18 @@ namespace SocketronTest {
 			//	Packet packet = (Packet)args[0];
 			//	Console.WriteLine("Test: {0}, {1}", packet.SequenceId, packet.GetStringData());
 			//});
-			_client.On("aaabbb", (args) => {
+			API.client.On("aaabbb", (args) => {
 				int? value = args[0] as int?;
 				Console.WriteLine("event aaabbb: {0}", value);
 			});
-			_client.On("aaabbbccc", (args) => {
+			API.client.On("aaabbbccc", (args) => {
 				Console.WriteLine("event aaabbbccc: {0}, {1}, {2}", args[0], args[1], args[2]);
 			});
-			_client.On("window-close", (args) => {
+			API.client.On("window-close", (args) => {
 				Console.WriteLine("event window-close: {0}", args[0]);
 			});
 			try {
-				_client.Connect("127.0.0.1");
+				API.client.Connect("127.0.0.1");
 			} catch (Exception) {
 				Console.WriteLine("Connect errror");
 				return;
@@ -43,13 +43,13 @@ namespace SocketronTest {
 		}
 
 		public void Close() {
-			_client.Close();
+			API.client.Close();
 		}
 
 		void Test() {
 			console.log("test", 123, true, null);
 			console.log(process.cpuUsage(), process.getVersionsChrome());
-			console.ApplyMethod("log", "test", 123, true, null);
+			console.API.Apply("log", "test", 123, true, null);
 
 			Console.WriteLine("IsRegistered: " + electron.globalShortcut.isRegistered(Accelerator.CmdOrCtrl + "+A"));
 			//electron.globalShortcut.register(Accelerator.CmdOrCtrl + "+A", () => {
@@ -332,7 +332,7 @@ namespace SocketronTest {
 
 			var windows = electron.BrowserWindow.getAllWindows();
 			foreach (var w in windows) {
-				Console.WriteLine("window.id: {0}", w._id);
+				Console.WriteLine("window.id: {0}", w.id);
 				Console.WriteLine("window.getTitle: {0}", w.getTitle());
 			}
 
@@ -415,12 +415,9 @@ namespace SocketronTest {
 			window.webContents.openDevTools();
 			Console.WriteLine("IsDevToolsOpened: {0}", window.webContents.isDevToolsOpened());
 
-			_client.On("BrowserWindow.close", (result) => {
+			API.client.On("BrowserWindow.close", (result) => {
 				Console.WriteLine("Test close");
 			});
-
-			Size size = window.getSize();
-			Console.WriteLine("GetSize: {0}", size.Stringify());
 
 			ulong handle1 = window.getNativeWindowHandle();
 			Console.WriteLine("GetNativeWindowHandle: " + handle1);
@@ -466,17 +463,17 @@ namespace SocketronTest {
 		}
 
 		public void Run() {
-			if (!_client.IsConnected) {
+			if (!API.client.IsConnected) {
 				return;
 			}
-			Init(_client);
+			Init(API.client);
 			//socketron.IsDebug = false;
 
 			//socketron.executeJavaScript("location.href='http://google.co.jp/'");
 			//var t = await socketron.Main.GetProcessType();
 			//Console.WriteLine("Test: " + t);
 			//*
-			_client.Main.ExecuteJavaScript("console.log('TestJQuery')");
+			API.client.Main.ExecuteJavaScript("console.log('TestJQuery')");
 
 			//socketron.Main.ExecuteJavaScript("return process.type;", (arg) => {
 			//	Console.WriteLine("Test: " + arg);
@@ -509,7 +506,7 @@ namespace SocketronTest {
 			//	Test2();
 			//}
 
-			//_client.ExecuteJavaScriptBlocking<string>("return Function.prototype.toString(self);");
+			//API.client.ExecuteJavaScriptBlocking<string>("return Function.prototype.toString(self);");
 			//return;
 
 			BrowserWindow.Options options = new BrowserWindow.Options();
@@ -519,10 +516,24 @@ namespace SocketronTest {
 			//options.height = 300;
 			//options.backgroundColor = "#aaa";
 			//options.opacity = 0.5;
-			options.webPreferences.preload = _client.RemoteConfig.String("path");
+			options.webPreferences.preload = API.client.RemoteConfig.String("path");
 			BrowserWindow window = electron.BrowserWindow.Create(options);
 			window.loadURL("file:///src/html/index.html");
 			window.webContents.openDevTools();
+
+			var windows = electron.BrowserWindow.getAllWindows();
+			foreach (var w in windows) {
+				Console.WriteLine("window.id: {0}", w.id);
+				Console.WriteLine("window.getTitle: {0}", w.getTitle());
+			}
+			setTimeout(() => {
+				Console.WriteLine(window.isFocused());
+				Console.WriteLine(window.isFullScreen());
+				Console.WriteLine(window.getBounds().Stringify());
+				Console.WriteLine(window.getSize().Stringify());
+				//window.setFullScreen(true);
+				//window.destroy();
+			}, 1000);
 
 			window.webContents.on(WebContents.Events.DomReady, (args) => {
 				string[] css = {
@@ -564,10 +575,10 @@ namespace SocketronTest {
 					window.webContents.executeJavaScript(string.Join("", scriptList));
 
 					RendererTest renderer = new RendererTest();
-					renderer.Init(_client, window.webContents);
+					renderer.Init(API.client, window.webContents);
 					renderer.Start();
 
-					//string ua = _client.Renderer.ExecuteJavaScriptBlocking<string>("return window.navigator.userAgent;");
+					//string ua = API.client.Renderer.ExecuteJavaScriptBlocking<string>("return window.navigator.userAgent;");
 					//Console.WriteLine(ua);
 				});
 			});

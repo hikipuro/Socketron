@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -22,7 +21,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="client"></param>
 		public DesktopCapturer(SocketronClient client) {
-			_client = client;
+			API.client = client;
 		}
 
 		/// <summary>
@@ -58,8 +57,11 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				Error error = new Error(_client, (int)argsList[0]);
-				DesktopCapturerSource[] sources = (argsList[1] as object[]).Cast<DesktopCapturerSource>().ToArray();
+				Error error = new Error(API.client, (int)argsList[0]);
+				DesktopCapturerSource[] sources = Array.ConvertAll(
+					argsList[1] as object[],
+					value => DesktopCapturerSource.Parse(value as string)
+				);
 				callback?.Invoke(error, sources);
 			});
 			string script = ScriptBuilder.Build(
@@ -76,7 +78,7 @@ namespace Socketron.Electron {
 				options.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

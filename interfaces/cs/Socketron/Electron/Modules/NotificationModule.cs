@@ -13,11 +13,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public NotificationModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public NotificationModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -33,12 +39,12 @@ namespace Socketron.Electron {
 					"var notification = new Notification({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.AddObject("notification")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Notification(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Notification(API.client, result);
 		}
 
 		/// <summary>
@@ -58,9 +64,9 @@ namespace Socketron.Electron {
 		public bool isSupported() {
 			string script = ScriptBuilder.Build(
 				"return {0}.isSupported();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 	}
 }

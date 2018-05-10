@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -17,22 +16,26 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public AppModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public AppModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
-			commandLine = new CommandLine(client);
-			dock = new Dock(client);
+			API.client = client;
+			API.id = id;
+			commandLine = API.GetObject<CommandLine>("commandLine");
+			dock = API.GetObject<Dock>("dock");
 		}
 
 		public class CommandLine : JSModule {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
-			/// <param name="client"></param>
-			public CommandLine(SocketronClient client) {
-				_client = client;
+			public CommandLine() {
 			}
 
 			/// <summary>
@@ -45,24 +48,11 @@ namespace Socketron.Electron {
 			/// <param name="switch">A command-line switch.</param>
 			/// <param name="value"> A value for the given switch.</param>
 			public void appendSwitch(string @switch, string value = null) {
-				string script = string.Empty;
 				if (value == null) {
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"electron.app.commandLine.appendSwitch({0});"
-						),
-						@switch.Escape()
-					);
+					API.Apply("appendSwitch", @switch);
 				} else {
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"electron.app.commandLine.appendSwitch({0},{1});"
-						),
-						@switch.Escape(),
-						value.Escape()
-					);
+					API.Apply("appendSwitch", @switch, value);
 				}
-				_ExecuteJavaScript(script);
 			}
 
 			/// <summary>
@@ -73,13 +63,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="value">The argument to append to the command line.</param>
 			public void appendArgument(string value) {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.commandLine.appendArgument({0});"
-					),
-					value.Escape()
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("appendArgument", value);
 			}
 		}
 
@@ -87,9 +71,7 @@ namespace Socketron.Electron {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
-			/// <param name="client"></param>
-			public Dock(SocketronClient client) {
-				_client = client;
+			public Dock() {
 			}
 
 			/// <summary>
@@ -110,22 +92,11 @@ namespace Socketron.Electron {
 			/// The default is informational.
 			/// </param>
 			public void bounce(string type = null) {
-				string script = string.Empty;
 				if (type == null) {
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"electron.app.dock.bounce();"
-						)
-					);
+					API.Apply("bounce");
 				} else {
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"electron.app.dock.bounce({0});"
-						),
-						type.Escape()
-					);
+					API.Apply("bounce", type);
 				}
-				_ExecuteJavaScript(script);
 			}
 
 			/// <summary>
@@ -134,13 +105,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="id"></param>
 			public void cancelBounce(int id) {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.dock.cancelBounce({0});"
-					),
-					id
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("cancelBounce", id);
 			}
 
 			/// <summary>
@@ -149,13 +114,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="filePath"></param>
 			public void downloadFinished(string filePath) {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.dock.downloadFinished({0});"
-					),
-					filePath.Escape()
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("downloadFinished", filePath);
 			}
 
 			/// <summary>
@@ -164,13 +123,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="text"></param>
 			public void setBadge(string text) {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.dock.setBadge({0});"
-					),
-					text.Escape()
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("setBadge", text);
 			}
 
 			/// <summary>
@@ -179,12 +132,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <returns></returns>
 			public string getBadge() {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.app.dock.getBadge();"
-					)
-				);
-				return _ExecuteBlocking<string>(script);
+				return API.Apply<string>("getBadge");
 			}
 
 			/// <summary>
@@ -192,12 +140,7 @@ namespace Socketron.Electron {
 			/// Hides the dock icon.
 			/// </summary>
 			public void hide() {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.dock.hide();"
-					)
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("hide");
 			}
 
 			/// <summary>
@@ -205,12 +148,7 @@ namespace Socketron.Electron {
 			/// Shows the dock icon.
 			/// </summary>
 			public void show() {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"electron.app.dock.show();"
-					)
-				);
-				_ExecuteJavaScript(script);
+				API.Apply("show");
 			}
 
 			/// <summary>
@@ -223,12 +161,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <returns></returns>
 			public bool isVisible() {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return electron.app.dock.isVisible();"
-					)
-				);
-				return _ExecuteBlocking<bool>(script);
+				return API.Apply<bool>("isVisible");
 			}
 
 			/// <summary>
@@ -245,9 +178,9 @@ namespace Socketron.Electron {
 						"var menu = {0};",
 						"electron.app.dock.setMenu(menu);"
 					),
-					Script.GetObject(menu._id)
+					Script.GetObject(menu.API.id)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 
 			/// <summary>
@@ -264,9 +197,9 @@ namespace Socketron.Electron {
 						"var image = {0};",
 						"electron.app.dock.setIcon(image);"
 					),
-					Script.GetObject(image._id)
+					Script.GetObject(image.API.id)
 				);
-				_ExecuteJavaScript(script);
+				API.ExecuteJavaScript(script);
 			}
 		}
 
@@ -275,13 +208,7 @@ namespace Socketron.Electron {
 		/// For many apps, this property can be used to distinguish development and production environments.
 		/// </summary>
 		public bool isPackaged {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.isPackaged;",
-					Script.GetObject(_id)
-				);
-				return _ExecuteBlocking<bool>(script);
-			}
+			get { return API.GetProperty<bool>("isPackaged"); }
 		}
 
 		/// <summary>
@@ -298,11 +225,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void quit() {
-			string script = ScriptBuilder.Build(
-				"{0}.quit();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("quit");
 		}
 
 		/// <summary>
@@ -315,12 +238,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="exitCode">(optional)</param>
 		public void exit(int exitCode = 0) {
-			string script = ScriptBuilder.Build(
-				"{0}.exit({1});",
-				Script.GetObject(_id),
-				exitCode
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("exit", exitCode);
 		}
 
 		/// <summary>
@@ -328,20 +246,11 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options">(optional)</param>
 		public void relaunch(JsonObject options = null) {
-			string script = string.Empty;
 			if (options == null) {
-				script = ScriptBuilder.Build(
-					"{0}.relaunch();",
-					Script.GetObject(_id)
-				);
+				API.Apply("relaunch");
 			} else {
-				script = ScriptBuilder.Build(
-					"{0}.relaunch({1});",
-					Script.GetObject(_id),
-					options.Stringify()
-				);
+				API.Apply("relaunch", options);
 			}
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -349,11 +258,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isReady() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isReady();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isReady");
 		}
 
 		/*
@@ -364,7 +269,7 @@ namespace Socketron.Electron {
 					"electron.app.whenReady();"
 				)
 			);
-			return _ExecuteJavaScriptBlocking<bool>(script);
+			return API.ExecuteJavaScriptBlocking<bool>(script);
 		}
 		//*/
 
@@ -374,11 +279,7 @@ namespace Socketron.Electron {
 		/// On Windows, focuses on the application's first window.
 		/// </summary>
 		public void focus() {
-			string script = ScriptBuilder.Build(
-				"{0}.focus();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("focus");
 		}
 
 		/// <summary>
@@ -386,11 +287,7 @@ namespace Socketron.Electron {
 		/// Hides all application windows without minimizing them.
 		/// </summary>
 		public void hide() {
-			string script = ScriptBuilder.Build(
-				"{0}.hide();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("hide");
 		}
 
 		/// <summary>
@@ -398,11 +295,7 @@ namespace Socketron.Electron {
 		/// Shows application windows after they were hidden. Does not automatically focus them.
 		/// </summary>
 		public void show() {
-			string script = ScriptBuilder.Build(
-				"{0}.show();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("show");
 		}
 
 		/// <summary>
@@ -410,11 +303,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getAppPath() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getAppPath();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getAppPath");
 		}
 
 		/// <summary>
@@ -424,12 +313,7 @@ namespace Socketron.Electron {
 		/// <param name="name"></param>
 		/// <returns></returns>
 		public string getPath(string name) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getPath({1});",
-				Script.GetObject(_id),
-				name.Escape()
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getPath", name);
 		}
 
 		/// <summary>
@@ -443,10 +327,10 @@ namespace Socketron.Electron {
 			}
 			string eventName = "getFileIcon";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				Error error = new Error(_client, (int)args[0]);
-				NativeImage image = new NativeImage(_client, (int)args[1]);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				Error error = new Error(API.client, (int)args[0]);
+				NativeImage image = new NativeImage(API.client, (int)args[1]);
 				callback?.Invoke(error, image);
 			});
 			string script = ScriptBuilder.Build(
@@ -456,23 +340,23 @@ namespace Socketron.Electron {
 					"}};",
 					"return {5};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("error"),
 				Script.AddObject("icon"),
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.getFileIcon({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				path.Escape(),
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -487,10 +371,10 @@ namespace Socketron.Electron {
 			}
 			string eventName = "getFileIcon";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
-				Error error = new Error(_client, (int)args[0]);
-				NativeImage image = new NativeImage(_client, (int)args[1]);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				Error error = new Error(API.client, (int)args[0]);
+				NativeImage image = new NativeImage(API.client, (int)args[1]);
 				callback?.Invoke(error, image);
 			});
 			string script = ScriptBuilder.Build(
@@ -500,24 +384,24 @@ namespace Socketron.Electron {
 					"}};",
 					"return {5};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("error"),
 				Script.AddObject("icon"),
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.getFileIcon({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				path.Escape(),
 				options.Stringify(),
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -531,13 +415,7 @@ namespace Socketron.Electron {
 		/// <param name="name"></param>
 		/// <param name="path"></param>
 		public void setPath(string name, string path) {
-			string script = ScriptBuilder.Build(
-				"{0}.setPath({1},{2});",
-				Script.GetObject(_id),
-				name.Escape(),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setPath", name, path);
 		}
 
 		/// <summary>
@@ -549,11 +427,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getVersion() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getVersion();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getVersion");
 		}
 
 		/// <summary>
@@ -562,11 +436,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getName() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getName();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getName");
 		}
 
 		/// <summary>
@@ -574,12 +444,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="name"></param>
 		public void setName(string name) {
-			string script = ScriptBuilder.Build(
-				"{0}.setName({1});",
-				Script.GetObject(_id),
-				name.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setName", name);
 		}
 
 		/// <summary>
@@ -593,11 +458,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getLocale() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getLocale();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getLocale");
 		}
 
 		/// <summary>
@@ -611,12 +472,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="path"></param>
 		public void addRecentDocument(string path) {
-			string script = ScriptBuilder.Build(
-				"{0}.addRecentDocument({1});",
-				Script.GetObject(_id),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("addRecentDocument", path);
 		}
 
 		/// <summary>
@@ -624,11 +480,7 @@ namespace Socketron.Electron {
 		/// Clears the recent documents list.
 		/// </summary>
 		public void clearRecentDocuments() {
-			string script = ScriptBuilder.Build(
-				"{0}.clearRecentDocuments();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("clearRecentDocuments");
 		}
 
 		/// <summary>
@@ -662,10 +514,10 @@ namespace Socketron.Electron {
 
 			string script = ScriptBuilder.Build(
 				"{0}.setAsDefaultProtocolClient({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				option
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -679,12 +531,7 @@ namespace Socketron.Electron {
 		/// <param name="protocol">The name of your protocol, without ://.</param>
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol) {
-			string script = ScriptBuilder.Build(
-				"return {0}.removeAsDefaultProtocolClient({1});",
-				Script.GetObject(_id),
-				protocol.Escape()
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("removeAsDefaultProtocolClient", protocol);
 		}
 
 		/// <summary>
@@ -694,13 +541,7 @@ namespace Socketron.Electron {
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol, string path) {
-			string script = ScriptBuilder.Build(
-				"return {0}.removeAsDefaultProtocolClient({1},{2});",
-				Script.GetObject(_id),
-				protocol.Escape(),
-				path.Escape()
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("removeAsDefaultProtocolClient", protocol, path);
 		}
 
 		/// <summary>
@@ -713,12 +554,12 @@ namespace Socketron.Electron {
 		public bool removeAsDefaultProtocolClient(string protocol, string path, string[] args) {
 			string script = ScriptBuilder.Build(
 				"return {0}.removeAsDefaultProtocolClient({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				protocol.Escape(),
 				path.Escape(),
 				args.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -729,12 +570,7 @@ namespace Socketron.Electron {
 		/// <param name="protocol">The name of your protocol, without ://.</param>
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol) {
-			string script = ScriptBuilder.Build(
-				"return {0}.isDefaultProtocolClient({1});",
-				Script.GetObject(_id),
-				protocol.Escape()
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isDefaultProtocolClient", protocol);
 		}
 
 		/// <summary>
@@ -746,13 +582,7 @@ namespace Socketron.Electron {
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol, string path) {
-			string script = ScriptBuilder.Build(
-				"return {0}.isDefaultProtocolClient({1},{2});",
-				Script.GetObject(_id),
-				protocol.Escape(),
-				path.Escape()
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isDefaultProtocolClient", protocol, path);
 		}
 
 		/// <summary>
@@ -767,12 +597,12 @@ namespace Socketron.Electron {
 		public bool isDefaultProtocolClient(string protocol, string path, string[] args) {
 			string script = ScriptBuilder.Build(
 				"return {0}.isDefaultProtocolClient({1},{2},{3});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				protocol.Escape(),
 				path.Escape(),
 				args.Escape()
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -789,10 +619,10 @@ namespace Socketron.Electron {
 			// TODO: check array arg
 			string script = ScriptBuilder.Build(
 				"return {0}.setUserTasks({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				JSON.Stringify(tasks)
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -803,9 +633,9 @@ namespace Socketron.Electron {
 		public JsonObject getJumpListSettings() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getJumpListSettings();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 
 		}
@@ -818,10 +648,10 @@ namespace Socketron.Electron {
 		public void setJumpList(JumpListCategory[] categories) {
 			string script = ScriptBuilder.Build(
 				"{0}.setJumpList({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				JSON.Stringify(categories)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -838,12 +668,15 @@ namespace Socketron.Electron {
 			}
 			string eventName = "makeSingleInstance";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
 				string[] commandLine = null;
 				string workingDirectory = args[1] as string;
 				if (args[0] != null) {
-					commandLine = (args[0] as object[]).Cast<string>().ToArray();
+					commandLine =  Array.ConvertAll(
+						args[0] as object[],
+						value => Convert.ToString(value)
+					);
 				}
 				callback?.Invoke(commandLine, workingDirectory);
 			});
@@ -854,20 +687,20 @@ namespace Socketron.Electron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.makeSingleInstance({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.GetObject(objectId)
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -875,11 +708,7 @@ namespace Socketron.Electron {
 		/// This will allow multiple instances of the application to once again run side by side.
 		/// </summary>
 		public void releaseSingleInstance() {
-			string script = ScriptBuilder.Build(
-				"{0}.releaseSingleInstance();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("releaseSingleInstance");
 		}
 
 		/// <summary>
@@ -906,10 +735,10 @@ namespace Socketron.Electron {
 			}
 			string script = ScriptBuilder.Build(
 				"{0}.setUserActivity({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				option
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -918,11 +747,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getCurrentActivityType() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getCurrentActivityType();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getCurrentActivityType");
 		}
 
 		/// <summary>
@@ -930,11 +755,7 @@ namespace Socketron.Electron {
 		/// Invalidates the current Handoff user activity.
 		/// </summary>
 		public void invalidateCurrentActivity() {
-			string script = ScriptBuilder.Build(
-				"{0}.invalidateCurrentActivity();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("invalidateCurrentActivity");
 		}
 
 		/// <summary>
@@ -945,13 +766,7 @@ namespace Socketron.Electron {
 		/// <param name="type"></param>
 		/// <param name="userInfo"></param>
 		public void updateCurrentActivity(string type, JsonObject userInfo) {
-			string script = ScriptBuilder.Build(
-				"{0}.updateCurrentActivity({1},{2});",
-				Script.GetObject(_id),
-				type.Escape(),
-				userInfo.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("updateCurrentActivity", type, userInfo);
 		}
 
 		/// <summary>
@@ -960,12 +775,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="id"></param>
 		public void setAppUserModelId(string id) {
-			string script = ScriptBuilder.Build(
-				"{0}.setAppUserModelId({1});",
-				Script.GetObject(_id),
-				id.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setAppUserModelId", id);
 		}
 
 		/// <summary>
@@ -988,8 +798,8 @@ namespace Socketron.Electron {
 			}
 			string eventName = "importCertificate";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
 				callback?.Invoke((int)args[0]);
 			});
 			string script = ScriptBuilder.Build(
@@ -999,21 +809,21 @@ namespace Socketron.Electron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.importCertificate({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -1023,11 +833,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void disableHardwareAcceleration() {
-			string script = ScriptBuilder.Build(
-				"{0}.disableHardwareAcceleration();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("disableHardwareAcceleration");
 		}
 
 		/// <summary>
@@ -1039,11 +845,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void disableDomainBlockingFor3DAPIs() {
-			string script = ScriptBuilder.Build(
-				"{0}.disableDomainBlockingFor3DAPIs();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("disableDomainBlockingFor3DAPIs");
 		}
 
 		/// <summary>
@@ -1055,9 +857,9 @@ namespace Socketron.Electron {
 		public List<ProcessMetric> getAppMetrics() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getAppMetrics();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
+			object[] result = API._ExecuteBlocking<object[]>(script);
 			List<ProcessMetric> metricList = new List<ProcessMetric>();
 			foreach (object item in result) {
 				ProcessMetric metric = ProcessMetric.FromObject(item);
@@ -1073,9 +875,9 @@ namespace Socketron.Electron {
 		public GPUFeatureStatus getGPUFeatureStatus() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getGPUFeatureStatus();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return GPUFeatureStatus.FromObject(result);
 		}
 
@@ -1086,12 +888,7 @@ namespace Socketron.Electron {
 		/// <param name="count"></param>
 		/// <returns></returns>
 		public bool setBadgeCount(int count) {
-			string script = ScriptBuilder.Build(
-				"return {0}.setBadgeCount({1});",
-				Script.GetObject(_id),
-				count
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("setBadgeCount", count);
 		}
 
 		/// <summary>
@@ -1100,11 +897,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public int getBadgeCount() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getBadgeCount();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<int>(script);
+			return API.Apply<int>("getBadgeCount");
 		}
 
 		/// <summary>
@@ -1113,11 +906,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isUnityRunning() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isUnityRunning();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isUnityRunning");
 		}
 
 		/// <summary>
@@ -1132,16 +921,16 @@ namespace Socketron.Electron {
 			if (options == null) {
 				ScriptBuilder.Build(
 					"return {0}.getLoginItemSettings();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 			} else {
 				ScriptBuilder.Build(
 					"return {0}.getLoginItemSettings({1});",
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					options.Stringify()
 				);
 			}
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -1151,12 +940,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="settings"></param>
 		public void setLoginItemSettings(JsonObject settings) {
-			string script = ScriptBuilder.Build(
-				"{0}.setLoginItemSettings({1});",
-				Script.GetObject(_id),
-				settings.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setLoginItemSettings", settings);
 		}
 
 		/// <summary>
@@ -1170,11 +954,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isAccessibilitySupportEnabled() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isAccessibilitySupportEnabled();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isAccessibilitySupportEnabled");
 		}
 
 		/// <summary>
@@ -1184,12 +964,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="enabled"></param>
 		public void setAccessibilitySupportEnabled(bool enabled) {
-			string script = ScriptBuilder.Build(
-				"{0}.setAccessibilitySupportEnabled({1});",
-				Script.GetObject(_id),
-				enabled.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setAccessibilitySupportEnabled", enabled);
 		}
 
 		/// <summary>
@@ -1199,12 +974,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void setAboutPanelOptions(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				"{0}.setAboutPanelOptions({1});",
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setAboutPanelOptions", options);
 		}
 
 		/// <summary>
@@ -1214,12 +984,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="bookmarkData"></param>
 		public void startAccessingSecurityScopedResource(string bookmarkData) {
-			string script = ScriptBuilder.Build(
-				"{0}.startAccessingSecurityScopedResource({1});",
-				Script.GetObject(_id),
-				bookmarkData.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("startAccessingSecurityScopedResource", bookmarkData);
 		}
 
 		/// <summary>
@@ -1228,11 +993,7 @@ namespace Socketron.Electron {
 		/// This method can only be called before app is ready.
 		/// </summary>
 		public void enableMixedSandbox() {
-			string script = ScriptBuilder.Build(
-				"{0}.enableMixedSandbox();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("enableMixedSandbox");
 		}
 
 		/// <summary>
@@ -1243,11 +1004,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isInApplicationsFolder() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isInApplicationsFolder();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isInApplicationsFolder");
 		}
 
 		/// <summary>
@@ -1257,11 +1014,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool moveToApplicationsFolder() {
-			string script = ScriptBuilder.Build(
-				"return {0}.moveToApplicationsFolder();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("moveToApplicationsFolder");
 		}
 	}
 }

@@ -11,11 +11,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public BrowserWindowModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public BrowserWindowModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -33,12 +39,12 @@ namespace Socketron.Electron {
 					"var window = new BrowserWindow({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.AddObject("window")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserWindow(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserWindow(API.client, result);
 		}
 
 		/// <summary>
@@ -64,16 +70,11 @@ namespace Socketron.Electron {
 					"}}",
 					"return result;"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("window")
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
-			List<BrowserWindow> windows = new List<BrowserWindow>();
-			foreach (object item in result) {
-				BrowserWindow window = new BrowserWindow(_client, (int)item);
-				windows.Add(window);
-			}
-			return windows;
+			object[] result = API._ExecuteBlocking<object[]>(script);
+			return API.CreateObjectList<BrowserWindow>(result);
 		}
 
 		/// <summary>
@@ -90,11 +91,11 @@ namespace Socketron.Electron {
 					"}}",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("window")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserWindow(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserWindow(API.client, result);
 		}
 
 		/// <summary>
@@ -111,12 +112,12 @@ namespace Socketron.Electron {
 					"}}",
 					"return {2};"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(webContents._id),
+				Script.GetObject(API.id),
+				Script.GetObject(webContents.API.id),
 				Script.AddObject("window")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserWindow(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserWindow(API.client, result);
 		}
 
 		/// <summary>
@@ -134,12 +135,12 @@ namespace Socketron.Electron {
 					"}}",
 					"return {2};"
 				),
-				Script.GetObject(_id),
-				Script.GetObject(browserView._id),
+				Script.GetObject(API.id),
+				Script.GetObject(browserView.API.id),
 				Script.AddObject("window")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserWindow(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserWindow(API.client, result);
 		}
 
 		/// <summary>
@@ -156,12 +157,12 @@ namespace Socketron.Electron {
 					"}}",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id,
 				Script.AddObject("window")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new BrowserWindow(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new BrowserWindow(API.client, result);
 		}
 
 		/// <summary>
@@ -175,12 +176,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="path"></param>
 		public void addExtension(string path) {
-			string script = ScriptBuilder.Build(
-				"{0}.addExtension({1});",
-				Script.GetObject(_id),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("addExtension", path);
 		}
 
 		/// <summary>
@@ -191,12 +187,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="name"></param>
 		public void removeExtension(string name) {
-			string script = ScriptBuilder.Build(
-				"{0}.removeExtension({1});",
-				Script.GetObject(_id),
-				name.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("removeExtension", name);
 		}
 
 		/// <summary>
@@ -210,9 +201,9 @@ namespace Socketron.Electron {
 		public JsonObject getExtensions() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getExtensions();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 
@@ -221,12 +212,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="path"></param>
 		public void addDevToolsExtension(string path) {
-			string script = ScriptBuilder.Build(
-				"{0}.addDevToolsExtension({1});",
-				Script.GetObject(_id),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("addDevToolsExtension", path);
 		}
 
 		/// <summary>
@@ -234,12 +220,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="name"></param>
 		public void removeDevToolsExtension(string name) {
-			string script = ScriptBuilder.Build(
-				"{0}.removeDevToolsExtension({1});",
-				Script.GetObject(_id),
-				name.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("removeDevToolsExtension", name);
 		}
 
 		/// <summary>
@@ -250,9 +231,9 @@ namespace Socketron.Electron {
 		public JsonObject getDevToolsExtensions() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getDevToolsExtensions();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return new JsonObject(result);
 		}
 	}

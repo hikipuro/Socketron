@@ -21,11 +21,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public PowerSaveBlockerModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public PowerSaveBlockerModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -40,10 +46,10 @@ namespace Socketron.Electron {
 		public int start(string type) {
 			string script = ScriptBuilder.Build(
 				"return {0}.start({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				type.Escape()
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -55,10 +61,10 @@ namespace Socketron.Electron {
 		public void stop(int id) {
 			string script = ScriptBuilder.Build(
 				"{0}.stop({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -71,10 +77,10 @@ namespace Socketron.Electron {
 		public bool isStarted(int id) {
 			string script = ScriptBuilder.Build(
 				"return {0}.isStarted({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 	}
 }

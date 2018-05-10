@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -22,11 +21,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public Session() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public Session(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -40,13 +45,11 @@ namespace Socketron.Electron {
 						"var cookies = session.cookies;",
 						"return {1};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Script.AddObject("cookies")
 				);
-				int result = _ExecuteBlocking<int>(script);
-				return new Cookies(_client) {
-					_id = result
-				};
+				int result = API._ExecuteBlocking<int>(script);
+				return new Cookies(API.client, result);
 			}
 		}
 
@@ -54,40 +57,14 @@ namespace Socketron.Electron {
 		/// A WebRequest object for this session.
 		/// </summary>
 		public WebRequest webRequest {
-			get {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var session = {0};",
-						"var webRequest = session.webRequest;",
-						"return {1};"
-					),
-					Script.GetObject(_id),
-					Script.AddObject("webRequest")
-				);
-				int result = _ExecuteBlocking<int>(script);
-				return new WebRequest(_client) {
-					_id = result
-				};
-			}
+			get { return API.GetObject<WebRequest>("webRequest"); }
 		}
 
 		/// <summary>
 		/// A Protocol object for this session.
 		/// </summary>
 		public ProtocolModule protocol {
-			get {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var session = {0};",
-						"var protocol = session.protocol;",
-						"return {1};"
-					),
-					Script.GetObject(_id),
-					Script.AddObject("protocol")
-				);
-				int result = _ExecuteBlocking<int>(script);
-				return new ProtocolModule(_client, result);
-			}
+			get { return API.GetObject<ProtocolModule>("protocol"); }
 		}
 
 		/// <summary>
@@ -112,22 +89,14 @@ namespace Socketron.Electron {
 		/// Clears the data of web storages.
 		/// </summary>
 		public void clearStorageData() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("clearStorageData");
 		}
 
 		/// <summary>
 		/// Writes any unwritten DOMStorage data to disk.
 		/// </summary>
 		public void flushStorageData() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.flushStorageData();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("flushStorageData");
 		}
 
 		/// <summary>
@@ -156,15 +125,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="path">The download location.</param>
 		public void setDownloadPath(string path) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.setDownloadPath({1});"
-				),
-				Script.GetObject(_id),
-				path.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setDownloadPath", path);
 		}
 
 		/// <summary>
@@ -172,15 +133,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void enableNetworkEmulation(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.enableNetworkEmulation({1});"
-				),
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("enableNetworkEmulation", options);
 		}
 
 		/// <summary>
@@ -188,14 +141,7 @@ namespace Socketron.Electron {
 		/// Resets to the original network configuration.
 		/// </summary>
 		public void disableNetworkEmulation() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.disableNetworkEmulation();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("disableNetworkEmulation");
 		}
 
 		/// <summary>
@@ -224,7 +170,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		public void clearHostResolverCache() {
 			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("clearHostResolverCache");
 		}
 
 		/// <summary>
@@ -234,15 +180,7 @@ namespace Socketron.Electron {
 		/// A comma-separated list of servers for which integrated authentication is enabled.
 		/// </param>
 		public void allowNTLMCredentialsForDomains(string domains) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.allowNTLMCredentialsForDomains({1});"
-				),
-				Script.GetObject(_id),
-				domains.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("allowNTLMCredentialsForDomains", domains);
 		}
 
 		/// <summary>
@@ -251,28 +189,11 @@ namespace Socketron.Electron {
 		/// <param name="userAgent"></param>
 		/// <param name="acceptLanguages"></param>
 		public void setUserAgent(string userAgent, string acceptLanguages = null) {
-			string script = string.Empty;
 			if (acceptLanguages == null) {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var session = {0};",
-						"session.setUserAgent({1});"
-					),
-					Script.GetObject(_id),
-					userAgent.Escape()
-				);
+				API.Apply("setUserAgent", userAgent);
 			} else {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var session = {0};",
-						"session.setUserAgent({1},{2});"
-					),
-					Script.GetObject(_id),
-					userAgent.Escape(),
-					acceptLanguages.Escape()
-				);
+				API.Apply("setUserAgent", userAgent, acceptLanguages);
 			}
-			_ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -280,14 +201,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getUserAgent() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"return session.getUserAgent();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getUserAgent");
 		}
 
 		/// <summary>
@@ -305,15 +219,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void createInterruptedDownload(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.createInterruptedDownload({1});"
-				),
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("createInterruptedDownload", options);
 		}
 
 		/// <summary>
@@ -336,10 +242,10 @@ namespace Socketron.Electron {
 					"var session = {0};",
 					"session.setPreloads({1});"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				JSON.Stringify(preloads)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -352,10 +258,10 @@ namespace Socketron.Electron {
 					"var session = {0};",
 					"return session.getPreloads();"
 				),
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object[] result = _ExecuteBlocking<object[]>(script);
-			return result.Cast<string>().ToArray();
+			object[] result = API._ExecuteBlocking<object[]>(script);
+			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 	}
 }

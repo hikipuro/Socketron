@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Web.Script.Serialization;
 
 namespace Socketron {
@@ -9,7 +10,6 @@ namespace Socketron {
 		}
 
 		public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) {
-			var json = new Dictionary<string, object>();
 			if (obj is Dictionary<string, object>) {
 				/*
 				foreach (var item in obj as Dictionary<string, object>) {
@@ -19,14 +19,16 @@ namespace Socketron {
 				//*/
 				return new Dictionary<string, object>(obj as Dictionary<string, object>);
 			}
-			foreach (var prop in obj.GetType().GetFields()) {
+			var json = new Dictionary<string, object>();
+			FieldInfo[] fields = obj.GetType().GetFields();
+			foreach (FieldInfo field in fields) {
 				//check if decorated with ScriptIgnore attribute
-				bool ignoreProp = prop.IsDefined(typeof(ScriptIgnoreAttribute), true);
-
-				var value = prop.GetValue(obj);
-				if (value != null && !ignoreProp) {
-					json.Add(prop.Name, value);
+				//bool ignoreProp = field.IsDefined(typeof(ScriptIgnoreAttribute), true);
+				object value = field.GetValue(obj);
+				if (value == null) { // && !ignoreProp) {
+					continue;
 				}
+				json.Add(field.Name, value);
 			}
 			return json;
 		}

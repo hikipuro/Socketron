@@ -74,11 +74,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CallbackManager.cs" />
+    <Compile Include="DOM\Attr.cs" />
+    <Compile Include="DOM\Canvas\CanvasPattern.cs" />
+    <Compile Include="DOM\Canvas\ImageBitmap.cs" />
+    <Compile Include="DOM\Canvas\ImageData.cs" />
+    <Compile Include="DOM\Canvas\Path2D.cs" />
     <Compile Include="DOM\Document.cs" />
     <Compile Include="DOM\DOMModule.cs" />
+    <Compile Include="DOM\DOMTokenList.cs" />
     <Compile Include="DOM\Element.cs" />
     <Compile Include="DOM\Event.cs" />
     <Compile Include="DOM\EventTarget.cs" />
+    <Compile Include="DOM\Canvas\CanvasGradient.cs" />
+    <Compile Include="DOM\Canvas\CanvasRenderingContext2D.cs" />
+    <Compile Include="DOM\Gamepad\Gamepad.cs" />
+    <Compile Include="DOM\Gamepad\GamepadButton.cs" />
+    <Compile Include="DOM\Gamepad\GamepadEvent.cs" />
+    <Compile Include="DOM\HTML\HTMLCanvasElement.cs" />
+    <Compile Include="DOM\HTML\HTMLDivElement.cs" />
+    <Compile Include="DOM\HTML\HTMLElement.cs" />
+    <Compile Include="DOM\Canvas\RenderingContext.cs" />
+    <Compile Include="DOM\Canvas\TextMetrics.cs" />
+    <Compile Include="DOM\Canvas\WebGLRenderingContext.cs" />
+    <Compile Include="DOM\NamedNodeMap.cs" />
     <Compile Include="DOM\Navigator.cs" />
     <Compile Include="DOM\Node.cs" />
     <Compile Include="DOM\Window.cs" />
@@ -106,6 +124,7 @@
     <Compile Include="Electron\Modules\ElectronModule.cs" />
     <Compile Include="Electron\Classes\WebPreferences.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="ExperimentalAttribute.cs" />
     <Compile Include="Node\Buffer.cs" />
     <Compile Include="Node\Modules\Error.cs" />
     <Compile Include="Node\Modules\FileSystemModule.cs" />

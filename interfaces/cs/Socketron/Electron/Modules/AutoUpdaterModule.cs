@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public AutoUpdaterModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public AutoUpdaterModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -22,12 +28,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void setFeedURL(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				"{0}.setFeedURL({1});",
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setFeedURL", options);
 		}
 
 		/// <summary>
@@ -35,11 +36,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getFeedURL() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getFeedURL();",
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<string>(script);
+			return API.Apply<string>("getFeedURL");
 		}
 
 		/// <summary>
@@ -47,11 +44,7 @@ namespace Socketron.Electron {
 		/// You must call setFeedURL before using this API.
 		/// </summary>
 		public void checkForUpdates() {
-			string script = ScriptBuilder.Build(
-				"{0}.checkForUpdates();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("checkForUpdates");
 		}
 
 		/// <summary>
@@ -69,11 +62,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void quitAndInstall() {
-			string script = ScriptBuilder.Build(
-				"{0}.quitAndInstall();",
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("quitAndInstall");
 		}
 	}
 }

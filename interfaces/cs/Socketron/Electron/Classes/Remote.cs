@@ -7,16 +7,16 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Remote {
+	public class Remote: JSModule {
+		public Remote() {
+		}
+
 		/// <summary>
 		/// The process object in the main process.
 		/// This is the same as remote.getGlobal('process') but is cached.
 		/// </summary>
-		public Process process {
-			get {
-				// TODO: implement this
-				throw new NotImplementedException();
-			}
+		public NodeModules.Process process {
+			get { return API.GetObject<NodeModules.Process>("process"); }
 		}
 
 		/// <summary>

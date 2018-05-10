@@ -8,7 +8,7 @@ namespace Socketron {
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Net : JSModule {
 			public Net() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			public void createConnection() {

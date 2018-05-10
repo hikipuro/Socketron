@@ -9,7 +9,7 @@ namespace Socketron {
 		public class FS : JSModule {
 			// TODO: implement all methods
 			public FS() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*
@@ -22,7 +22,7 @@ namespace Socketron {
 					"fs".Escape(),
 					Script.AddObject("module")
 				);
-				_id = _ExecuteBlocking<int>(script);
+				API.id = API._ExecuteBlocking<int>(script);
 			}
 			//*/
 
@@ -32,10 +32,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.existsSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				return _ExecuteBlocking<bool>(script);
+				return API._ExecuteBlocking<bool>(script);
 			}
 
 			public JsonObject linkSync(string existingPath, string newPath) {
@@ -44,11 +44,11 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.linkSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					existingPath.Escape(),
 					newPath.Escape()
 				);
-				object result = _ExecuteBlocking<object>(script);
+				object result = API._ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 
@@ -58,10 +58,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.lstatSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				object result = _ExecuteBlocking<object>(script);
+				object result = API._ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 
@@ -71,10 +71,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.mkdirSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				return _ExecuteBlocking<string>(script);
+				return API._ExecuteBlocking<string>(script);
 			}
 
 			public string mkdtempSync(string prefix) {
@@ -83,10 +83,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.mkdtempSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					prefix.Escape()
 				);
-				return _ExecuteBlocking<string>(script);
+				return API._ExecuteBlocking<string>(script);
 			}
 
 			public int openSync(string path, string flags) {
@@ -95,11 +95,11 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.readdirSync({1},{2});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape(),
 					flags.Escape()
 				);
-				return _ExecuteBlocking<int>(script);
+				return API._ExecuteBlocking<int>(script);
 			}
 
 			public JsonObject readdirSync(string path) {
@@ -108,10 +108,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.readdirSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				object result = _ExecuteBlocking<object>(script);
+				object result = API._ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 
@@ -121,10 +121,10 @@ namespace Socketron {
 						"var fs = {0};",
 						"return fs.readFileSync({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				object result = _ExecuteBlocking<object>(script);
+				object result = API._ExecuteBlocking<object>(script);
 				return new JsonObject(result);
 			}
 
@@ -154,10 +154,10 @@ namespace Socketron {
 						"fs.realpathSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 
 			public void renameSync(string oldPath, string newPath) {
@@ -167,11 +167,11 @@ namespace Socketron {
 						"fs.renameSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					oldPath.Escape(),
 					newPath.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 
 			public void rmdirSync(string path) {
@@ -181,10 +181,10 @@ namespace Socketron {
 						"fs.rmdirSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 
 			public void truncateSync(string path) {
@@ -194,10 +194,10 @@ namespace Socketron {
 						"fs.truncateSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 
 			public void unlinkSync(string path) {
@@ -207,10 +207,10 @@ namespace Socketron {
 						"fs.unlinkSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 
 			public void writeFileSync(string file, string data) {
@@ -220,11 +220,11 @@ namespace Socketron {
 						"fs.writeFileSync({1});",
 						"return 1;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					file.Escape(),
 					data.Escape()
 				);
-				_ExecuteBlocking<int>(script);
+				API._ExecuteBlocking<int>(script);
 			}
 		}
 	}

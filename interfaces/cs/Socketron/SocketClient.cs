@@ -116,6 +116,7 @@ namespace Socketron {
 			AsyncCallback callback = new AsyncCallback(_OnRead);
 			TcpClient tcpClient = _tcpClient;
 			NetworkStream stream = _stream;
+			byte[] _buffer = new byte[LocalConfig.ReadBufferSize];
 			while (tcpClient.Connected && stream.CanRead) {
 				do {
 					/*
@@ -158,7 +159,7 @@ namespace Socketron {
 					} else {
 						break;
 					}
-				} while (stream.DataAvailable);
+				} while (tcpClient.Connected && stream.DataAvailable);
 				//Thread.Sleep(TimeSpan.FromTicks(1));
 			}
 		}
@@ -190,7 +191,11 @@ namespace Socketron {
 
 		protected void _OnWrite(IAsyncResult result) {
 			//NetworkStream stream = (NetworkStream)result.AsyncState;
-			_stream.EndWrite(result);
+			try {
+				_stream.EndWrite(result);
+			} catch (IOException) {
+				_DebugLog("_OnWrite IOException");
+			}
 		}
 
 		protected void _OnData(byte[] data, int bytesReaded) {
@@ -260,7 +265,9 @@ namespace Socketron {
 							EmitNewThread("data", SocketronData.Parse(text));
 							break;
 					}
-					_payload.Data = _payload.Data.Slice(offset + _payload.DataLength);
+					var newData = _payload.Data.Slice(offset + _payload.DataLength);
+					_payload.Data.Dispose();
+					_payload.Data = newData;
 					_payload.DataOffset = 0;
 					_payload.State = ReadState.Type;
 					break;

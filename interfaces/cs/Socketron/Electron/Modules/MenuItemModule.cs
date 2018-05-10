@@ -10,11 +10,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public MenuItemModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public MenuItemModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -32,12 +38,12 @@ namespace Socketron.Electron {
 					"var item = new MenuItem({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.AddObject("item")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new MenuItem(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new MenuItem(API.client, result);
 		}
 
 		/// <summary>

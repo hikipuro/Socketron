@@ -114,8 +114,8 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public Notification(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/*
@@ -159,34 +159,14 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void show() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var notification = {0};",
-					"if (notification == null) {{",
-						"return;",
-					"}}",
-					"notification.show();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("show");
 		}
 
 		/// <summary>
 		/// Dismisses the notification.
 		/// </summary>
 		public void close() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var notification = {0};",
-					"if (notification == null) {{",
-						"return;",
-					"}}",
-					"notification.close();"
-				),
-				Script.GetObject(_id)
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("close");
 		}
 	}
 }

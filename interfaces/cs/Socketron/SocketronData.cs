@@ -2,8 +2,8 @@
 
 namespace Socketron {
 	public class SocketronData : JsonObject {
-		public ushort? SequenceId {
-			get { return this["sequenceId"] as ushort?; }
+		public int? SequenceId {
+			get { return this["sequenceId"] as int?; }
 			set { this["sequenceId"] = value; }
 		}
 		public string Status {

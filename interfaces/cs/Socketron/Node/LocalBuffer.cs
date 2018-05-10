@@ -17,7 +17,7 @@ namespace Socketron {
 		protected MemoryStream _data;
 
 		public LocalBuffer() {
-			_data = new MemoryStream();
+			_data = new MemoryStream(1024);
 		}
 
 		public static LocalBuffer Alloc(long size) {
@@ -64,6 +64,10 @@ namespace Socketron {
 
 		public int Length {
 			get { return (int)_data.Length; }
+		}
+
+		public void Dispose() {
+			_data.Dispose();
 		}
 
 		public void Save(string path) {

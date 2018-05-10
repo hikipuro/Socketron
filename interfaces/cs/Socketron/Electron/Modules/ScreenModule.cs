@@ -11,11 +11,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public ScreenModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public ScreenModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -25,9 +31,9 @@ namespace Socketron.Electron {
 		public Point getCursorScreenPoint() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getCursorScreenPoint();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return Point.FromObject(result);
 		}
 
@@ -39,9 +45,9 @@ namespace Socketron.Electron {
 		public int getMenuBarHeight() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getMenuBarHeight();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			return _ExecuteBlocking<int>(script);
+			return API._ExecuteBlocking<int>(script);
 		}
 
 		/// <summary>
@@ -51,9 +57,9 @@ namespace Socketron.Electron {
 		public Display getPrimaryDisplay() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getPrimaryDisplay();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return Display.FromObject(result);
 		}
 
@@ -64,9 +70,9 @@ namespace Socketron.Electron {
 		public List<Display> getAllDisplays() {
 			string script = ScriptBuilder.Build(
 				"return {0}.getAllDisplays();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			object[] list = result as object[];
 			List<Display> displayList = new List<Display>();
 			foreach (object item in list) {
@@ -84,10 +90,10 @@ namespace Socketron.Electron {
 		public Display getDisplayNearestPoint(Point point) {
 			string script = ScriptBuilder.Build(
 				"return {0}.getDisplayNearestPoint({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				point.Stringify()
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return Display.FromObject(result);
 		}
 
@@ -99,10 +105,10 @@ namespace Socketron.Electron {
 		public Display getDisplayMatching(Rectangle rect) {
 			string script = ScriptBuilder.Build(
 				"return {0}.getDisplayMatching({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				rect.Stringify()
 			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API._ExecuteBlocking<object>(script);
 			return Display.FromObject(result);
 		}
 

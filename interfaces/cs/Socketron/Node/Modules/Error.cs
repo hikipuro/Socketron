@@ -12,8 +12,8 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="client"></param>
 		public Error(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		public static void captureStackTrace() {
@@ -30,9 +30,9 @@ namespace Socketron {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.code;",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				return _ExecuteBlocking<string>(script);
+				return API._ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -40,9 +40,9 @@ namespace Socketron {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.message;",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				return _ExecuteBlocking<string>(script);
+				return API._ExecuteBlocking<string>(script);
 			}
 		}
 
@@ -50,18 +50,18 @@ namespace Socketron {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.stack;",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				return _ExecuteBlocking<string>(script);
+				return API._ExecuteBlocking<string>(script);
 			}
 		}
 
 		public string toString() {
 			string script = ScriptBuilder.Build(
 				"return {0}.toString();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			return _ExecuteBlocking<string>(script);
+			return API._ExecuteBlocking<string>(script);
 		}
 	}
 }

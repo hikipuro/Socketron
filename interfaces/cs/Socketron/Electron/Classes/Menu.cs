@@ -32,8 +32,8 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public Menu(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/*
@@ -71,17 +71,11 @@ namespace Socketron.Electron {
 						"}}",
 						"return result;"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Script.AddObject("item")
 				);
-				object[] result = _ExecuteBlocking<object[]>(script);
-				List<MenuItem> items = new List<MenuItem>();
-				foreach (object item in result) {
-					int itemId = (int)item;
-					MenuItem menuItem = new MenuItem(_client, itemId);
-					items.Add(menuItem);
-				}
-				return items;
+				object[] result = API._ExecuteBlocking<object[]>(script);
+				return API.CreateObjectList<MenuItem>(result);
 			}
 		}
 
@@ -98,12 +92,7 @@ namespace Socketron.Electron {
 		/// </list>
 		/// </param>
 		public void popup(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				"{0}.popup({1});",
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("popup", options);
 		}
 
 		/// <summary>
@@ -115,7 +104,7 @@ namespace Socketron.Electron {
 			if (browserWindow == null) {
 				script = ScriptBuilder.Build(
 					"{0}.closePopup();",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
 			} else {
 				script = ScriptBuilder.Build(
@@ -123,11 +112,11 @@ namespace Socketron.Electron {
 						"var window = electron.BrowserWindow.fromId({0});",
 						"{1}.closePopup(window);"
 					),
-					browserWindow._id,
-					Script.GetObject(_id)
+					browserWindow.API.id,
+					Script.GetObject(API.id)
 				);
 			}
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -137,10 +126,10 @@ namespace Socketron.Electron {
 		public void append(MenuItem menuItem) {
 			string script = ScriptBuilder.Build(
 				"{0}.append({1});",
-				Script.GetObject(_id),
-				Script.GetObject(menuItem._id)
+				Script.GetObject(API.id),
+				Script.GetObject(menuItem.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -151,11 +140,11 @@ namespace Socketron.Electron {
 		public MenuItem getMenuItemById(string id) {
 			string script = ScriptBuilder.Build(
 				"return {0}.getMenuItemById({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				id.Escape()
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new MenuItem(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new MenuItem(API.client, result);
 		}
 
 		/// <summary>
@@ -166,11 +155,11 @@ namespace Socketron.Electron {
 		public void insert(int pos, MenuItem menuItem) {
 			string script = ScriptBuilder.Build(
 				"{0}.insert({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				pos,
-				Script.GetObject(menuItem._id)
+				Script.GetObject(menuItem.API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

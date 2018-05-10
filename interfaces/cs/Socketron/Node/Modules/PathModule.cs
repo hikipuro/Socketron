@@ -8,7 +8,7 @@ namespace Socketron {
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Path : JSModule {
 			public Path() {
-				_client = SocketronClient.GetCurrent();
+				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*
@@ -21,7 +21,7 @@ namespace Socketron {
 					"path".Escape(),
 					Script.AddObject("module")
 				);
-				_id = SocketronClient.ExecuteBlocking<int>(script);
+				API.id = SocketronClient.ExecuteBlocking<int>(script);
 			}
 			//*/
 
@@ -31,7 +31,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.basename({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -43,7 +43,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.basename({1},{2});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape(),
 					ext.Escape()
 				);
@@ -57,7 +57,7 @@ namespace Socketron {
 							"var path = {0};",
 							"return path.delimiter;"
 						),
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 					return SocketronClient.ExecuteBlocking<string>(script);
 				}
@@ -69,7 +69,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.dirname({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -81,7 +81,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.extname({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -93,7 +93,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.format({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					pathObject.Stringify()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -105,7 +105,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.isAbsolute({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<bool>(script);
@@ -117,7 +117,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.join({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					paths.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -129,7 +129,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.normalize({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -141,7 +141,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.parse({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					path.Escape()
 				);
 				object result = SocketronClient.ExecuteBlocking<object>(script);
@@ -170,7 +170,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.relative({1},{2});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					from.Escape(),
 					to.Escape()
 				);
@@ -183,7 +183,7 @@ namespace Socketron {
 						"var path = {0};",
 						"return path.resolve({1});"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					paths.Escape()
 				);
 				return SocketronClient.ExecuteBlocking<string>(script);
@@ -196,7 +196,7 @@ namespace Socketron {
 							"var path = {0};",
 							"return path.sep;"
 						),
-						Script.GetObject(_id)
+						Script.GetObject(API.id)
 					);
 					return SocketronClient.ExecuteBlocking<string>(script);
 				}

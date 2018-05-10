@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -28,11 +27,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public ContentTracingModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public ContentTracingModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -67,7 +72,10 @@ namespace Socketron.Electron {
 				if (argsList == null) {
 					return;
 				}
-				string[] categories = (argsList[0] as object[]).Cast<string>().ToArray();
+				string[] categories = Array.ConvertAll(
+					argsList[0] as object[],
+					value => Convert.ToString(value)
+				);
 				callback?.Invoke(categories);
 			});
 			string script = ScriptBuilder.Build(
@@ -77,12 +85,12 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.getCategories(callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -110,13 +118,13 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.startRecording({3},callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId,
 				options.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -145,13 +153,13 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.stopRecording({3},callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId,
 				resultFilePath.Escape()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -183,13 +191,13 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.startMonitoring({3},callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId,
 				options.Stringify()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -215,12 +223,12 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.stopMonitoring(callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -249,13 +257,13 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.captureMonitoringSnapshot({3},callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId,
 				resultFilePath.Escape()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -287,12 +295,12 @@ namespace Socketron.Electron {
 					"}};",
 					"{0}.getTraceBufferUsage(callback);"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Name.Escape(),
 				_callbackListId
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

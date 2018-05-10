@@ -1,58 +1,49 @@
 ﻿namespace Socketron.DOM {
 	public class DOMModule : JSModule {
-		public int _webContentsId;
+		public class SocketronDOMAPI: SocketronAPI {
+			public int webContentsId;
 
-		protected override void _ExecuteJavaScript(string script) {
-			if (_client.LocalConfig.IsDebug) {
-				script = script + "\n/* " + _GetDebugInfo() + " */";
+			public override void ExecuteJavaScript(string script) {
+				if (client.LocalConfig.IsDebug) {
+					script = script + "\n/* " + GetDebugInfo() + " */";
+				}
+				client.Renderer.ExecuteJavaScript(webContentsId, script);
 			}
-			_client.Renderer.ExecuteJavaScript(_webContentsId, script);
+
+			public override void ExecuteJavaScript(string script, Callback success) {
+				client.Renderer.ExecuteJavaScript(webContentsId, script, success);
+			}
+
+			public override void ExecuteJavaScript(string script, Callback success, Callback error) {
+				client.Renderer.ExecuteJavaScript(webContentsId, script, success, error);
+			}
+
+			public override T _ExecuteBlocking<T>(string script) {
+				if (client.LocalConfig.IsDebug) {
+					script = script + "\n/* " + GetDebugInfo() + " */";
+				}
+				return client.Renderer.ExecuteJavaScriptBlocking<T>(webContentsId, script);
+			}
+
+			public override int CacheScript(string script) {
+				return client.Renderer.CacheScript(webContentsId, script);
+			}
+
+			public override T ExecuteCachedScript<T>(int script) {
+				return client.Renderer.ExecuteCachedScript<T>(webContentsId, script);
+			}
+
+			public override T CreateObject<T>(int id) {
+				T obj = new T();
+				obj.API.client = client;
+				obj.API.id = id;
+				(obj.API as SocketronDOMAPI).webContentsId = webContentsId;
+				return obj;
+			}
 		}
 
-		protected override void _ExecuteJavaScript(string script, Callback success) {
-			_client.Renderer.ExecuteJavaScript(_webContentsId, script, success);
-		}
-
-		protected override void _ExecuteJavaScript(string script, Callback success, Callback error) {
-			_client.Renderer.ExecuteJavaScript(_webContentsId, script, success, error);
-		}
-
-		protected override T _ExecuteBlocking<T>(string script) {
-			if (_client.LocalConfig.IsDebug) {
-				script = script + "\n/* " + _GetDebugInfo() + " */";
-			}
-			return _client.Renderer.ExecuteJavaScriptBlocking<T>(_webContentsId, script);
-		}
-
-		public T GetObject<T>(string moduleName) where T : DOMModule, new() {
-			if (moduleName == null) {
-				return null;
-			}
-			string script = string.Empty;
-			if (_id <= 0) {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"return {0};"
-					),
-					Script.AddObject(moduleName)
-				);
-			} else {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var m = {0}.{1};",
-						"return {2};"
-					),
-					Script.GetObject(_id),
-					moduleName,
-					Script.AddObject("m")
-				);
-			}
-			int result = _ExecuteBlocking<int>(script);
-			T module = new T() {
-				_id = result,
-				_webContentsId = _webContentsId
-			};
-			return module;
+		public DOMModule() {
+			API = new SocketronDOMAPI();
 		}
 	}
 }

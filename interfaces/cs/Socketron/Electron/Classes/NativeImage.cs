@@ -56,8 +56,8 @@ namespace Socketron.Electron {
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public NativeImage(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -75,12 +75,12 @@ namespace Socketron.Electron {
 					"var buf = {0}.toPNG({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				option,
 				Script.AddObject("buf")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -94,12 +94,12 @@ namespace Socketron.Electron {
 					"var buf = {0}.toJPEG({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				quality,
 				Script.AddObject("buf")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -117,12 +117,12 @@ namespace Socketron.Electron {
 					"var buf = {0}.toBitmap({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				option,
 				Script.AddObject("buf")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -138,9 +138,9 @@ namespace Socketron.Electron {
 					"}}",
 					"return image.toDataURL();"
 				),
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			return _ExecuteBlocking<string>(script);
+			return API._ExecuteBlocking<string>(script);
 		}
 
 		/// <summary>
@@ -158,12 +158,12 @@ namespace Socketron.Electron {
 					"var buf = {0}.getBitmap({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				option,
 				Script.AddObject("buf")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -178,11 +178,11 @@ namespace Socketron.Electron {
 					"var buf = {0}.getNativeHandle();",
 					"return {1};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.AddObject("buf")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new Buffer(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -190,13 +190,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isEmpty() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.isEmpty();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isEmpty");
 		}
 
 		/// <summary>
@@ -204,13 +198,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public Size getSize() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.getSize();"
-				),
-				Script.GetObject(_id)
-			);
-			object result = _ExecuteBlocking<object>(script);
+			object result = API.Apply<object>("getSize");
 			return Size.FromObject(result);
 		}
 
@@ -219,14 +207,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="option"></param>
 		public void setTemplateImage(bool option) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.setTemplateImage({1});"
-				),
-				Script.GetObject(_id),
-				option.Escape()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("setTemplateImage", option);
 		}
 
 		/// <summary>
@@ -234,13 +215,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isTemplateImage() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.isTemplateImage();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isTemplateImage");
 		}
 
 		/// <summary>
@@ -254,12 +229,12 @@ namespace Socketron.Electron {
 					"var image = {0}.crop({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				rect.Stringify(),
 				Script.AddObject("image")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -277,12 +252,12 @@ namespace Socketron.Electron {
 					"var image = {0}.resize({1});",
 					"return {2};"
 				),
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				options.Stringify(),
 				Script.AddObject("image")
 			);
-			int result = _ExecuteBlocking<int>(script);
-			return new NativeImage(_client, result);
+			int result = API._ExecuteBlocking<int>(script);
+			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -290,13 +265,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public double getAspectRatio() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.getAspectRatio();"
-				),
-				Script.GetObject(_id)
-			);
-			return _ExecuteBlocking<double>(script);
+			return API.Apply<double>("getAspectRatio");
 		}
 
 		/// <summary>
@@ -306,12 +275,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void addRepresentation(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				"{0}.addRepresentation({1});",
-				Script.GetObject(_id),
-				options.Stringify()
-			);
-			_ExecuteJavaScript(script);
+			API.Apply("addRepresentation", options);
 		}
 	}
 }

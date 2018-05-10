@@ -17,11 +17,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public ProtocolModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public ProtocolModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -85,7 +91,7 @@ namespace Socketron.Electron {
 					return;
 				}
 				int errId = (int)argsList[0];
-				completion?.Invoke(new Error(_client, errId));
+				completion?.Invoke(new Error(API.client, errId));
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -101,7 +107,7 @@ namespace Socketron.Electron {
 				scheme.Escape()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		public void isProtocolHandled(string scheme, Action<string> callback) {
@@ -148,7 +154,7 @@ namespace Socketron.Electron {
 					return;
 				}
 				int errId = (int)argsList[0];
-				completion?.Invoke(new Error(_client, errId));
+				completion?.Invoke(new Error(API.client, errId));
 			});
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -164,7 +170,7 @@ namespace Socketron.Electron {
 				scheme.Escape()
 			);
 			_callbackListId++;
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

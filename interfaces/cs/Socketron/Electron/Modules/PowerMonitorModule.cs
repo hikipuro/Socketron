@@ -27,11 +27,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
+		public PowerMonitorModule() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
 		/// <param name="client"></param>
 		/// <param name="id"></param>
 		public PowerMonitorModule(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -46,8 +52,8 @@ namespace Socketron.Electron {
 			}
 			string eventName = "querySystemIdleState";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
 				string idleState = args[0] as string;
 				callback?.Invoke(idleState);
 			});
@@ -58,21 +64,21 @@ namespace Socketron.Electron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.querySystemIdleState({1},{2});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				idleThreshold,
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -85,8 +91,8 @@ namespace Socketron.Electron {
 			}
 			string eventName = "querySystemIdleTime";
 			CallbackItem item = null;
-			item = _client.Callbacks.Add(_id, eventName, (object[] args) => {
-				_client.Callbacks.RemoveItem(_id, eventName, item.CallbackId);
+			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
 				int idleTime = (int)args[0];
 				callback?.Invoke(idleTime);
 			});
@@ -97,20 +103,20 @@ namespace Socketron.Electron {
 					"}};",
 					"return {3};"
 				),
-				_id,
+				API.id,
 				eventName.Escape(),
 				item.CallbackId,
 				Script.AddObject("callback")
 			);
-			int objectId = _ExecuteBlocking<int>(script);
+			int objectId = API._ExecuteBlocking<int>(script);
 			item.ObjectId = objectId;
 
 			script = ScriptBuilder.Build(
 				"{0}.querySystemIdleTime({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				Script.GetObject(objectId)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

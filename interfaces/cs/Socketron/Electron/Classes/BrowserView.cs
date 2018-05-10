@@ -10,6 +10,12 @@ namespace Socketron.Electron {
 	public class BrowserView : JSModule {
 		/// <summary>
 		/// This constructor is used for internally by the library.
+		/// </summary>
+		public BrowserView() {
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
 		/// <para>
 		/// If you are looking for the BrowserView constructors,
 		/// please use electron.BrowserView.Create() method instead.
@@ -17,8 +23,8 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="client"></param>
 		public BrowserView(SocketronClient client, int id) {
-			_client = client;
-			_id = id;
+			API.client = client;
+			API.id = id;
 		}
 
 		/// <summary>
@@ -32,11 +38,11 @@ namespace Socketron.Electron {
 						"var webContents = {0}.webContents;",
 						"return {1};"
 					),
-					Script.GetObject(_id),
+					Script.GetObject(API.id),
 					Script.AddObject("webContents")
 				);
-				int result = _ExecuteBlocking<int>(script);
-				return new WebContents(_client, result);
+				int result = API._ExecuteBlocking<int>(script);
+				return new WebContents(API.client, result);
 			}
 		}
 
@@ -48,9 +54,9 @@ namespace Socketron.Electron {
 			get {
 				string script = ScriptBuilder.Build(
 					"return {0}.id;",
-					Script.GetObject(_id)
+					Script.GetObject(API.id)
 				);
-				return _ExecuteBlocking<int>(script);
+				return API._ExecuteBlocking<int>(script);
 
 			}
 		}
@@ -64,9 +70,9 @@ namespace Socketron.Electron {
 		public void destroy() {
 			string script = ScriptBuilder.Build(
 				"{0}.destroy();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -76,9 +82,9 @@ namespace Socketron.Electron {
 		public bool isDestroyed() {
 			string script = ScriptBuilder.Build(
 				"return {0}.isDestroyed();",
-				Script.GetObject(_id)
+				Script.GetObject(API.id)
 			);
-			return _ExecuteBlocking<bool>(script);
+			return API._ExecuteBlocking<bool>(script);
 		}
 
 		/// <summary>
@@ -95,11 +101,11 @@ namespace Socketron.Electron {
 		public void setAutoResize(bool width, bool height) {
 			string script = ScriptBuilder.Build(
 				"{0}.setAutoResize({{width:{1},height:{2}}});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				width.Escape(),
 				height.Escape()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -110,10 +116,10 @@ namespace Socketron.Electron {
 		public void setBounds(Rectangle bounds) {
 			string script = ScriptBuilder.Build(
 				"{0}.setBounds({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				bounds.Stringify()
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -126,10 +132,10 @@ namespace Socketron.Electron {
 		public void setBackgroundColor(string color) {
 			string script = ScriptBuilder.Build(
 				"{0}.setBackgroundColor({1});",
-				Script.GetObject(_id),
+				Script.GetObject(API.id),
 				color
 			);
-			_ExecuteJavaScript(script);
+			API.ExecuteJavaScript(script);
 		}
 	}
 }

@@ -58,7 +58,8 @@ class SocketronRenderer {
 	}
 
 	_ipcSend(channel, ...args) {
-		ipcRenderer.send(this._ipcEventId(channel), ...args);
+		channel = this.config.ipcEventPrefix + channel;
+		ipcRenderer.send(channel, ...args);
 	}
 
 	_sendCallback(sequenceId, clientId, args) {
