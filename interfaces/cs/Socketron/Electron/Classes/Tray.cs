@@ -90,22 +90,12 @@ namespace Socketron.Electron {
 
 		/// <summary>
 		/// This constructor is used for internally by the library.
-		/// </summary>
-		public Tray() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
 		/// <para>
 		/// If you are looking for the Tray constructors,
 		/// please use electron.Tray.Create() method instead.
 		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public Tray(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Tray() {
 		}
 
 		/// <summary>
@@ -120,17 +110,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="image"></param>
 		public void setImage(NativeImage image) {
-			if (image == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setImage({1});"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(image.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setImage", image);
 		}
 
 		/// <summary>
@@ -147,17 +127,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="image"></param>
 		public void setPressedImage(NativeImage image) {
-			if (image == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setPressedImage({1});"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(image.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setPressedImage", image);
 		}
 
 		/// <summary>
@@ -217,17 +187,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="menu"></param>
 		public void popUpContextMenu(Menu menu) {
-			if (menu == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.popUpContextMenu({1});"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(menu.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("popUpContextMenu", menu);
 		}
 
 		/// <summary>
@@ -241,18 +201,7 @@ namespace Socketron.Electron {
 		/// <param name="menu"></param>
 		/// <param name="position"></param>
 		public void popUpContextMenu(Menu menu, Point position) {
-			if (menu == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.popUpContextMenu({1},{2});"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(menu.API.id),
-				position.Stringify()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("popUpContextMenu", menu, position);
 		}
 
 		/// <summary>
@@ -260,17 +209,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="menu"></param>
 		public void setContextMenu(Menu menu) {
-			if (menu == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"{0}.setContextMenu({1});"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(menu.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setContextMenu", menu);
 		}
 
 		/// <summary>

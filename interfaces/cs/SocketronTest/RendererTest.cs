@@ -56,7 +56,7 @@ namespace SocketronTest {
 			window.addEventListener("gamepadconnected", (e) => {
 				Console.WriteLine("gamepadconnected");
 				var gamepads = navigator.getGamepads();
-				Console.WriteLine("gamepads: {0}", gamepads.Count);
+				Console.WriteLine("gamepads: {0}", gamepads.Length);
 				foreach (var gamepad in gamepads) {
 					if (gamepad == null) {
 						continue;
@@ -71,12 +71,12 @@ namespace SocketronTest {
 		protected void Update() {
 			//try {
 				var gamepads = navigator.getGamepads();
-				if (gamepads.Count <= 0) {
+				if (gamepads.Length <= 0) {
 					return;
 				}
 				var gamepad = gamepads[0];
 				var buttons = gamepad.buttons;
-				if (buttons.Count <= 0) {
+				if (buttons.Length <= 0) {
 					return;
 				}
 				double value = buttons[0].value;

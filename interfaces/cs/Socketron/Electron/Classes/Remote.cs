@@ -27,8 +27,8 @@ namespace Socketron.Electron {
 		/// <param name="module"></param>
 		/// <returns></returns>
 		public JsonObject require(string module) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			object result = API.Apply("require", module);
+			return new JsonObject(result);
 		}
 
 		/// <summary>
@@ -54,8 +54,8 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getGlobal() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			object result = API.Apply("getGlobal");
+			return new JsonObject(result);
 		}
 	}
 }

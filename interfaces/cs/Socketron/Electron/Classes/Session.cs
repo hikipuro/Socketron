@@ -25,32 +25,10 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public Session(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// A Cookies object for this session.
 		/// </summary>
 		public Cookies cookies {
-			get {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var session = {0};",
-						"var cookies = session.cookies;",
-						"return {1};"
-					),
-					Script.GetObject(API.id),
-					Script.AddObject("cookies")
-				);
-				int result = API._ExecuteBlocking<int>(script);
-				return new Cookies(API.client, result);
-			}
+			get { return API.GetObject<Cookies>("cookies"); }
 		}
 
 		/// <summary>
@@ -72,8 +50,13 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="callback"></param>
 		public void getCacheSize(Action<int> callback) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string eventName = "_getCacheSize";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				int size = Convert.ToInt32(args[0]);
+				callback?.Invoke(size);
+			});
+			API.Apply("getCacheSize", item);
 		}
 
 		/// <summary>
@@ -81,8 +64,12 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="callback"></param>
 		public void clearCache(Action callback) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string eventName = "_clearCache";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				callback?.Invoke();
+			});
+			API.Apply("clearCache", item);
 		}
 
 		/// <summary>
@@ -90,6 +77,20 @@ namespace Socketron.Electron {
 		/// </summary>
 		public void clearStorageData() {
 			API.Apply("clearStorageData");
+		}
+
+		/// <summary>
+		/// Clears the data of web storages.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
+		public void clearStorageData(JsonObject options, Action callback) {
+			string eventName = "_clearStorageData";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				callback?.Invoke();
+			});
+			API.Apply("clearStorageData", options, item);
 		}
 
 		/// <summary>
@@ -105,8 +106,12 @@ namespace Socketron.Electron {
 		/// <param name="config"></param>
 		/// <param name="callback"></param>
 		public void setProxy(JsonObject config, Action callback) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string eventName = "_setProxy";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				callback?.Invoke();
+			});
+			API.Apply("setProxy", config, item);
 		}
 
 		/// <summary>
@@ -115,8 +120,13 @@ namespace Socketron.Electron {
 		/// <param name="url"></param>
 		/// <param name="callback"></param>
 		public void resolveProxy(string url, Action<string> callback) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string eventName = "_resolveProxy";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				string proxy = args[0] as string;
+				callback?.Invoke(proxy);
+			});
+			API.Apply("resolveProxy", url, item);
 		}
 
 		/// <summary>
@@ -150,9 +160,18 @@ namespace Socketron.Electron {
 		/// whenever a server certificate verification is requested.
 		/// Calling callback(0) accepts the certificate, calling callback(-2) rejects it.
 		/// </summary>
-		public void setCertificateVerifyProc() {
-			// TODO: implement this
-			throw new NotImplementedException();
+		public void setCertificateVerifyProc(Action<JsonObject, Action<int>> proc) {
+			string eventName = "_setCertificateVerifyProc";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				JsonObject request = new JsonObject(args[0]);
+				JSModule _callback = API.CreateObject<JSModule>((int)args[1]);
+				Action<int> callback = (verificationResult) => {
+					_callback.API.Invoke(verificationResult);
+				};
+				proc?.Invoke(request, callback);
+			});
+			API.Apply("setCertificateVerifyProc", item);
 		}
 
 		/// <summary>
@@ -160,17 +179,41 @@ namespace Socketron.Electron {
 		/// Calling callback(true) will allow the permission and callback(false) will reject it.
 		/// To clear the handler, call setPermissionRequestHandler(null).
 		/// </summary>
-		public void setPermissionRequestHandler() {
-			// TODO: implement this
-			throw new NotImplementedException();
+		public void setPermissionRequestHandler(Action<WebContents, string, Action<bool>, JsonObject> handler) {
+			string eventName = "_setPermissionRequestHandler";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				WebContents webContents = API.CreateObject<WebContents>((int)args[0]);
+				string permission = args[1] as string;
+				JSModule _callback = API.CreateObject<JSModule>((int)args[2]);
+				JsonObject details = new JsonObject(args[3]);
+				Action<bool> callback = (permissionGranted) => {
+					_callback.API.Invoke(permissionGranted);
+				};
+				handler?.Invoke(webContents, permission, callback, details);
+			});
+			API.Apply("setPermissionRequestHandler", item);
 		}
 
 		/// <summary>
 		/// Clears the host resolver cache.
 		/// </summary>
 		public void clearHostResolverCache() {
-			// TODO: implement this
 			API.Apply("clearHostResolverCache");
+		}
+
+		/// <summary>
+		/// Clears the host resolver cache.
+		/// </summary>
+		/// <param name="callback">Called when operation is done.</param>
+		public void clearHostResolverCache(Action callback) {
+			string eventName = "_clearHostResolverCache";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("clearHostResolverCache", item);
 		}
 
 		/// <summary>
@@ -210,8 +253,14 @@ namespace Socketron.Electron {
 		/// <param name="identifier">Valid UUID.</param>
 		/// <param name="callback"></param>
 		public void getBlobData(string identifier, Action<Buffer> callback) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			string eventName = "_getBlobData";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				Buffer result = API.CreateObject<Buffer>((int)args[0]);
+				callback?.Invoke(result);
+			});
+			API.Apply("getBlobData", identifier, item);
 		}
 
 		/// <summary>
@@ -227,8 +276,45 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		public void clearAuthCache(RemovePassword options) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("clearAuthCache", options);
+		}
+
+		/// <summary>
+		/// Clears the session’s HTTP authentication cache.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <param name="callback">Called when operation is done.</param>
+		public void clearAuthCache(RemovePassword options, Action callback) {
+			string eventName = "_clearAuthCache";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("clearAuthCache", options, item);
+		}
+
+		/// <summary>
+		/// Clears the session’s HTTP authentication cache.
+		/// </summary>
+		/// <param name="options"></param>
+		public void clearAuthCache(RemoveClientCertificate options) {
+			API.Apply("clearAuthCache", options);
+		}
+
+		/// <summary>
+		/// Clears the session’s HTTP authentication cache.
+		/// </summary>
+		/// <param name="options"></param>
+		/// <param name="callback">Called when operation is done.</param>
+		public void clearAuthCache(RemoveClientCertificate options, Action callback) {
+			string eventName = "_clearAuthCache";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("clearAuthCache", options, item);
 		}
 
 		/// <summary>
@@ -239,8 +325,7 @@ namespace Socketron.Electron {
 		public void setPreloads(string[] preloads) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
-					"var session = {0};",
-					"session.setPreloads({1});"
+					"{0}.setPreloads({1});"
 				),
 				Script.GetObject(API.id),
 				JSON.Stringify(preloads)
@@ -253,14 +338,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string[] getPreloads() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var session = {0};",
-					"return session.getPreloads();"
-				),
-				Script.GetObject(API.id)
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
+			object[] result = API.Apply<object[]>("getPreloads");
 			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 	}

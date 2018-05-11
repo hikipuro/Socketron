@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -12,16 +12,6 @@ namespace Socketron.Electron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public CrashReporterModule() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public CrashReporterModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
 		}
 
 		/// <summary>
@@ -43,11 +33,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public CrashReport getLastCrashReport() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getLastCrashReport();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getLastCrashReport");
 			return CrashReport.FromObject(result);
 		}
 
@@ -56,17 +42,11 @@ namespace Socketron.Electron {
 		/// Each report contains the date and uploaded ID.
 		/// </summary>
 		/// <returns></returns>
-		public List<CrashReport> getUploadedReports() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getUploadedReports();",
-				Script.GetObject(API.id)
+		public CrashReport[] getUploadedReports() {
+			object[] result = API.Apply<object[]>("getUploadedReports");
+			return Array.ConvertAll(
+				result, value => CrashReport.FromObject(value)
 			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			List<CrashReport> reports = new List<CrashReport>();
-			foreach (object item in result) {
-				reports.Add(CrashReport.FromObject(item));
-			}
-			return reports;
 		}
 
 		/// <summary>
@@ -122,11 +102,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getParameters() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getParameters();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getParameters");
 			return new JsonObject(result);
 		}
 	}

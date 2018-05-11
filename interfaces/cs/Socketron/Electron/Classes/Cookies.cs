@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -9,11 +8,6 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Cookies : JSModule {
-		public const string Name = "Cookies";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// Cookies instance events.
 		/// </summary>
@@ -28,11 +22,7 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public Cookies(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Cookies() {
 		}
 
 		/// <summary>
@@ -45,36 +35,18 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(API.client, (int)argsList[0]);
+			string eventName = "_get";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: check cookie[]
+				Error error = API.CreateObject<Error>((int)args[0]);
 				Cookie[] cookies = Array.ConvertAll(
-					argsList[1] as object[],
+					args[1] as object[],
 					value => Cookie.Parse(value as string)
 				);
 				callback?.Invoke(error, cookies);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (err,cookies) => {{",
-						"var errId = {0};",
-						"this.emit('__event',{1},{2},errId,cookies);",
-					"}};",
-					"{3}.get({4},callback);"
-				),
-				Script.AddObject("err"),
-				Name.Escape(),
-				_callbackListId,
-				Script.GetObject(API.id),
-				filter.Stringify()
-			);
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
+			API.Apply("get", filter, item);
 		}
 
 		/// <summary>
@@ -87,32 +59,13 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(API.client, (int)argsList[0]);
+			string eventName = "_set";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				Error error = API.CreateObject<Error>((int)args[0]);
 				callback?.Invoke(error);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (err) => {{",
-						"var errId = {0};",
-						"this.emit('__event',{1},{2},errId);",
-					"}};",
-					"{3}.set({4},callback);"
-				),
-				Script.AddObject("err"),
-				Name.Escape(),
-				_callbackListId,
-				Script.GetObject(API.id),
-				details.Stringify()
-			);
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
+			API.Apply("set", details, item);
 		}
 
 		/// <summary>
@@ -126,26 +79,12 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "_remove";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				callback?.Invoke();
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = () => {{",
-						"this.emit('__event',{0},{1});",
-					"}};",
-					"{2}.remove({3},{4},callback);"
-				),
-				Name.Escape(),
-				_callbackListId,
-				Script.GetObject(API.id),
-				url.Escape(),
-				name.Escape()
-			);
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
+			API.Apply("remove", url, name, item);
 		}
 
 		/// <summary>
@@ -156,24 +95,12 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
+			string eventName = "_flushStore";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				callback?.Invoke();
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = () => {{",
-						"this.emit('__event',{0},{1});",
-					"}};",
-					"{2}.flushStore(callback);"
-				),
-				Name.Escape(),
-				_callbackListId,
-				Script.GetObject(API.id)
-			);
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
+			API.Apply("flushStore", item);
 		}
 	}
 }

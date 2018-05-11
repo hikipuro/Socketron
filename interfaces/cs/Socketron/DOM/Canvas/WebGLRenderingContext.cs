@@ -43,14 +43,7 @@ namespace Socketron.DOM {
 		}
 
 		public JsonObject getContextAttributes() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var attr = {0}.getContextAttributes();",
-					"return attr;"
-				),
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getContextAttributes");
 			return new JsonObject(result);
 		}
 
@@ -270,15 +263,7 @@ namespace Socketron.DOM {
 		}
 
 		public JsonObject getParameter(GLenum pname) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var param = {0}.getParameter({1});",
-					"return param;"
-				),
-				Script.GetObject(API.id),
-				pname
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getParameter", pname);
 			return new JsonObject(result);
 		}
 

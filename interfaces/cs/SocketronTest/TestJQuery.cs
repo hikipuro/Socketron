@@ -489,7 +489,6 @@ namespace SocketronTest {
 				}
 			});
 			*/
-			//return;
 
 			/*
 			JsonObject args = new JsonObject() {
@@ -507,6 +506,15 @@ namespace SocketronTest {
 			//}
 
 			//API.client.ExecuteJavaScriptBlocking<string>("return Function.prototype.toString(self);");
+			Console.WriteLine(electron.screen.getAllDisplays().Stringify());
+			//electron.app.dock.setIcon(electron.nativeImage.createEmpty());
+			Console.WriteLine(electron.clipboard.availableFormats().Stringify());
+			//Console.WriteLine(electron.session.defaultSession.getPreloads().Stringify());
+			Console.WriteLine(JSON.Stringify(electron.session.defaultSession.getUserAgent()));
+			electron.session.defaultSession.clearAuthCache(new RemoveClientCertificate() { origin = "aa" }, () => {
+				Console.WriteLine("clearAuthCache");
+			});
+
 			//return;
 
 			BrowserWindow.Options options = new BrowserWindow.Options();
@@ -536,6 +544,8 @@ namespace SocketronTest {
 			}, 1000);
 
 			window.webContents.on(WebContents.Events.DomReady, (args) => {
+				Console.WriteLine(JSON.Stringify(args));
+				return;
 				string[] css = {
 					"* {",
 					"	font-family: sans-serif;",

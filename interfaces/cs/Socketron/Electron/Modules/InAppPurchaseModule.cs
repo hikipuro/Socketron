@@ -9,29 +9,10 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class InAppPurchaseModule : JSModule {
-		public const string Name = "InAppPurchase";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		public InAppPurchaseModule(SocketronClient client) {
-			API.client = client;
+		public InAppPurchaseModule() {
 		}
 
 		/// <summary>
@@ -43,11 +24,7 @@ namespace Socketron.Electron {
 		///  (The identifier of com.example.app.product1 is product1).
 		/// </param>
 		public void purchaseProduct(string productID) {
-			string script = ScriptBuilder.Build(
-				"electron.inAppPurchase.purchaseProduct({0});",
-				productID.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("purchaseProduct", productID);
 		}
 
 		/// <summary>
@@ -64,31 +41,23 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
+			string eventName = "_getProducts";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: check Product[]
+				API.RemoveCallbackItem(eventName, item);
 				Product[] products = Array.ConvertAll(
-					argsList[0] as object[],
+					args[0] as object[],
 					value => Product.Parse(value as string)
 				);
 				callback?.Invoke(products);
 			});
 			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (products) => {{",
-						"this.emit('__event',{0},{1},products);",
-					"}};",
-					"electron.inAppPurchase.getProducts({2},callback);"
-				),
-				Name.Escape(),
-				_callbackListId,
-				productIDs.Stringify()
+				"{0}.getProducts({1},{2});",
+				Script.GetObject(API.id),
+				productIDs.Stringify(),
+				Script.GetObject(item.ObjectId)
 			);
-			_callbackListId++;
 			API.ExecuteJavaScript(script);
 		}
 
@@ -97,10 +66,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool canMakePayments() {
-			string script = ScriptBuilder.Build(
-				"return electron.inAppPurchase.canMakePayments();"
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("canMakePayments");
 		}
 
 		/// <summary>
@@ -108,20 +74,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getReceiptURL() {
-			string script = ScriptBuilder.Build(
-				"return electron.inAppPurchase.getReceiptURL();"
-			);
-			return API._ExecuteBlocking<string>(script);
+			return API.Apply<string>("getReceiptURL");
 		}
 
 		/// <summary>
 		/// Completes all pending transactions.
 		/// </summary>
 		public void finishAllTransactions() {
-			string script = ScriptBuilder.Build(
-				"electron.inAppPurchase.finishAllTransactions();"
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("finishAllTransactions");
 		}
 
 		/// <summary>
@@ -131,11 +91,7 @@ namespace Socketron.Electron {
 		/// The ISO formatted date of the transaction to finish.
 		/// </param>
 		public void finishTransactionByDate(string date) {
-			string script = ScriptBuilder.Build(
-				"electron.inAppPurchase.finishTransactionByDate({0});",
-				date.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("finishTransactionByDate", date);
 		}
 	}
 }

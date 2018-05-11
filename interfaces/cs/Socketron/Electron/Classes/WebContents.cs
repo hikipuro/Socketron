@@ -233,16 +233,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public WebContents(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// A Integer representing the unique ID of this WebContents.
 		/// </summary>
 		public int id {
@@ -500,54 +490,27 @@ namespace Socketron.Electron {
 		/// of the code is a rejected promise.
 		/// </returns>
 		public Promise executeJavaScript(string code) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var promise = {0}.executeJavaScript({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				code.Escape(),
-				Script.AddObject("promise")
+			return API.ApplyAndGetObject<Promise>(
+				"executeJavaScript", code
 			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
 		}
 
 		public Promise executeJavaScript(string code, bool userGesture) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var promise = {0}.executeJavaScript({1},{2});",
-					"return {3};"
-				),
-				Script.GetObject(API.id),
-				code.Escape(),
-				userGesture.Escape(),
-				Script.AddObject("promise")
+			return API.ApplyAndGetObject<Promise>(
+				"executeJavaScript", code, userGesture
 			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
 		}
 
 		public Promise executeJavaScript(string code, bool userGesture, Action<object> callback) {
-			string eventName = "API.ExecuteJavaScript";
+			string eventName = "_executeJavaScript";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				API.RemoveCallbackItem(eventName, item);
 				callback?.Invoke(args[0]);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var promise = {0}.executeJavaScript({1},{2},{3});",
-					"return {4};"
-				),
-				Script.GetObject(API.id),
-				code.Escape(),
-				userGesture.Escape(),
-				Script.GetObject(item.ObjectId),
-				Script.AddObject("promise")
+			return API.ApplyAndGetObject<Promise>(
+				"executeJavaScript", code, userGesture, item
 			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
 		}
 
 		/// <summary>
@@ -593,32 +556,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "getZoomFactor";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				double zoomFactor = (double)args[0];
+			string eventName = "_getZoomFactor";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				double zoomFactor = Convert.ToDouble(args[0]);
 				callback?.Invoke(zoomFactor);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (zoomFactor) => {{",
-						"this.emit('__event',{0},{1},{2},zoomFactor);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.getZoomFactor({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("getZoomFactor", item);
 		}
 
 		/// <summary>
@@ -643,32 +588,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "getZoomLevel";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				double zoomLevel = (double)args[0];
+			string eventName = "_getZoomLevel";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				double zoomLevel = Convert.ToDouble(args[0]);
 				callback?.Invoke(zoomLevel);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (zoomLevel) => {{",
-						"this.emit('__event',{0},{1},{2},zoomLevel);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.getZoomLevel({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("getZoomLevel", item);
 		}
 
 		/// <summary>
@@ -821,34 +748,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "capturePage";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				NativeImage image = new NativeImage(API.client, (int)args[0]);
+			string eventName = "_capturePage";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
 				callback?.Invoke(image);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (image) => {{",
-						"this.emit('__event',{0},{1},{2},{3});",
-					"}};",
-					"return {4};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("image"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.capturePage({1},{2});",
-				Script.GetObject(API.id),
-				rect.Stringify(),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("capturePage", rect, item);
 		}
 
 		/// <summary>
@@ -859,33 +766,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "capturePage";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				NativeImage image = new NativeImage(API.client, (int)args[0]);
+			string eventName = "_capturePage";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
 				callback?.Invoke(image);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (image) => {{",
-						"this.emit('__event',{0},{1},{2},{3});",
-					"}};",
-					"return {4};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("image"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.capturePage({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("capturePage", item);
 		}
 
 		/// <summary>
@@ -897,31 +785,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "hasServiceWorker";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				callback?.Invoke((bool)args[0]);
+			string eventName = "_hasServiceWorker";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				bool hasWorker = Convert.ToBoolean(args[0]);
+				callback?.Invoke(hasWorker);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (hasWorker) => {{",
-						"this.emit('__event',{0},{1},{2},hasWorker);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.hasServiceWorker({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("hasServiceWorker", item);
 		}
 
 		/// <summary>
@@ -933,49 +804,23 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "unregisterServiceWorker";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				callback?.Invoke((bool)args[0]);
+			string eventName = "_unregisterServiceWorker";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				bool success = Convert.ToBoolean(args[0]);
+				callback?.Invoke(success);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (success) => {{",
-						"this.emit('__event',{0},{1},{2},success);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.unregisterServiceWorker({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unregisterServiceWorker", item);
 		}
 
 		/// <summary>
 		/// Get the system printer list.
 		/// </summary>
 		/// <returns></returns>
-		public List<PrinterInfo> getPrinters() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getPrinters();",
-				Script.GetObject(API.id)
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			List<PrinterInfo> printers = new List<PrinterInfo>();
-			foreach (object item in result) {
-				PrinterInfo info = PrinterInfo.FromObject(item);
-				printers.Add(info);
-			}
-			return printers;
+		public PrinterInfo[] getPrinters() {
+			object[] result = API.Apply<object[]>("getPrinters");
+			return Array.ConvertAll(result, value => PrinterInfo.Parse(value as string));
 		}
 
 		/// <summary>
@@ -995,31 +840,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "print";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				callback?.Invoke((bool)args[0]);
+			string eventName = "_print";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				bool success = Convert.ToBoolean(args[0]);
+				callback?.Invoke(success);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (success) => {{",
-						"this.emit('__event',{0},{1},{2},success);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.print({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("print", options, item);
 		}
 
 		/// <summary>
@@ -1036,18 +864,12 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				Error error = null;
 				if (args[0] != null) {
-					error = new Error(API.client, (int)args[0]);
+					error = API.CreateObject<Error>((int)args[0]);
 				}
-				Buffer data = new Buffer(API.client, (int)args[1]);
+				Buffer data = API.CreateObject<Buffer>((int)args[1]);
 				callback?.Invoke(error, data);
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.printToPDF({1},{2});",
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("printToPDF", options, item);
 		}
 
 		/// <summary>
@@ -1204,69 +1026,32 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "beginFrameSubscription";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				Buffer frameBuffer = new Buffer(API.client, (int)args[0]);
+			string eventName = "_beginFrameSubscription";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: fix rectangle param
+				API.RemoveCallbackItem(eventName, item);
+				Buffer frameBuffer = API.CreateObject<Buffer>((int)args[0]);
 				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (frameBuffer,dirtyRect) => {{",
-						"this.emit('__event',{0},{1},{2},{3},dirtyRect);",
-					"}};",
-					"return {4};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("frameBuffer"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.beginFrameSubscription({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("beginFrameSubscription", item);
 		}
 
 		public void beginFrameSubscription(bool onlyDirty, Action<Buffer, Rectangle> callback) {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "beginFrameSubscription";
-			CallbackItem item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				Buffer frameBuffer = new Buffer(API.client, (int)args[0]);
+			string eventName = "_beginFrameSubscription";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: fix rectangle param
+				API.RemoveCallbackItem(eventName, item);
+				Buffer frameBuffer = API.CreateObject<Buffer>((int)args[0]);
 				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (frameBuffer,dirtyRect) => {{",
-						"this.emit('__event',{0},{1},{2},{3},dirtyRect);",
-					"}};",
-					"return {4};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("frameBuffer"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.beginFrameSubscription({1},{2});",
-				Script.GetObject(API.id),
-				onlyDirty.Escape(),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("beginFrameSubscription", onlyDirty, item);
 		}
 
 
@@ -1300,22 +1085,15 @@ namespace Socketron.Electron {
 			string eventName = "_savePage";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				API.RemoveCallbackItem(eventName, item);
 				if (args[0] == null) {
 					callback?.Invoke(null);
 					return;
 				}
-				Error error = new Error(API.client, (int)args[0]);
+				Error error = API.CreateObject<Error>((int)args[0]);
 				callback?.Invoke(error);
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.savePage({1},{2},{3});",
-				Script.GetObject(API.id),
-				fullPath.Escape(),
-				saveType.Escape(),
-				Script.GetObject(item.ObjectId)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("savePage", fullPath, saveType, item);
 		}
 
 		/// <summary>

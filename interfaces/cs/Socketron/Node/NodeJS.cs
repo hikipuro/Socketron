@@ -42,7 +42,7 @@ namespace Socketron {
 			string eventName = "setTimeout";
 			CallbackItem item = null;
 			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				API.RemoveCallbackItem(eventName, item);
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(

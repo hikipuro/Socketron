@@ -24,7 +24,7 @@ namespace Socketron.DOM {
 			}
 		}
 
-		public List<GamepadButton> buttons {
+		public GamepadButton[] buttons {
 			get {
 				if (_buttonsCache == 0) {
 					string script = ScriptBuilder.Build(
@@ -41,16 +41,17 @@ namespace Socketron.DOM {
 					_buttonsCache = API.CacheScript(script);
 				}
 				object[] result = API.ExecuteCachedScript<object[]>(_buttonsCache);
-				List<GamepadButton> buttons = new List<GamepadButton>();
 				if (result == null) {
-					return buttons;
+					return new GamepadButton[0];
 				}
-				foreach (object item in result) {
+				GamepadButton[] buttons = new GamepadButton[result.Length];
+				for (int i = 0; i < result.Length; i++) {
+					object item = result[i];
 					JsonObject button = new JsonObject(item);
-					buttons.Add(new GamepadButton() {
+					buttons[i] = new GamepadButton() {
 						pressed = button.Bool("pressed"),
 						value = button.Double("value")
-					});
+					};
 				}
 				return buttons;
 			}

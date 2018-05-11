@@ -15,16 +15,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public BrowserWindowModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Create a new BrowserWindow instance.
 		/// </summary>
 		/// <param name="options"></param>
@@ -33,18 +23,7 @@ namespace Socketron.Electron {
 			if (options == null) {
 				options = new BrowserWindow.Options();
 			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var BrowserWindow = {0};",
-					"var window = new BrowserWindow({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.AddObject("window")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyConstructor<BrowserWindow>(options);
 		}
 
 		/// <summary>
@@ -60,21 +39,8 @@ namespace Socketron.Electron {
 		/// Returns BrowserWindow[] - An array of all opened browser windows.
 		/// </summary>
 		/// <returns></returns>
-		public List<BrowserWindow> getAllWindows() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var result = [];",
-					"var windows = {0}.getAllWindows();",
-					"for (var window of windows) {{",
-						"result.push({1});",
-					"}}",
-					"return result;"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("window")
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			return API.CreateObjectList<BrowserWindow>(result);
+		public BrowserWindow[] getAllWindows() {
+			return API.ApplyAndGetObjectList<BrowserWindow>("getAllWindows");
 		}
 
 		/// <summary>
@@ -83,19 +49,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public BrowserWindow getFocusedWindow() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = {0}.getFocusedWindow();",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("window")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyAndGetObject<BrowserWindow>("getFocusedWindow");
 		}
 
 		/// <summary>
@@ -104,20 +58,7 @@ namespace Socketron.Electron {
 		/// <param name="webContents"></param>
 		/// <returns></returns>
 		public BrowserWindow fromWebContents(WebContents webContents) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = {0}.fromWebContents({1});",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(webContents.API.id),
-				Script.AddObject("window")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyAndGetObject<BrowserWindow>("fromWebContents", webContents);
 		}
 
 		/// <summary>
@@ -127,20 +68,7 @@ namespace Socketron.Electron {
 		/// <param name="browserView"></param>
 		/// <returns></returns>
 		public BrowserWindow fromBrowserView(BrowserView browserView) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = {0}.fromBrowserView({1});",
-					"if (window == null) {{",
-						"return null",
-					"}}",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(browserView.API.id),
-				Script.AddObject("window")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyAndGetObject<BrowserWindow>("fromBrowserView", browserView);
 		}
 
 		/// <summary>
@@ -149,20 +77,7 @@ namespace Socketron.Electron {
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public BrowserWindow fromId(int id) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = {0}.fromId({1});",
-					"if (window == null) {{",
-						"return null;",
-					"}}",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				id,
-				Script.AddObject("window")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyAndGetObject<BrowserWindow>("fromId", id);
 		}
 
 		/// <summary>
@@ -199,11 +114,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getExtensions() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getExtensions();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getExtensions");
 			return new JsonObject(result);
 		}
 
@@ -229,11 +140,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getDevToolsExtensions() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getDevToolsExtensions();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getDevToolsExtensions");
 			return new JsonObject(result);
 		}
 	}

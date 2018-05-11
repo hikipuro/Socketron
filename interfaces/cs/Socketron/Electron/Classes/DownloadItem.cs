@@ -23,6 +23,12 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public DownloadItem() {
+		}
+
+		/// <summary>
 		/// The API is only available in session's will-download callback function.
 		/// <para>
 		/// If user doesn't set the save path via the API,
@@ -155,11 +161,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string[] getURLChain() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getURLChain();",
-				Script.GetObject(API.id)
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
+			object[] result = API.Apply<object[]>("getURLChain");
 			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 

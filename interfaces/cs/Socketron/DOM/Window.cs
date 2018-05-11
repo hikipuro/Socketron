@@ -471,9 +471,7 @@ namespace Socketron.DOM {
 				return API.ExecuteCachedScript<int>(_requestAnimationFrameCache[key]);
 			}
 			string eventName = "_requestAnimationFrame";
-			CallbackItem item = null;
-			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				//_client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+			CallbackItem item = API.CreateCallbackItem(eventName, (object[] args) => {
 				callback?.Invoke();
 			});
 			string script = ScriptBuilder.Build(
@@ -492,15 +490,10 @@ namespace Socketron.DOM {
 			string eventName = "_requestIdleCallback";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+				API.RemoveCallbackItem(eventName, item);
 				callback?.Invoke();
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.requestIdleCallback({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			return API._ExecuteBlocking<int>(script);
+			return API.Apply<int>("requestIdleCallback", item);
 		}
 
 		public void resizeBy(int xDelta, int yDelta) {

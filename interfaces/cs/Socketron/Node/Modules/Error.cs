@@ -10,10 +10,7 @@ namespace Socketron {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		public Error(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Error() {
 		}
 
 		public static void captureStackTrace() {
@@ -27,41 +24,19 @@ namespace Socketron {
 		}
 
 		public string code {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.code;",
-					Script.GetObject(API.id)
-				);
-				return API._ExecuteBlocking<string>(script);
-			}
+			get { return API.GetProperty<string>("code"); }
 		}
 
 		public string message {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.message;",
-					Script.GetObject(API.id)
-				);
-				return API._ExecuteBlocking<string>(script);
-			}
+			get { return API.GetProperty<string>("message"); }
 		}
 
 		public string stack {
-			get {
-				string script = ScriptBuilder.Build(
-					"return {0}.stack;",
-					Script.GetObject(API.id)
-				);
-				return API._ExecuteBlocking<string>(script);
-			}
+			get { return API.GetProperty<string>("stack"); }
 		}
 
 		public string toString() {
-			string script = ScriptBuilder.Build(
-				"return {0}.toString();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<string>(script);
+			return API.Apply<string>("toString");
 		}
 	}
 }

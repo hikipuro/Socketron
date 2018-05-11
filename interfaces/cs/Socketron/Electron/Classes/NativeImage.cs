@@ -53,11 +53,7 @@ namespace Socketron.Electron {
 		/// please use electron.nativeImage.createXxx() method instead.
 		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public NativeImage(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public NativeImage() {
 		}
 
 		/// <summary>
@@ -66,21 +62,11 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public Buffer toPNG(Options options = null) {
-			string option = string.Empty;
-			if (options != null) {
-				option = options.Stringify();
+			if (options == null) {
+				return API.ApplyAndGetObject<Buffer>("toPNG");
+			} else {
+				return API.ApplyAndGetObject<Buffer>("toPNG", options);
 			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.toPNG({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				option,
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -89,17 +75,7 @@ namespace Socketron.Electron {
 		/// <param name="quality"></param>
 		/// <returns></returns>
 		public Buffer toJPEG(int quality) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.toJPEG({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				quality,
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
+			return API.ApplyAndGetObject<Buffer>("toJPEG", quality);
 		}
 
 		/// <summary>
@@ -108,21 +84,11 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public Buffer toBitmap(Options options = null) {
-			string option = string.Empty;
-			if (options != null) {
-				option = options.Stringify();
+			if (options == null) {
+				return API.ApplyAndGetObject<Buffer>("toBitmap");
+			} else {
+				return API.ApplyAndGetObject<Buffer>("toBitmap", options);
 			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.toBitmap({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				option,
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
 		}
 
 		/// <summary>
@@ -130,17 +96,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string toDataURL() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0};",
-					"if (image == null) {{",
-						"return null;",
-					"}}",
-					"return image.toDataURL();"
-				),
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<string>(script);
+			return API.Apply<string>("toDataURL");
 		}
 
 		/// <summary>
@@ -149,21 +105,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public Buffer getBitmap(Options options) {
-			string option = string.Empty;
-			if (options != null) {
-				option = options.Stringify();
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.getBitmap({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				option,
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
+			return API.ApplyAndGetObject<Buffer>("getBitmap", options);
 		}
 
 		/// <summary>
@@ -173,16 +115,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public Buffer getNativeHandle() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.getNativeHandle();",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
+			return API.ApplyAndGetObject<Buffer>("getNativeHandle");
 		}
 
 		/// <summary>
@@ -224,17 +157,7 @@ namespace Socketron.Electron {
 		/// <param name="rect"></param>
 		/// <returns></returns>
 		public NativeImage crop(Rectangle rect) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.crop({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				rect.Stringify(),
-				Script.AddObject("image")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("crop", rect);
 		}
 
 		/// <summary>
@@ -247,17 +170,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public NativeImage resize(JsonObject options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.resize({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.AddObject("image")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("resize", options);
 		}
 
 		/// <summary>

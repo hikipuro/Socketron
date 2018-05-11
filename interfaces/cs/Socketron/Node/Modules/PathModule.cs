@@ -7,8 +7,10 @@ namespace Socketron {
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Path : JSModule {
+			/// <summary>
+			/// This constructor is used for internally by the library.
+			/// </summary>
 			public Path() {
-				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*

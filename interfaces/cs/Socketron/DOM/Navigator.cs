@@ -20,7 +20,7 @@ namespace Socketron.DOM {
 			}
 		}
 
-		public List<Gamepad> getGamepads() {
+		public Gamepad[] getGamepads() {
 			if (!_getGamepadsCache.ContainsKey((API as SocketronDOMAPI).webContentsId)) {
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
@@ -42,18 +42,18 @@ namespace Socketron.DOM {
 				_getGamepadsCache.Add((API as SocketronDOMAPI).webContentsId, cacheId);
 			}
 			int cacheId2 = _getGamepadsCache[(API as SocketronDOMAPI).webContentsId];
-			List<Gamepad> gamepads = new List<Gamepad>();
 			object[] result = API.ExecuteCachedScript<object[]>(cacheId2);
 			if (result == null) {
-				return gamepads;
+				return new Gamepad[0];
 			}
 			int[] ids = Array.ConvertAll(result, value => Convert.ToInt32(value));
-			foreach (int id in ids) {
+			Gamepad[] gamepads = new Gamepad[ids.Length];
+			for (int i = 0; i < ids.Length; i++) {
+				int id = ids[i];
 				if (id <= 0) {
-					gamepads.Add(null);
 					continue;
 				}
-				gamepads.Add(API.CreateObject<Gamepad>(id));
+				gamepads[i] = API.CreateObject<Gamepad>(id);
 			}
 			return gamepads;
 		}

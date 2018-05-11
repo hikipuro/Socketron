@@ -7,8 +7,10 @@ namespace Socketron {
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class Net : JSModule {
+			/// <summary>
+			/// This constructor is used for internally by the library.
+			/// </summary>
 			public Net() {
-				API.client = SocketronClient.GetCurrent();
 			}
 
 			public void createConnection() {

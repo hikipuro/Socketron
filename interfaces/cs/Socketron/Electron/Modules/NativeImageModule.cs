@@ -14,30 +14,11 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public NativeImageModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Creates an empty NativeImage instance.
 		/// </summary>
 		/// <returns></returns>
 		public NativeImage createEmpty() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.createEmpty();",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("image")
-			);
-			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("createEmpty");
 		}
 
 		/// <summary>
@@ -48,17 +29,7 @@ namespace Socketron.Electron {
 		/// <param name="path"></param>
 		/// <returns></returns>
 		public NativeImage createFromPath(string path) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.createFromPath({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				path.Escape(),
-				Script.AddObject("image")
-			);
-			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("createFromPath", path);
 		}
 
 		/// <summary>
@@ -67,18 +38,7 @@ namespace Socketron.Electron {
 		/// <param name="buffer"></param>
 		/// <returns></returns>
 		public NativeImage createFromBuffer(Buffer buffer) {
-			// TODO: add options
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.createFromBuffer({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(buffer.API.id),
-				Script.AddObject("image")
-			);
-			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("createFromBuffer", buffer);
 		}
 
 		/// <summary>
@@ -87,17 +47,7 @@ namespace Socketron.Electron {
 		/// <param name="dataURL"></param>
 		/// <returns></returns>
 		public NativeImage createFromDataURL(string dataURL) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.createFromDataURL({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				dataURL.Escape(),
-				Script.AddObject("image")
-			);
-			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("createFromDataURL", dataURL);
 		}
 
 		/// <summary>
@@ -109,17 +59,7 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public NativeImage createFromNamedImage(string imageName) {
 			// TODO: add hslShift option
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.createFromNamedImage({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				imageName.Escape(),
-				Script.AddObject("image")
-			);
-			int result = SocketronClient.ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
+			return API.ApplyAndGetObject<NativeImage>("createFromNamedImage", imageName);
 		}
 	}
 }

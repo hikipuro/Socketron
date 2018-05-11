@@ -110,7 +110,7 @@ namespace Socketron.Electron {
 		}
 
 		public JsonObject getResourceUsage() {
-			object result = API.Apply<object>("getResourceUsage");
+			object result = API.Apply("getResourceUsage");
 			return new JsonObject(result);
 		}
 

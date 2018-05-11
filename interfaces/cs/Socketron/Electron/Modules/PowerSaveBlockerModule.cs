@@ -25,16 +25,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public PowerSaveBlockerModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Returns Integer - The blocker ID that is assigned to this power blocker.
 		/// <para>
 		/// Starts preventing the system from entering lower-power mode.
@@ -44,12 +34,7 @@ namespace Socketron.Electron {
 		/// <param name="type"></param>
 		/// <returns></returns>
 		public int start(string type) {
-			string script = ScriptBuilder.Build(
-				"return {0}.start({1});",
-				Script.GetObject(API.id),
-				type.Escape()
-			);
-			return API._ExecuteBlocking<int>(script);
+			return API.Apply<int>("start", type);
 		}
 
 		/// <summary>
@@ -59,12 +44,7 @@ namespace Socketron.Electron {
 		/// The power save blocker id returned by powerSaveBlocker.start.
 		/// </param>
 		public void stop(int id) {
-			string script = ScriptBuilder.Build(
-				"{0}.stop({1});",
-				Script.GetObject(API.id),
-				id
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("stop", id);
 		}
 
 		/// <summary>
@@ -75,12 +55,7 @@ namespace Socketron.Electron {
 		/// </param>
 		/// <returns></returns>
 		public bool isStarted(int id) {
-			string script = ScriptBuilder.Build(
-				"return {0}.isStarted({1});",
-				Script.GetObject(API.id),
-				id
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isStarted", id);
 		}
 	}
 }

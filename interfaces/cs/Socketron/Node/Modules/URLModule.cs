@@ -7,8 +7,10 @@ namespace Socketron {
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class URL : JSModule {
+			/// <summary>
+			/// This constructor is used for internally by the library.
+			/// </summary>
 			public URL() {
-				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*

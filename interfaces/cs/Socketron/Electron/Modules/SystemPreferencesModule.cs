@@ -14,26 +14,12 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public SystemPreferencesModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// *macOS*
 		/// Returns Boolean - Whether the system is in Dark Mode.
 		/// </summary>
 		/// <returns></returns>
 		public bool isDarkMode() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isDarkMode();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isDarkMode");
 		}
 
 		/// <summary>
@@ -42,11 +28,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isSwipeTrackingFromScrollEventsEnabled() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isSwipeTrackingFromScrollEventsEnabled();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isSwipeTrackingFromScrollEventsEnabled");
 		}
 
 		/// <summary>
@@ -58,13 +40,7 @@ namespace Socketron.Electron {
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
 		public void postNotification(string @event, JsonObject userInfo) {
-			string script = ScriptBuilder.Build(
-				"{0}.postNotification({1},{2});",
-				Script.GetObject(API.id),
-				@event.Escape(),
-				userInfo.Stringify()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("postNotification", @event, userInfo);
 		}
 
 		/// <summary>
@@ -76,13 +52,7 @@ namespace Socketron.Electron {
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
 		public void postLocalNotification(string @event, JsonObject userInfo) {
-			string script = ScriptBuilder.Build(
-				"{0}.postLocalNotification({1},{2});",
-				Script.GetObject(API.id),
-				@event.Escape(),
-				userInfo.Stringify()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("postLocalNotification", @event, userInfo);
 		}
 
 		/// <summary>
@@ -94,13 +64,7 @@ namespace Socketron.Electron {
 		/// <param name="event"></param>
 		/// <param name="userInfo"></param>
 		public void postWorkspaceNotification(string @event, JsonObject userInfo) {
-			string script = ScriptBuilder.Build(
-				"{0}.postWorkspaceNotification({1},{2});",
-				Script.GetObject(API.id),
-				@event.Escape(),
-				userInfo.Stringify()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("postWorkspaceNotification", @event, userInfo);
 		}
 
 		/*
@@ -130,12 +94,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="id"></param>
 		public void unsubscribeNotification(int id) {
-			string script = ScriptBuilder.Build(
-				"{0}.unsubscribeNotification({1});",
-				Script.GetObject(API.id),
-				id
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unsubscribeNotification", id);
 		}
 
 		/// <summary>
@@ -145,12 +104,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="id"></param>
 		public void unsubscribeLocalNotification(int id) {
-			string script = ScriptBuilder.Build(
-				"{0}.unsubscribeLocalNotification({1});",
-				Script.GetObject(API.id),
-				id
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unsubscribeLocalNotification", id);
 		}
 
 		/// <summary>
@@ -160,12 +114,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="id"></param>
 		public void unsubscribeWorkspaceNotification(int id) {
-			string script = ScriptBuilder.Build(
-				"{0}.unsubscribeWorkspaceNotification({1});",
-				Script.GetObject(API.id),
-				id
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unsubscribeWorkspaceNotification", id);
 		}
 
 		/// <summary>
@@ -174,12 +123,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="defaults"></param>
 		public void registerDefaults(JsonObject defaults) {
-			string script = ScriptBuilder.Build(
-				"return {0}.registerDefaults({1});",
-				Script.GetObject(API.id),
-				defaults.Stringify()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("registerDefaults", defaults);
 		}
 
 		/// <summary>
@@ -190,13 +134,7 @@ namespace Socketron.Electron {
 		/// <param name="type"></param>
 		/// <returns></returns>
 		public JsonObject getUserDefault(string key, string type) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getUserDefault({1},{2});",
-				Script.GetObject(API.id),
-				key.Escape(),
-				type.Escape()
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getUserDefault", key, type);
 			return new JsonObject(result);
 		}
 
@@ -208,14 +146,7 @@ namespace Socketron.Electron {
 		/// <param name="type"></param>
 		/// <param name="value"></param>
 		public void setUserDefault(string key, string type, string value) {
-			string script = ScriptBuilder.Build(
-				"{0}.setUserDefault({1},{2},{3});",
-				Script.GetObject(API.id),
-				key.Escape(),
-				type.Escape(),
-				value.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setUserDefault", key, type, value);
 		}
 
 		/// <summary>
@@ -226,12 +157,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="key"></param>
 		public void removeUserDefault(string key) {
-			string script = ScriptBuilder.Build(
-				"{0}.removeUserDefault({1});",
-				Script.GetObject(API.id),
-				key.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("removeUserDefault", key);
 		}
 
 		/// <summary>
@@ -240,11 +166,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isAeroGlassEnabled() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isAeroGlassEnabled();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isAeroGlassEnabled");
 		}
 
 		/// <summary>
@@ -253,11 +175,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public string getAccentColor() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getAccentColor();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<string>(script);
+			return API.Apply<string>("getAccentColor");
 		}
 
 		/// <summary>
@@ -268,12 +186,7 @@ namespace Socketron.Electron {
 		/// <param name="color">SystemPreferences.WindowsColors</param>
 		/// <returns></returns>
 		public string getColor(string color) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getColor({1});",
-				Script.GetObject(API.id),
-				color.Escape()
-			);
-			return API._ExecuteBlocking<string>(script);
+			return API.Apply<string>("getColor", color);
 		}
 
 		/// <summary>
@@ -283,11 +196,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public bool isInvertedColorScheme() {
-			string script = ScriptBuilder.Build(
-				"return {0}.isInvertedColorScheme();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isInvertedColorScheme");
 		}
 	}
 }

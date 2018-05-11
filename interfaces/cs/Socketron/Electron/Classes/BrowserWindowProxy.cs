@@ -9,6 +9,12 @@ namespace Socketron.Electron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class BrowserWindowProxy : JSModule {
 		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public BrowserWindowProxy() {
+		}
+
+		/// <summary>
 		/// A Boolean that is set to true after the child window gets closed.
 		/// </summary>
 		public bool closed {

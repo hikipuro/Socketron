@@ -17,7 +17,6 @@ namespace Socketron {
 			/// This constructor is used for internally by the library.
 			/// </summary>
 			public Process() {
-				API.client = SocketronClient.GetCurrent();
 			}
 			
 			public void abort() {

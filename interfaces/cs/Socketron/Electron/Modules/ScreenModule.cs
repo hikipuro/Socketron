@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -15,25 +16,11 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public ScreenModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// The current absolute position of the mouse pointer.
 		/// </summary>
 		/// <returns></returns>
 		public Point getCursorScreenPoint() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getCursorScreenPoint();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getCursorScreenPoint");
 			return Point.FromObject(result);
 		}
 
@@ -43,11 +30,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public int getMenuBarHeight() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getMenuBarHeight();",
-				Script.GetObject(API.id)
-			);
-			return API._ExecuteBlocking<int>(script);
+			return API.Apply<int>("getMenuBarHeight");
 		}
 
 		/// <summary>
@@ -55,11 +38,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public Display getPrimaryDisplay() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getPrimaryDisplay();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getPrimaryDisplay");
 			return Display.FromObject(result);
 		}
 
@@ -67,19 +46,11 @@ namespace Socketron.Electron {
 		/// Returns Display[] - An array of displays that are currently available.
 		/// </summary>
 		/// <returns></returns>
-		public List<Display> getAllDisplays() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getAllDisplays();",
-				Script.GetObject(API.id)
+		public Display[] getAllDisplays() {
+			object[] result = API.Apply<object[]>("getAllDisplays");
+			return Array.ConvertAll(
+				result, value => Display.FromObject(value)
 			);
-			object result = API._ExecuteBlocking<object>(script);
-			object[] list = result as object[];
-			List<Display> displayList = new List<Display>();
-			foreach (object item in list) {
-				Display display = Display.FromObject(item);
-				displayList.Add(display);
-			}
-			return displayList;
 		}
 
 		/// <summary>
@@ -88,12 +59,7 @@ namespace Socketron.Electron {
 		/// <param name="point"></param>
 		/// <returns></returns>
 		public Display getDisplayNearestPoint(Point point) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getDisplayNearestPoint({1});",
-				Script.GetObject(API.id),
-				point.Stringify()
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getDisplayNearestPoint", point);
 			return Display.FromObject(result);
 		}
 
@@ -103,14 +69,8 @@ namespace Socketron.Electron {
 		/// <param name="rect"></param>
 		/// <returns></returns>
 		public Display getDisplayMatching(Rectangle rect) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getDisplayMatching({1});",
-				Script.GetObject(API.id),
-				rect.Stringify()
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getDisplayMatching", rect);
 			return Display.FromObject(result);
 		}
-
 	}
 }

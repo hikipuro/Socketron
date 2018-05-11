@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -15,16 +14,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public NetModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Creates a ClientRequest instance using the provided options
 		/// which are directly forwarded to the ClientRequest constructor.
 		/// <para>
@@ -35,17 +24,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public ClientRequest request(ClientRequest.Options options) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var request = {0}.request({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.AddObject("request")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new ClientRequest(API.client, result);
+			return API.ApplyAndGetObject<ClientRequest>("request", options);
 		}
 
 		public ClientRequest request(string options) {

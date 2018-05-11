@@ -8,8 +8,11 @@ namespace Socketron {
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class FS : JSModule {
 			// TODO: implement all methods
+
+			/// <summary>
+			/// This constructor is used for internally by the library.
+			/// </summary>
 			public FS() {
-				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*

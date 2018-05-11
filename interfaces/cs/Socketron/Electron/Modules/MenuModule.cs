@@ -14,16 +14,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public MenuModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Sets menu as the application menu on macOS.
 		/// On Windows and Linux, the menu will be set as each window's top menu.
 		/// <para>
@@ -35,15 +25,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="menu"></param>
 		public void setApplicationMenu(Menu menu) {
-			if (menu == null) {
-				return;
-			}
-			string script = ScriptBuilder.Build(
-				"{0}.setApplicationMenu({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(menu.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setApplicationMenu", menu);
 		}
 
 		/// <summary>
@@ -55,19 +37,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public Menu getApplicationMenu() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var menu = {0}.getApplicationMenu();",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("menu")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			if (result <= 0) {
-				return null;
-			}
-			return new Menu(API.client, result);
+			return API.ApplyAndGetObject<Menu>("getApplicationMenu");
 		}
 
 		/// <summary>
@@ -83,12 +53,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="action"></param>
 		public void sendActionToFirstResponder(string action) {
-			string script = ScriptBuilder.Build(
-				"{0}.sendActionToFirstResponder({1});",
-				Script.GetObject(API.id),
-				action.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("sendActionToFirstResponder", action);
 		}
 
 		/// <summary>
@@ -102,7 +67,9 @@ namespace Socketron.Electron {
 		/// <returns></returns>
 		public Menu buildFromTemplate(MenuItem.Options[] template) {
 			string templateText = JSON.Stringify(template);
+			return API.ApplyAndGetObject<Menu>("buildFromTemplate", templateText);
 
+			/*
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var menu = {0}.buildFromTemplate({1});",
@@ -116,7 +83,8 @@ namespace Socketron.Electron {
 			if (result <= 0) {
 				return null;
 			}
-			return new Menu(API.client, result);
+			return API.CreateObject<Menu>(result);
+			//*/
 		}
 
 		/// <summary>

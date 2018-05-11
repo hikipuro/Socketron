@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -15,15 +14,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		public BrowserViewModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// *Experimental*
 		/// Create a new BrowserView instance.
 		/// </summary>
@@ -31,19 +21,7 @@ namespace Socketron.Electron {
 			if (options == null) {
 				options = new WebPreferences();
 			}
-			SocketronClient client = SocketronClient.GetCurrent();
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var BrowserView = {0};",
-					"var view = new BrowserView({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.AddObject("view")
-			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
-			return new BrowserView(API.client, result);
+			return API.ApplyConstructor<BrowserView>(options);
 		}
 
 
@@ -51,21 +29,8 @@ namespace Socketron.Electron {
 		/// Returns BrowserView[] - An array of all opened BrowserViews.
 		/// </summary>
 		/// <returns></returns>
-		public List<BrowserView> getAllViews() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var result = [];",
-					"var views = {0}.getAllViews();",
-					"for (var view of views) {{",
-						"result.push({1});",
-					"}}",
-					"return result;"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("view")
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			return API.CreateObjectList<BrowserView>(result);
+		public BrowserView[] getAllViews() {
+			return API.ApplyAndGetObjectList<BrowserView>("getAllViews");
 		}
 
 		/// <summary>
@@ -75,23 +40,7 @@ namespace Socketron.Electron {
 		/// <param name="webContents"></param>
 		/// <returns></returns>
 		public BrowserView fromWebContents(WebContents webContents) {
-			if (webContents == null) {
-				return null;
-			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = {0}.fromWebContents({1});",
-					"if (view == null) {{",
-						"return null;",
-					"}}",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(webContents.API.id),
-				Script.AddObject("view")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserView(API.client, result);
+			return API.ApplyAndGetObject<BrowserView>("fromWebContents", webContents);
 		}
 
 		/// <summary>
@@ -100,20 +49,7 @@ namespace Socketron.Electron {
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public BrowserView fromId(int id) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = {0}.fromId({1});",
-					"if (view == null) {{",
-						"return null;",
-					"}}",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				id,
-				Script.AddObject("view")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserView(API.client, result);
+			return API.ApplyAndGetObject<BrowserView>("fromId", id);
 		}
 	}
 }

@@ -8,16 +8,10 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class IPCRenderer : JSModule {
-		public const string Name = "IPCRenderer";
-
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public IPCRenderer(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public IPCRenderer() {
 		}
 
 		/// <summary>

@@ -107,6 +107,7 @@
     <Compile Include="Electron\Modules\AutoUpdaterModule.cs" />
     <Compile Include="Electron\Modules\BrowserViewModule.cs" />
     <Compile Include="Electron\Modules\BrowserWindowModule.cs" />
+    <Compile Include="Electron\Modules\ClientRequestModule.cs" />
     <Compile Include="Electron\Modules\MenuItemModule.cs" />
     <Compile Include="Electron\Modules\PowerMonitorModule.cs" />
     <Compile Include="Electron\Modules\PowerSaveBlockerModule.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="ExperimentalAttribute.cs" />
     <Compile Include="Node\Buffer.cs" />
     <Compile Include="Node\Modules\Error.cs" />
+    <Compile Include="Node\Modules\EventEmitter.cs" />
     <Compile Include="Node\Modules\FileSystemModule.cs" />
     <Compile Include="Node\LocalBuffer.cs" />
     <Compile Include="Color.cs" />

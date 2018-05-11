@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
@@ -8,8 +9,10 @@ namespace Socketron {
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
 		public class OS : JSModule {
+			/// <summary>
+			/// This constructor is used for internally by the library.
+			/// </summary>
 			public OS() {
-				API.client = SocketronClient.GetCurrent();
 			}
 
 			/*
@@ -55,13 +58,11 @@ namespace Socketron {
 				}
 			}
 
-			public List<JsonObject> cpus() {
-				string script = ScriptBuilder.Build(
-					"return {0}.cpus();",
-					Script.GetObject(API.id)
+			public JsonObject[] cpus() {
+				object[] result = API.Apply<object[]>("cpus");
+				return Array.ConvertAll(
+					result, value => new JsonObject(value)
 				);
-				object[] result = SocketronClient.ExecuteBlocking<object[]>(script);
-				return JsonObject.FromArray(result);
 			}
 
 			public string endianness() {
@@ -96,13 +97,11 @@ namespace Socketron {
 				return SocketronClient.ExecuteBlocking<string>(script);
 			}
 
-			public List<JsonObject> loadavg() {
-				string script = ScriptBuilder.Build(
-					"return {0}.loadavg();",
-					Script.GetObject(API.id)
+			public JsonObject[] loadavg() {
+				object[] result = API.Apply<object[]>("loadavg");
+				return Array.ConvertAll(
+					result, value => new JsonObject(value)
 				);
-				object[] result = SocketronClient.ExecuteBlocking<object[]>(script);
-				return JsonObject.FromArray(result);
 			}
 
 			public JsonObject networkInterfaces() {

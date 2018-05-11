@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -8,22 +7,6 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class MenuItem : JSModule {
-		public const string Name = "MenuItem";
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
 		/// <summary>
 		/// MenuItem constructor options.
 		/// </summary>
@@ -140,92 +123,63 @@ namespace Socketron.Electron {
 
 			/// <summary>Minimize current window.</summary>
 			public const string minimize = "minimize";
-
 			/// <summary>Close current window.</summary>
 			public const string close = "close";
-
 			/// <summary> Quit the application.</summary>
 			public const string quit = "quit";
-
 			/// <summary>Reload the current window.</summary>
 			public const string reload = "reload";
-
 			/// <summary>Reload the current window ignoring the cache.</summary>
 			public const string forceReload = "forceReload";
-
 			/// <summary>Toggle developer tools in the current window.</summary>
 			public const string toggleDevTools = "toggleDevTools";
-
 			/// <summary>Toggle full screen mode on the current window.</summary>
 			public const string toggleFullScreen = "toggleFullScreen";
-
 			/// <summary>Reset the focused page's zoom level to the original size.</summary>
 			public const string resetZoom = "resetZoom";
-
 			/// <summary>Zoom in the focused page by 10%.</summary>
 			public const string zoomIn = "zoomIn";
-
 			/// <summary>Zoom out the focused page by 10%.</summary>
 			public const string zoomOut = "zoomOut";
-
 			/// <summary>Whole default "Edit" menu (Undo, Copy, etc.).</summary>
 			public const string editMenu = "editMenu";
-
 			/// <summary>Whole default "Window" menu (Minimize, Close, etc.).</summary>
 			public const string windowMenu = "windowMenu";
 
-
 			/// <summary>*macOS* Map to the orderFrontStandardAboutPanel action.</summary>
 			public const string about = "about";
-
 			/// <summary>*macOS* Map to the hide action.</summary>
 			public const string hide = "hide";
-
 			/// <summary>*macOS* Map to the hideOtherApplications action.</summary>
 			public const string hideOthers = "hideOthers";
-
 			/// <summary>*macOS* Map to the unhideAllApplications action.</summary>
 			public const string unhide = "unhide";
-
 			/// <summary>*macOS* Map to the startSpeaking action.</summary>
 			public const string startSpeaking = "startSpeaking";
-
 			/// <summary>*macOS* Map to the stopSpeaking action.</summary>
 			public const string stopSpeaking = "stopSpeaking";
-
 			/// <summary>*macOS* Map to the arrangeInFront action.</summary>
 			public const string front = "front";
-
 			/// <summary>*macOS* Map to the performZoom action.</summary>
 			public const string zoom = "zoom";
-
 			/// <summary>*macOS* Map to the toggleTabBar action.</summary>
 			public const string toggleTabBar = "toggleTabBar";
-
 			/// <summary>*macOS* Map to the selectNextTab action.</summary>
 			public const string selectNextTab = "selectNextTab";
-
 			/// <summary>*macOS* Map to the selectPreviousTab action.</summary>
 			public const string selectPreviousTab = "selectPreviousTab";
-
 			/// <summary>*macOS* Map to the mergeAllWindows action.</summary>
 			public const string mergeAllWindows = "mergeAllWindows";
-
 			/// <summary>*macOS* Map to the moveTabToNewWindow action.</summary>
 			public const string moveTabToNewWindow = "moveTabToNewWindow";
-
 			/// <summary>*macOS* The submenu is a "Window" menu.</summary>
 			public const string window = "window";
-
 			/// <summary>*macOS* The submenu is a "Help" menu.</summary>
 			public const string help = "help";
-
 			/// <summary>*macOS* The submenu is a "Services" menu.</summary>
 			public const string services = "services";
-
 			/// <summary>*macOS* The submenu is an "Open Recent" menu.</summary>
 			public const string recentDocuments = "recentDocuments";
-
 			/// <summary>*macOS* Map to the clearRecentDocuments action.</summary>
 			public const string clearRecentDocuments = "clearRecentDocuments";
 		}
@@ -234,16 +188,6 @@ namespace Socketron.Electron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public MenuItem() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public MenuItem(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
 		}
 
 		/// <summary>
@@ -284,24 +228,17 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// A Function that is fired when the MenuItem receives a click event.
 		/// </summary>
-		public Callback click {
+		public JSCallback click {
 			set {
-				_callbackList.Add(_callbackListId, value);
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var item = {0};",
-						"var listener = () => {{",
-							"this.emit('__event',{1},{2});",
-						"}};",
-						"this._addClientEventListener({1},{2},listener);",
-						"item.click = listener;"
-					),
-					Script.GetObject(API.id),
-					Name.Escape(),
-					_callbackListId
-				);
-				_callbackListId++;
-				API.ExecuteJavaScript(script);
+				if (value == null) {
+					API.SetPropertyNull("click");
+					return;
+				}
+				string eventName = "_click";
+				CallbackItem item = API.CreateCallbackItem(eventName, (object[] args) => {
+					value?.Invoke(args);
+				});
+				API.SetProperty("click", item);
 			}
 		}
 	}

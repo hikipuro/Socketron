@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -11,29 +10,10 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class DesktopCapturer : JSModule {
-		public const string Name = "DesktopCapturer";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		/// <param name="client"></param>
-		public DesktopCapturer(SocketronClient client) {
-			API.client = client;
-		}
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
+		public DesktopCapturer() {
 		}
 
 		/// <summary>
@@ -50,35 +30,19 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(API.client, (int)argsList[0]);
+			string eventName = "_getSources";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: check DesktopCapturerSource[]
+				API.RemoveCallbackItem(eventName, item);
+				Error error = API.CreateObject<Error>((int)args[0]);
 				DesktopCapturerSource[] sources = Array.ConvertAll(
-					argsList[1] as object[],
+					args[1] as object[],
 					value => DesktopCapturerSource.Parse(value as string)
 				);
 				callback?.Invoke(error, sources);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (err,sources) => {{",
-						"var errId = {0};",
-						"this.emit('__event',{1},{2},errId,sources);",
-					"}};",
-					"electron.desktopCapturer.getSources({3},callback);"
-				),
-				Script.AddObject("err"),
-				Name.Escape(),
-				_callbackListId,
-				options.Stringify()
-			);
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
+			API.Apply("getSources", options, item);
 		}
 	}
 }

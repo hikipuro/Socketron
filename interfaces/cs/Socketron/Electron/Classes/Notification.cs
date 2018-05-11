@@ -111,41 +111,8 @@ namespace Socketron.Electron {
 		/// please use electron.Notification.Create() method instead.
 		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public Notification(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Notification() {
 		}
-
-		/*
-		/// <summary>
-		/// *Experimental* 
-		/// </summary>
-		/// <param name="options"></param>
-		public Notification(Options options) {
-			SocketronClient client = SocketronClient.GetCurrent();
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var notification = new {0}({1});",
-					"return {2};"
-				),
-				Script.GetObject(_Class._id),
-				options.Stringify(),
-				Script.AddObject("notification")
-			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
-			_client = client;
-			_id = result;
-		}
-
-		/// <summary>
-		/// *Experimental* 
-		/// </summary>
-		/// <param name="options"></param>
-		public Notification(string options) : this(Options.Parse(options)) {
-		}
-		*/
 
 		/// <summary>
 		/// Immediately shows the notification to the user,

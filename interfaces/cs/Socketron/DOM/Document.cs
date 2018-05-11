@@ -186,23 +186,13 @@ namespace Socketron.DOM {
 		public Action onclick {
 			set {
 				if (value == null) {
-					string script2 = ScriptBuilder.Build(
-						"{0}.onclick = null;",
-						Script.GetObject(API.id)
-					);
-					API.ExecuteJavaScript(script2);
+					API.SetPropertyNull("onclick");
 					return;
 				}
-				CallbackItem item = null;
-				item = API.CreateCallbackItem("_onclick", (object[] args) => {
+				CallbackItem item = API.CreateCallbackItem("_onclick", (object[] args) => {
 					value?.Invoke();
 				});
-				string script = ScriptBuilder.Build(
-					"{0}.onclick = {1};",
-					Script.GetObject(API.id),
-					Script.GetObject(item.ObjectId)
-				);
-				API.ExecuteJavaScript(script);
+				API.SetProperty("onclick", item);
 			}
 		}
 

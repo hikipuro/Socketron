@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -9,51 +8,19 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class ShellModule : JSModule {
-		public const string Name = "ShellClass";
-
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public ShellModule() {
 		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public ShellModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
+		
 		/// <summary>
 		/// Show the given file in a file manager. If possible, select the file.
 		/// </summary>
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully shown.</returns>
 		public bool showItemInFolder(string fullPath) {
-			string script = ScriptBuilder.Build(
-				"return {0}.showItemInFolder({1});",
-				Script.GetObject(API.id),
-				fullPath.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("showItemInFolder", fullPath);
 		}
 
 		/// <summary>
@@ -62,12 +29,7 @@ namespace Socketron.Electron {
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully opened.</returns>
 		public bool openItem(string fullPath) {
-			string script = ScriptBuilder.Build(
-				"return {0}.openItem({1});",
-				Script.GetObject(API.id),
-				fullPath.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("openItem", fullPath);
 		}
 
 		/// <summary>
@@ -80,43 +42,20 @@ namespace Socketron.Electron {
 		/// If callback is specified, always returns true.
 		/// </returns>
 		public bool openExternal(string url) {
-			string script = ScriptBuilder.Build(
-				"return {0}.openExternal({1});",
-				Script.GetObject(API.id),
-				url.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("openExternal", url);
 		}
 
 		public bool openExternal(string url, JsonObject options, Action<Error> callback) {
 			if (options == null) {
 				options = new JsonObject();
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
-				Error error = new Error(API.client, (int)argsList[0]);
+			string eventName = "_openExternal";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				Error error = API.CreateObject<Error>((int)args[0]);
 				callback?.Invoke(error);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"return {0}.openExternal({1},{2},(err) => {{",
-						"var errId = {3};",
-						"this.emit('__event',{4},{5},errId);",
-					"}});"
-				),
-				Script.GetObject(API.id),
-				url.Escape(),
-				options.Stringify(),
-				Script.AddObject("err"),
-				Name.Escape(),
-				_callbackListId
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("openExternal", url, options, item);
 		}
 
 		/// <summary>
@@ -125,23 +64,14 @@ namespace Socketron.Electron {
 		/// <param name="fullPath"></param>
 		/// <returns>Whether the item was successfully moved to the trash.</returns>
 		public bool moveItemToTrash(string fullPath) {
-			string script = ScriptBuilder.Build(
-				"return {0}.moveItemToTrash({1});",
-				Script.GetObject(API.id),
-				fullPath.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("moveItemToTrash", fullPath);
 		}
 
 		/// <summary>
 		/// Play the beep sound.
 		/// </summary>
 		public void beep() {
-			string script = ScriptBuilder.Build(
-				"return {0}.beep();",
-				Script.GetObject(API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("beep");
 		}
 
 		/// <summary>
@@ -152,13 +82,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns>Whether the shortcut was created successfully.</returns>
 		public bool writeShortcutLink(string shortcutPath, ShortcutDetails options) {
-			string script = ScriptBuilder.Build(
-				"return {0}.writeShortcutLink({1},{2});",
-				Script.GetObject(API.id),
-				shortcutPath.Escape(),
-				options.Stringify()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("writeShortcutLink", shortcutPath, options);
 		}
 
 		/// <summary>
@@ -170,14 +94,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns>Whether the shortcut was created successfully.</returns>
 		public bool writeShortcutLink(string shortcutPath, string operation, ShortcutDetails options) {
-			string script = ScriptBuilder.Build(
-				"return {0}.writeShortcutLink({1},{2},{3});",
-				Script.GetObject(API.id),
-				shortcutPath.Escape(),
-				operation.Escape(),
-				options.Stringify()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("writeShortcutLink", shortcutPath, operation, options);
 		}
 
 		/// <summary>
@@ -188,12 +105,7 @@ namespace Socketron.Electron {
 		/// <param name="shortcutPath"></param>
 		/// <returns></returns>
 		public ShortcutDetails readShortcutLink(string shortcutPath) {
-			string script = ScriptBuilder.Build(
-				"return {0}.readShortcutLink({1});",
-				Script.GetObject(API.id),
-				shortcutPath.Escape()
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("readShortcutLink", shortcutPath);
 			return ShortcutDetails.FromObject(result);
 		}
 	}

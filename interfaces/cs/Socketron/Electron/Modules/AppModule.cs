@@ -9,28 +9,6 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class AppModule : JSModule {
-		public CommandLine commandLine;
-		/// <summary>*macOS*</summary>
-		public Dock dock;
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		public AppModule() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public AppModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-			commandLine = API.GetObject<CommandLine>("commandLine");
-			dock = API.GetObject<Dock>("dock");
-		}
-
 		public class CommandLine : JSModule {
 			/// <summary>
 			/// This constructor is used for internally by the library.
@@ -170,17 +148,7 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="menu"></param>
 			public void setMenu(Menu menu) {
-				if (menu == null) {
-					return;
-				}
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var menu = {0};",
-						"electron.app.dock.setMenu(menu);"
-					),
-					Script.GetObject(menu.API.id)
-				);
-				API.ExecuteJavaScript(script);
+				API.Apply("setMenu", menu);
 			}
 
 			/// <summary>
@@ -189,18 +157,23 @@ namespace Socketron.Electron {
 			/// </summary>
 			/// <param name="image"></param>
 			public void setIcon(NativeImage image) {
-				if (image == null) {
-					return;
-				}
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var image = {0};",
-						"electron.app.dock.setIcon(image);"
-					),
-					Script.GetObject(image.API.id)
-				);
-				API.ExecuteJavaScript(script);
+				API.Apply("setIcon", image);
 			}
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public AppModule() {
+		}
+
+		public CommandLine commandLine {
+			get { return API.GetObject<CommandLine>("commandLine"); }
+		}
+
+		/// <summary>*macOS*</summary>
+		public Dock dock {
+			get { return API.GetObject<Dock>("dock"); }
 		}
 
 		/// <summary>
@@ -261,17 +234,17 @@ namespace Socketron.Electron {
 			return API.Apply<bool>("isReady");
 		}
 
-		/*
-		public bool whenReady() {
-			// TODO: implement this
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"electron.app.whenReady();"
-				)
-			);
-			return API.ExecuteJavaScriptBlocking<bool>(script);
+		/// <summary>
+		/// Returns Promise - fulfilled when Electron is initialized.
+		/// <para>
+		/// May be used as a convenient alternative to checking app.isReady()
+		/// and subscribing to the ready event if the app is not ready yet.
+		/// </para>
+		/// </summary>
+		/// <returns></returns>
+		public Promise whenReady() {
+			return API.ApplyAndGetObject<Promise>("whenReady");
 		}
-		//*/
 
 		/// <summary>
 		/// On Linux, focuses on the first visible window.
@@ -325,38 +298,15 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "getFileIcon";
+			string eventName = "_getFileIcon";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				Error error = new Error(API.client, (int)args[0]);
-				NativeImage image = new NativeImage(API.client, (int)args[1]);
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				Error error = API.CreateObject<Error>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[1]);
 				callback?.Invoke(error, image);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (error, icon) => {{",
-						"this.emit('__event',{0},{1},{2},{3},{4});",
-					"}};",
-					"return {5};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("error"),
-				Script.AddObject("icon"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.getFileIcon({1},{2});",
-				Script.GetObject(API.id),
-				path.Escape(),
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("getFileIcon", path, item);
 		}
 
 		/// <summary>
@@ -369,39 +319,15 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "getFileIcon";
+			string eventName = "_getFileIcon";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				Error error = new Error(API.client, (int)args[0]);
-				NativeImage image = new NativeImage(API.client, (int)args[1]);
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				Error error = API.CreateObject<Error>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[1]);
 				callback?.Invoke(error, image);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (error, icon) => {{",
-						"this.emit('__event',{0},{1},{2},{3},{4});",
-					"}};",
-					"return {5};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("error"),
-				Script.AddObject("icon"),
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.getFileIcon({1},{2},{3});",
-				Script.GetObject(API.id),
-				path.Escape(),
-				options.Stringify(),
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("getFileIcon", path, options, item);
 		}
 
 		/// <summary>
@@ -631,11 +557,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject getJumpListSettings() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getJumpListSettings();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getJumpListSettings");
 			return new JsonObject(result);
 
 		}
@@ -666,41 +588,22 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return false;
 			}
-			string eventName = "makeSingleInstance";
+			string eventName = "_makeSingleInstance";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				// TODO: check commandLine
+				API.RemoveCallbackItem(eventName, item);
 				string[] commandLine = null;
 				string workingDirectory = args[1] as string;
 				if (args[0] != null) {
-					commandLine =  Array.ConvertAll(
+					commandLine = Array.ConvertAll(
 						args[0] as object[],
 						value => Convert.ToString(value)
 					);
 				}
 				callback?.Invoke(commandLine, workingDirectory);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (argv, workingDirectory) => {{",
-						"this.emit('__event',{0},{1},{2},argv, workingDirectory);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.makeSingleInstance({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(objectId)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("makeSingleInstance", item);
 		}
 
 		/// <summary>
@@ -796,34 +699,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "importCertificate";
+			string eventName = "_importCertificate";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				callback?.Invoke((int)args[0]);
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				int result = Convert.ToInt32(args[0]);
+				callback?.Invoke(result);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (result) => {{",
-						"this.emit('__event',{0},{1},{2},result);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.importCertificate({1},{2});",
-				Script.GetObject(API.id),
-				options.Stringify(),
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("importCertificate", options, item);
 		}
 
 		/// <summary>
@@ -854,18 +737,11 @@ namespace Socketron.Electron {
 		/// of all the processes associated with the app.
 		/// </summary>
 		/// <returns></returns>
-		public List<ProcessMetric> getAppMetrics() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getAppMetrics();",
-				Script.GetObject(API.id)
+		public ProcessMetric[] getAppMetrics() {
+			object[] result = API.Apply<object[]>("getAppMetrics");
+			return Array.ConvertAll(
+				result, value => ProcessMetric.FromObject(value)
 			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			List<ProcessMetric> metricList = new List<ProcessMetric>();
-			foreach (object item in result) {
-				ProcessMetric metric = ProcessMetric.FromObject(item);
-				metricList.Add(metric);
-			}
-			return metricList;
 		}
 
 		/// <summary>
@@ -917,21 +793,13 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public JsonObject getLoginItemSettings(JsonObject options = null) {
-			string script = string.Empty;
 			if (options == null) {
-				ScriptBuilder.Build(
-					"return {0}.getLoginItemSettings();",
-					Script.GetObject(API.id)
-				);
+				object result = API.Apply("getLoginItemSettings");
+				return new JsonObject(result);
 			} else {
-				ScriptBuilder.Build(
-					"return {0}.getLoginItemSettings({1});",
-					Script.GetObject(API.id),
-					options.Stringify()
-				);
+				object result = API.Apply("getLoginItemSettings", options);
+				return new JsonObject(result);
 			}
-			object result = API._ExecuteBlocking<object>(script);
-			return new JsonObject(result);
 		}
 
 		/// <summary>

@@ -12,15 +12,5 @@ namespace Socketron.Electron {
 		/// </summary>
 		public IPCMainModule() {
 		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public IPCMainModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
 	}
 }

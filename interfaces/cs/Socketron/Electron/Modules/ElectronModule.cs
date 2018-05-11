@@ -21,6 +21,11 @@
 		/// </summary>
 		public BrowserWindowModule BrowserWindow;
 		/// <summary>
+		/// Make HTTP/HTTPS requests.
+		/// <para>Process: Main</para>
+		/// </summary>
+		public ClientRequest ClientRequest;
+		/// <summary>
 		/// Perform copy and paste operations on the system clipboard.
 		/// <para>Process: Main, Renderer</para>
 		/// </summary>
@@ -130,6 +135,7 @@
 			autoUpdater = API.GetObject<AutoUpdaterModule>("autoUpdater");
 			BrowserView = API.GetObject<BrowserViewModule>("BrowserView");
 			BrowserWindow = API.GetObject<BrowserWindowModule>("BrowserWindow");
+			ClientRequest = API.GetObject<ClientRequest>("ClientRequest");
 			clipboard = API.GetObject<ClipboardModule>("clipboard");
 			contentTracing = API.GetObject<ContentTracingModule>("contentTracing");
 			crashReporter = API.GetObject<CrashReporterModule>("crashReporter");

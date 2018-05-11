@@ -14,32 +14,11 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public TrayModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Creates a new tray icon associated with the image.
 		/// </summary>
 		/// <param name="image"></param>
 		public Tray Create(NativeImage image) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var Tray = {0};",
-					"var tray = new Tray({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				Script.GetObject(image.API.id),
-				Script.AddObject("tray")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Tray(API.client, result);
+			return API.ApplyConstructor<Tray>(image);
 		}
 
 		/// <summary>
@@ -47,18 +26,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="image"></param>
 		public Tray Create(string image) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var Tray = {0};",
-					"var tray = new Tray({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				image.Escape(),
-				Script.AddObject("tray")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Tray(API.client, result);
+			return API.ApplyConstructor<Tray>(image);
 		}
 	}
 }

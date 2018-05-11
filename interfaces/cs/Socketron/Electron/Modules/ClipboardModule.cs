@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -12,16 +12,6 @@ namespace Socketron.Electron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public ClipboardModule() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public ClipboardModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
 		}
 
 		/// <summary>
@@ -82,21 +72,11 @@ namespace Socketron.Electron {
 		/// <param name="type"></param>
 		/// <returns></returns>
 		public NativeImage readImage(string type = null) {
-			string option = string.Empty;
-			if (type != null) {
-				option = type.Escape();
+			if (type == null) {
+				return API.ApplyAndGetObject<NativeImage>("readImage");
+			} else {
+				return API.ApplyAndGetObject<NativeImage>("readImage", type);
 			}
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var image = {0}.readImage({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				option,
-				Script.AddObject("image")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new NativeImage(API.client, result);
 		}
 
 		/// <summary>
@@ -105,22 +85,11 @@ namespace Socketron.Electron {
 		/// <param name="image"></param>
 		/// <param name="type"></param>
 		public void writeImage(NativeImage image, string type = null) {
-			string script = string.Empty;
-			if (type != null) {
-				script = ScriptBuilder.Build(
-					"{0}.writeImage({1},{2});",
-					Script.GetObject(API.id),
-					Script.GetObject(image.API.id),
-					type.Escape()
-				);
+			if (type == null) {
+				API.Apply("writeImage", image);
 			} else {
-				script = ScriptBuilder.Build(
-					"{0}.writeImage({1});",
-					Script.GetObject(API.id),
-					Script.GetObject(image.API.id)
-				);
+				API.Apply("writeImage", image, type);
 			}
-			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -157,14 +126,9 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public JsonObject readBookmark() {
-			string script = ScriptBuilder.Build(
-				"return {0}.readBookmark();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("readBookmark");
 			return new JsonObject(result);
 		}
-		//*/
 
 		/// <summary>
 		/// *macOS Windows*
@@ -234,26 +198,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public List<string> availableFormats(string type = null) {
-			string option = string.Empty;
-			if (type != null) {
-				option = type.Escape();
+		public string[] availableFormats(string type = null) {
+			if (type == null) {
+				object[] result = API.Apply<object[]>("availableFormats");
+				return Array.ConvertAll(result, value => Convert.ToString(value));
+			} else {
+				object[] result = API.Apply<object[]>("availableFormats", type);
+				return Array.ConvertAll(result, value => Convert.ToString(value));
 			}
-			string script = ScriptBuilder.Build(
-				"return {0}.availableFormats({1});",
-				Script.GetObject(API.id),
-				option
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			List<string> formats = new List<string>();
-			foreach (object item in result) {
-				string format = item as string;
-				if (format == null) {
-					continue;
-				}
-				formats.Add(format);
-			}
-			return formats;
 		}
 
 		/// <summary>
@@ -288,17 +240,7 @@ namespace Socketron.Electron {
 		/// <param name="format"></param>
 		/// <returns></returns>
 		public Buffer readBuffer(string format) {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var buf = {0}.readBuffer({1});",
-					"return {2};"
-				),
-				Script.GetObject(API.id),
-				format.Escape(),
-				Script.AddObject("buf")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new Buffer(API.client, result);
+			return API.ApplyAndGetObject<Buffer>("readBuffer", format);
 		}
 
 		/// <summary>
@@ -309,24 +251,11 @@ namespace Socketron.Electron {
 		/// <param name="buffer"></param>
 		/// <param name="type"></param>
 		public void writeBuffer(string format, Buffer buffer, string type = null) {
-			string script = string.Empty;
-			if (type != null) {
-				script = ScriptBuilder.Build(
-					"{0}.writeBuffer({1},{2},{3});",
-					Script.GetObject(API.id),
-					format.Escape(),
-					Script.GetObject(buffer.API.id),
-					type.Escape()
-				);
+			if (type == null) {
+				API.Apply("writeBuffer", format, buffer);
 			} else {
-				script = ScriptBuilder.Build(
-					"{0}.writeBuffer({1},{2});",
-					Script.GetObject(API.id),
-					format.Escape(),
-					Script.GetObject(buffer.API.id)
-				);
+				API.Apply("writeBuffer", format, buffer, type);
 			}
-			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>

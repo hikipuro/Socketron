@@ -3,9 +3,7 @@
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class Promise : JSModule {
-		public Promise(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Promise() {
 		}
 
 		public Promise then(JSCallback onFulfilled) {
@@ -21,7 +19,7 @@ namespace Socketron {
 				Script.AddObject("promise")
 			);
 			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
+			return API.CreateObject<Promise>(result);
 		}
 
 		public Promise then(JSCallback onFulfilled, JSCallback onRejected) {
@@ -39,7 +37,7 @@ namespace Socketron {
 				Script.AddObject("promise")
 			);
 			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
+			return API.CreateObject<Promise>(result);
 		}
 
 		public Promise @catch(JSCallback onRejected) {
@@ -55,7 +53,7 @@ namespace Socketron {
 				Script.AddObject("promise")
 			);
 			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
+			return API.CreateObject<Promise>(result);
 		}
 
 		public Promise @finally(JSCallback onFinally) {
@@ -71,7 +69,7 @@ namespace Socketron {
 				Script.AddObject("promise")
 			);
 			int result = API._ExecuteBlocking<int>(script);
-			return new Promise(API.client, result);
+			return API.CreateObject<Promise>(result);
 		}
 	}
 }

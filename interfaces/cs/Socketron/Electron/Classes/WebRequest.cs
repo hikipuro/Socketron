@@ -11,11 +11,6 @@ namespace Socketron.Electron {
 		public WebRequest() {
 		}
 
-		public WebRequest(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
 		public void onBeforeRequest(Action listener) {
 			// TODO: implement this
 			throw new NotImplementedException();

@@ -14,13 +14,7 @@ namespace Socketron.DOM {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				listener?.Invoke(args);
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.addEventListener({1},{2});",
-				Script.GetObject(API.id),
-				eventName.Escape(),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("addEventListener", eventName, item);
 		}
 
 		/*

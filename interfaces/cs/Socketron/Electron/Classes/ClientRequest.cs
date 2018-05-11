@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -12,22 +11,6 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class ClientRequest : JSModule {
-		public const string Name = "ClientRequest";
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
-		}
-
 		/// <summary>
 		/// ClientRequest constructor options.
 		/// </summary>
@@ -151,30 +134,12 @@ namespace Socketron.Electron {
 
 		/// <summary>
 		/// This constructor is used for internally by the library.
+		/// <para>
+		/// If you are looking for the ClientRequest constructors,
+		/// please use electron.ClientRequest.Create() method instead.
+		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public ClientRequest(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		public ClientRequest(Options options) {
-			if (options == null) {
-				options = new Options();
-			}
-			SocketronClient client = SocketronClient.GetCurrent();
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var request = new electron.ClientRequest({0});",
-					"return {1};"
-				),
-				options.Stringify(),
-				Script.AddObject("request")
-			);
-			int result = client.ExecuteJavaScriptBlocking<int>(script);
-			API.client = client;
-			API.id = result;
+		public ClientRequest() {
 		}
 
 		/// <summary>
@@ -208,12 +173,7 @@ namespace Socketron.Electron {
 		/// <param name="name">Specify an extra header name.</param>
 		/// <returns></returns>
 		public JsonObject getHeader(string name) {
-			string script = ScriptBuilder.Build(
-				"{0}.getHeader({1});",
-				Script.GetObject(API.id),
-				name.Escape()
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getHeader", name);
 			return new JsonObject(result);
 		}
 
@@ -255,56 +215,60 @@ namespace Socketron.Electron {
 		/// <param name="callback">
 		/// (optional) Called after the write operation ends.
 		/// </param>
-		public void write(string chunk, string encoding = null, Action callback = null) {
-			string script = string.Empty;
-			if (encoding == null) {
-				script = ScriptBuilder.Build(
-					"{0}.write({1});",
-					Script.GetObject(API.id),
-					chunk.Escape()
-				);
-			} else {
-				if (callback == null) {
-					script = ScriptBuilder.Build(
-						"{0}.write({1},{2});",
-						Script.GetObject(API.id),
-						chunk.Escape(),
-						encoding.Escape()
-					);
-				} else {
-					ushort callbackId = _callbackListId;
-					_callbackList.Add(_callbackListId, (object args) => {
-						_callbackList.Remove(callbackId);
-						callback?.Invoke();
-					});
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"var callback = () => {{",
-								"this.emit('__event',{0},{1});",
-							"}};",
-							"{2}.write({3},{4},callback);"
-						),
-						Name.Escape(),
-						_callbackListId,
-						Script.GetObject(API.id),
-						chunk.Escape(),
-						encoding.Escape()
-					);
-					_callbackListId++;
-				}
-			}
-			API.ExecuteJavaScript(script);
+		public void write(string chunk, string encoding, Action callback) {
+			string eventName = "_write";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("write", chunk, encoding, item);
 		}
 
-		/// <summary>
-		/// Sends the last chunk of the request data.
-		/// <para>
-		/// Subsequent write or end operations will not be allowed.
-		/// The finish event is emitted just after the end operation.
-		/// </para>
-		/// </summary>
-		public void end() {
-			API.Apply("end");
+		public void write(Buffer chunk, string encoding, Action callback) {
+			string eventName = "_write";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("write", chunk, encoding, item);
+		}
+
+		public void write(string chunk, string encoding = null) {
+			if (encoding == null) {
+				API.Apply("write", chunk);
+			} else {
+				API.Apply("write", chunk, encoding);
+			}
+		}
+
+		public void write(Buffer chunk, string encoding = null) {
+			if (encoding == null) {
+				API.Apply("write", chunk);
+			} else {
+				API.Apply("write", chunk, encoding);
+			}
+		}
+
+		public void write(string chunk, Action callback) {
+			string eventName = "_write";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("write", chunk, item);
+		}
+
+		public void write(Buffer chunk, Action callback) {
+			string eventName = "_write";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("write", chunk, item);
 		}
 
 		/// <summary>
@@ -317,46 +281,66 @@ namespace Socketron.Electron {
 		/// <param name="chunk">(optional)</param>
 		/// <param name="encoding">(optional)</param>
 		/// <param name="callback">(optional)</param>
-		public void end(string chunk, string encoding = null, Action callback = null) {
-			string script = string.Empty;
-			if (encoding == null) {
-				script = ScriptBuilder.Build(
-					"{0}.end({1});",
-					Script.GetObject(API.id),
-					chunk.Escape()
-				);
-			} else {
-				if (callback == null) {
-					script = ScriptBuilder.Build(
-						"{0}.end({1},{2});",
-						Script.GetObject(API.id),
-						chunk.Escape(),
-						encoding.Escape()
-					);
-				} else {
-					ushort callbackId = _callbackListId;
-					_callbackList.Add(_callbackListId, (object args) => {
-						_callbackList.Remove(callbackId);
-						callback?.Invoke();
-					});
-					script = ScriptBuilder.Build(
-						ScriptBuilder.Script(
-							"var callback = () => {{",
-								"this.emit('__event',{0},{1});",
-							"}};",
-							"{2}.end({3},{4},callback);"
-						),
-						Name.Escape(),
-						_callbackListId,
-						Script.GetObject(API.id),
-						chunk.Escape(),
-						encoding.Escape()
-					);
-					_callbackListId++;
-				}
-			}
-			API.ExecuteJavaScript(script);
+		public void end(string chunk, string encoding, Action callback) {
+			string eventName = "_end";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("end", chunk, encoding, item);
 		}
+
+		public void end(Buffer chunk, string encoding, Action callback) {
+			string eventName = "_end";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("end", chunk, encoding, item);
+		}
+
+		public void end() {
+			API.Apply("end");
+		}
+
+		public void end(string chunk, string encoding = null) {
+			if (encoding == null) {
+				API.Apply("end", chunk);
+			} else {
+				API.Apply("end", chunk, encoding);
+			}
+		}
+
+		public void end(Buffer chunk, string encoding = null) {
+			if (encoding == null) {
+				API.Apply("end", chunk);
+			} else {
+				API.Apply("end", chunk, encoding);
+			}
+		}
+
+		public void end(string chunk, Action callback) {
+			string eventName = "_end";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("end", chunk, item);
+		}
+
+		public void end(Buffer chunk, Action callback) {
+			string eventName = "_end";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				callback?.Invoke();
+			});
+			API.Apply("end", chunk, item);
+		}
+
 
 		/// <summary>
 		/// Cancels an ongoing HTTP transaction.

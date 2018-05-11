@@ -38,8 +38,7 @@ namespace Socketron {
 			}
 		}
 
-		protected Buffer(SocketronClient client) {
-			API.client = client;
+		public Buffer() {
 		}
 
 		public Buffer(SocketronClient client, int id) {

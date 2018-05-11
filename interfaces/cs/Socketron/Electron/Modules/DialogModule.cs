@@ -9,36 +9,10 @@ namespace Socketron.Electron {
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class DialogModule : JSModule {
-		public const string Name = "Dialog";
-		static ushort _callbackListId = 0;
-		static Dictionary<ushort, Callback> _callbackList = new Dictionary<ushort, Callback>();
-
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public DialogModule() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public DialogModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
-		/// This method is used for internally by the library.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public static Callback GetCallbackFromId(ushort id) {
-			if (!_callbackList.ContainsKey(id)) {
-				return null;
-			}
-			return _callbackList[id];
 		}
 
 		/// <summary>
@@ -61,65 +35,36 @@ namespace Socketron.Electron {
 			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 
-		public List<string> showOpenDialog(Dialog.OpenDialogOptions options,
+		public string[] showOpenDialog(Dialog.OpenDialogOptions options,
 			Action<string[], string[]> callback, BrowserWindow browserWindow = null) {
 			if (callback == null) {
 				return null;
 			}
-			ushort callbackId = _callbackListId;
-			_callbackList.Add(_callbackListId, (object args) => {
-				_callbackList.Remove(callbackId);
-				object[] argsList = args as object[];
-				if (argsList == null) {
-					return;
-				}
+			string eventName = "_showOpenDialog";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
 				string[] filePaths = null;
 				string[] bookmarks = null;
-				if (argsList[0] != null) {
+				if (args[0] != null) {
 					filePaths = Array.ConvertAll(
-						argsList[0] as object[],
+						args[0] as object[],
 						value => Convert.ToString(value)
 					);
 				}
-				if (argsList[1] != null) {
+				if (args[1] != null) {
 					bookmarks = Array.ConvertAll(
-						argsList[1] as object[],
+						args[1] as object[],
 						value => Convert.ToString(value)
 					);
 				}
 				callback?.Invoke(filePaths, bookmarks);
 			});
-			string script = string.Empty;
-			if (browserWindow != null) {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var callback = (filePaths, bookmarks) => {{",
-							"this.emit('__event',{0},{1},filePaths,bookmarks);",
-						"}};",
-						"return {2}.showOpenDialog({3},{4},callback);"
-					),
-					Name.Escape(),
-					_callbackListId,
-					Script.GetObject(API.id),
-					Script.GetObject(browserWindow.API.id),
-					options.Stringify()
-				);
+			if (browserWindow == null) {
+				API.Apply("showOpenDialog", options, item);
 			} else {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var callback = (filePaths, bookmarks) => {{",
-							"this.emit('__event',{0},{1},filePaths,bookmarks);",
-						"}};",
-						"return {2}.showOpenDialog({3},callback);"
-					),
-					Name.Escape(),
-					_callbackListId,
-					Script.GetObject(API.id),
-					options.Stringify()
-				);
+				API.Apply("showOpenDialog", browserWindow, options, item);
 			}
-			_callbackListId++;
-			API.ExecuteJavaScript(script);
 			return null;
 		}
 

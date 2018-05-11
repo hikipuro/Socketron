@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -160,22 +159,12 @@ namespace Socketron.Electron {
 
 		/// <summary>
 		/// This constructor is used for internally by the library.
-		/// </summary>
-		public BrowserWindow() {
-		}
-
-		/// <summary>
-		/// This constructor is used for internally by the library.
 		/// <para>
 		/// If you are looking for the BrowserWindow constructors,
 		/// please use electron.BrowserWindow.Create() method instead.
 		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public BrowserWindow(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public BrowserWindow() {
 		}
 
 		/// <summary>
@@ -885,13 +874,7 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				callback?.Invoke();
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.hookWindowMessage({1},{2});",
-				Script.GetObject(API.id),
-				message,
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("hookWindowMessage", message, item);
 		}
 
 		/// <summary>
@@ -986,17 +969,11 @@ namespace Socketron.Electron {
 			string eventName = "_capturePage";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				NativeImage image = new NativeImage(API.client, (int)args[0]);
+				API.RemoveCallbackItem(eventName, item);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
 				callback?.Invoke(image);
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.capturePage({1},{2});",
-				Script.GetObject(API.id),
-				rect.Stringify(),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("capturePage", rect, item);
 		}
 
 		/// <summary>
@@ -1011,16 +988,11 @@ namespace Socketron.Electron {
 			string eventName = "_capturePage";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				NativeImage image = new NativeImage(API.client, (int)args[0]);
+				API.RemoveCallbackItem(eventName, item);
+				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
 				callback?.Invoke(image);
 			});
-			string script = ScriptBuilder.Build(
-				"{0}.capturePage({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(item.ObjectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("capturePage", item);
 		}
 
 		/// <summary>
@@ -1342,60 +1314,22 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="parent"></param>
 		public void setParentWindow(BrowserWindow parent) {
-			string script = string.Empty;
-			if (parent == null) {
-				script = ScriptBuilder.Build(
-					"{0}.setParentWindow(null);",
-					Script.GetObject(API.id)
-				);
-			} else {
-				script = ScriptBuilder.Build(
-					"{0}.setParentWindow({1});",
-					Script.GetObject(API.id),
-					Script.GetObject(parent.API.id)
-				);
-			}
-			API.ExecuteJavaScript(script);
+			API.Apply("setParentWindow", parent);
 		}
 
 		/// <summary>
 		/// The parent window.
 		/// </summary>
 		public BrowserWindow getParentWindow() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var parent = {0}.getParentWindow();",
-					"if (parent == null) {{",
-						"return null;",
-					"}}",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("parent")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserWindow(API.client, result);
+			return API.ApplyAndGetObject<BrowserWindow>("getParentWindow");
 		}
 
 		/// <summary>
 		/// All child windows.
 		/// </summary>
 		/// <returns></returns>
-		public List<BrowserWindow> getChildWindows() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var result = [];",
-					"var windows = {0}.getChildWindows();",
-					"for (var window of windows) {{",
-						"result.push({1});",
-					"}}",
-					"return result;"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("window")
-			);
-			object[] result = API._ExecuteBlocking<object[]>(script);
-			return API.CreateObjectList<BrowserWindow>(result);
+		public BrowserWindow[] getChildWindows() {
+			return API.ApplyAndGetObjectList<BrowserWindow>("getChildWindows");
 		}
 
 		/// <summary>
@@ -1486,20 +1420,14 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public void setTouchBar(TouchBar touchBar) {
-			// TODO: implement this
-			throw new NotImplementedException();
+			API.Apply("setTouchBar", touchBar);
 		}
 
 		/// <summary>
 		/// *Experimental*
 		/// </summary>
 		public void setBrowserView(BrowserView browserView) {
-			string script = ScriptBuilder.Build(
-				"{0}.setBrowserView({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(browserView.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setBrowserView", browserView);
 		}
 
 		/// <summary>
@@ -1512,16 +1440,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public BrowserView getBrowserView() {
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var view = {0}.getBrowserView();",
-					"return {1};"
-				),
-				Script.GetObject(API.id),
-				Script.AddObject("view")
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new BrowserView(API.client, result);
+			return API.ApplyAndGetObject<BrowserView>("getBrowserView");
 		}
 	}
 }

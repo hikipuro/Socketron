@@ -31,16 +31,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public PowerMonitorModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Calculate the system idle state.
 		/// idleThreshold is the amount of time (in seconds) before considered idle. 
 		/// </summary>
@@ -50,35 +40,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "querySystemIdleState";
+			string eventName = "_querySystemIdleState";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
 				string idleState = args[0] as string;
 				callback?.Invoke(idleState);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (idleState) => {{",
-						"this.emit('__event',{0},{1},{2},idleState);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.querySystemIdleState({1},{2});",
-				Script.GetObject(API.id),
-				idleThreshold,
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("querySystemIdleState", idleThreshold, item);
 		}
 
 		/// <summary>
@@ -89,34 +58,14 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "querySystemIdleTime";
+			string eventName = "_querySystemIdleTime";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
-				API.client.Callbacks.RemoveItem(API.id, eventName, item.CallbackId);
-				int idleTime = (int)args[0];
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				int idleTime = Convert.ToInt32(args[0]);
 				callback?.Invoke(idleTime);
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = (idleTime) => {{",
-						"this.emit('__event',{0},{1},{2},idleTime);",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.querySystemIdleTime({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("querySystemIdleTime", item);
 		}
 	}
 }

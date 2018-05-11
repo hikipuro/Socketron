@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -29,54 +28,14 @@ namespace Socketron.Electron {
 		/// please use electron.Menu.buildFromTemplate() method instead.
 		/// </para>
 		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public Menu(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
+		public Menu() {
 		}
-
-		/*
-		public void setApplicationMenu(Menu menu) {
-			_Class.setApplicationMenu(menu);
-		}
-
-		public Menu getApplicationMenu() {
-			return _Class.getApplicationMenu();
-		}
-
-		public void sendActionToFirstResponder(string action) {
-			_Class.sendActionToFirstResponder(action);
-		}
-
-		public static Menu buildFromTemplate(MenuItem.Options[] template) {
-			return _Class.buildFromTemplate(template);
-		}
-
-		public static Menu buildFromTemplate(string template) {
-			return _Class.buildFromTemplate(template);
-		}
-		//*/
 
 		/// <summary>
 		/// A MenuItem[] array containing the menu's items.
 		/// </summary>
-		public List<MenuItem> items {
-			get {
-				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var result = [];",
-						"for (var item of {0}.items) {{",
-							"result.push({1});",
-						"}}",
-						"return result;"
-					),
-					Script.GetObject(API.id),
-					Script.AddObject("item")
-				);
-				object[] result = API._ExecuteBlocking<object[]>(script);
-				return API.CreateObjectList<MenuItem>(result);
-			}
+		public MenuItem[] items {
+			get { return API.GetObjectList<MenuItem>("items"); }
 		}
 
 		/// <summary>
@@ -100,23 +59,11 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="browserWindow">Default is the focused window.</param>
 		public void closePopup(BrowserWindow browserWindow = null) {
-			string script = string.Empty;
 			if (browserWindow == null) {
-				script = ScriptBuilder.Build(
-					"{0}.closePopup();",
-					Script.GetObject(API.id)
-				);
+				API.Apply("closePopup");
 			} else {
-				script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"var window = electron.BrowserWindow.fromId({0});",
-						"{1}.closePopup(window);"
-					),
-					browserWindow.API.id,
-					Script.GetObject(API.id)
-				);
+				API.Apply("closePopup", browserWindow);
 			}
-			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -124,12 +71,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="menuItem"></param>
 		public void append(MenuItem menuItem) {
-			string script = ScriptBuilder.Build(
-				"{0}.append({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(menuItem.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("append", menuItem);
 		}
 
 		/// <summary>
@@ -138,13 +80,7 @@ namespace Socketron.Electron {
 		/// <param name="id"></param>
 		/// <returns></returns>
 		public MenuItem getMenuItemById(string id) {
-			string script = ScriptBuilder.Build(
-				"return {0}.getMenuItemById({1});",
-				Script.GetObject(API.id),
-				id.Escape()
-			);
-			int result = API._ExecuteBlocking<int>(script);
-			return new MenuItem(API.client, result);
+			return API.ApplyAndGetObject<MenuItem>("getMenuItemById", id);
 		}
 
 		/// <summary>
@@ -153,13 +89,7 @@ namespace Socketron.Electron {
 		/// <param name="pos"></param>
 		/// <param name="menuItem"></param>
 		public void insert(int pos, MenuItem menuItem) {
-			string script = ScriptBuilder.Build(
-				"{0}.insert({1},{2});",
-				Script.GetObject(API.id),
-				pos,
-				Script.GetObject(menuItem.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("insert", pos, menuItem);
 		}
 	}
 }

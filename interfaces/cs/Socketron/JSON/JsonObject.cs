@@ -35,13 +35,13 @@ namespace Socketron {
 			return null;
 		}
 
-		public static List<JsonObject> FromArray(object[] array) {
+		public static JsonObject[] FromArray(object[] array) {
 			if (array == null) {
 				return null;
 			}
-			List<JsonObject> list = new List<JsonObject>();
-			foreach (object item in array) {
-				list.Add(FromObject(item));
+			JsonObject[] list = new JsonObject[array.Length];
+			for (int i = 0; i < array.Length; i++) {
+				list[i] = FromObject(array[i]);
 			}
 			return list;
 		}
@@ -98,20 +98,6 @@ namespace Socketron {
 			object obj = this[name];
 			return Convert.ToBoolean(obj);
 		}
-
-		/*
-		public void Add(string name, JsonObject json) {
-			this[name] = json;
-		}
-
-		public void Add(string name, ArrayList list) {
-			this[name] = list;
-		}
-
-		public void Remove(string name) {
-			_objects.Remove(name);
-		}
-		*/
 
 		public string Stringify() {
 			return JSON.Stringify(this);

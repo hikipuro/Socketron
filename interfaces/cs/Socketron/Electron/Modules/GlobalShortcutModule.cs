@@ -15,16 +15,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// This constructor is used for internally by the library.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="id"></param>
-		public GlobalShortcutModule(SocketronClient client, int id) {
-			API.client = client;
-			API.id = id;
-		}
-
-		/// <summary>
 		/// Registers a global shortcut of accelerator.
 		/// The callback is called when the registered shortcut is pressed by the user.
 		/// </summary>
@@ -34,33 +24,12 @@ namespace Socketron.Electron {
 			if (callback == null) {
 				return;
 			}
-			string eventName = "register";
+			string eventName = "_register";
 			CallbackItem item = null;
-			item = API.client.Callbacks.Add(API.id, eventName, (object[] args) => {
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				callback?.Invoke();
 			});
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var callback = () => {{",
-						"this.emit('__event',{0},{1},{2});",
-					"}};",
-					"return {3};"
-				),
-				API.id,
-				eventName.Escape(),
-				item.CallbackId,
-				Script.AddObject("callback")
-			);
-			int objectId = API._ExecuteBlocking<int>(script);
-			item.ObjectId = objectId;
-
-			script = ScriptBuilder.Build(
-				"{0}.register({1},{2});",
-				Script.GetObject(API.id),
-				accelerator.Escape(),
-				Script.GetObject(objectId)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("register", accelerator, item);
 		}
 
 		/// <summary>
@@ -69,12 +38,7 @@ namespace Socketron.Electron {
 		/// <param name="accelerator"></param>
 		/// <returns></returns>
 		public bool isRegistered(string accelerator) {
-			string script = ScriptBuilder.Build(
-				"return {0}.isRegistered({1});",
-				Script.GetObject(API.id),
-				accelerator.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isRegistered", accelerator);
 		}
 
 		/// <summary>
@@ -82,23 +46,14 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="accelerator"></param>
 		public void unregister(string accelerator) {
-			string script = ScriptBuilder.Build(
-				"{0}.unregister({1});",
-				Script.GetObject(API.id),
-				accelerator.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unregister", accelerator);
 		}
 
 		/// <summary>
 		/// Unregisters all of the global shortcuts.
 		/// </summary>
 		public void unregisterAll() {
-			string script = ScriptBuilder.Build(
-				"{0}.unregisterAll();",
-				Script.GetObject(API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("unregisterAll");
 		}
 	}
 }
