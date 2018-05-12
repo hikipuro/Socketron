@@ -333,7 +333,7 @@ namespace Socketron {
 			Write(data.ToBuffer(DataType.Text16, LocalConfig.Encoding));
 		}
 
-		public void RemoveObject(JSModule module) {
+		public void RemoveObject(JSObject module) {
 			if (module == null) {
 				return;
 			}

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -7,8 +6,11 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Remote: JSModule {
-		public Remote() {
+	public class RemoteModule : JSObject {
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public RemoteModule() {
 		}
 
 		/// <summary>
@@ -26,9 +28,8 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="module"></param>
 		/// <returns></returns>
-		public JsonObject require(string module) {
-			object result = API.Apply("require", module);
-			return new JsonObject(result);
+		public T require<T>(string module) where T: JSObject, new() {
+			return API.ApplyAndGetObject<T>("require", module);
 		}
 
 		/// <summary>
@@ -36,8 +37,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public BrowserWindow getCurrentWindow() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			return API.ApplyAndGetObject<BrowserWindow>("getCurrentWindow");
 		}
 
 		/// <summary>
@@ -45,8 +45,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public WebContents getCurrentWebContents() {
-			// TODO: implement this
-			throw new NotImplementedException();
+			return API.ApplyAndGetObject<WebContents>("getCurrentWebContents");
 		}
 
 		/// <summary>

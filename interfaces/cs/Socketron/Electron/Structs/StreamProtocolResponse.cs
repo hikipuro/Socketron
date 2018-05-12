@@ -1,27 +1,30 @@
-﻿namespace Socketron.Electron {
-	public class StreamProtocolResponse {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class StreamProtocolResponse : JSObject {
 		/// <summary>
 		/// The HTTP response code.
 		/// </summary>
-		public int? statusCode;
+		public int statusCode {
+			get { return API.GetProperty<int>("statusCode"); }
+		}
 		/// <summary>
 		/// An object containing the response headers.
 		/// </summary>
-		public object headers;
+		public JsonObject headers {
+			get {
+				object result = API.GetProperty<object>("statusCode");
+				return new JsonObject(result);
+			}
+		}
 		/// <summary>
 		/// A Node.js readable stream representing the response body.
 		/// </summary>
 		/// <param name="text"></param>
 		/// <returns></returns>
-		//public string data;
-
-		/// <summary>
-		/// Parse JSON text.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static StreamProtocolResponse Parse(string text) {
-			return JSON.Parse<StreamProtocolResponse>(text);
+		public Readable data {
+			get { return API.GetObject<Readable>("data"); }
 		}
 
 		/// <summary>

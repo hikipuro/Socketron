@@ -18,7 +18,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ContentTracingModule : JSModule {
+	public class ContentTracingModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -42,8 +42,9 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: check string[]
+				JSObject _categories = API.CreateObject<JSObject>(args[0]);
 				string[] categories = Array.ConvertAll(
-					args[0] as object[],
+					_categories.API.GetValue() as object[],
 					value => Convert.ToString(value)
 				);
 				callback?.Invoke(categories);
@@ -80,7 +81,7 @@ namespace Socketron.Electron {
 			string eventName = "_stopRecording";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				string resultFilePath2 = args[0] as string;
+				string resultFilePath2 = Convert.ToString(args[0]);
 				callback?.Invoke(resultFilePath2);
 			});
 			API.Apply("stopRecording", resultFilePath, item);
@@ -142,7 +143,7 @@ namespace Socketron.Electron {
 			string eventName = "_captureMonitoringSnapshot";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				string resultFilePath2 = args[0] as string;
+				string resultFilePath2 = Convert.ToString(args[0]);
 				callback?.Invoke(resultFilePath2);
 			});
 			API.Apply("captureMonitoringSnapshot", resultFilePath, item);

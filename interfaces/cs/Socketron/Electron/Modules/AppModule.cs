@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -8,8 +7,8 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class AppModule : JSModule {
-		public class CommandLine : JSModule {
+	public class AppModule : JSObject {
+		public class CommandLine : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
@@ -45,7 +44,7 @@ namespace Socketron.Electron {
 			}
 		}
 
-		public class Dock : JSModule {
+		public class Dock : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>
@@ -176,6 +175,26 @@ namespace Socketron.Electron {
 			get { return API.GetObject<Dock>("dock"); }
 		}
 
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
+		}
+
 		/// <summary>
 		/// A Boolean property that returns true if the app is packaged, false otherwise.
 		/// For many apps, this property can be used to distinguish development and production environments.
@@ -302,8 +321,8 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				Error error = API.CreateObject<Error>((int)args[0]);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[1]);
+				Error error = API.CreateObject<Error>(args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[1]);
 				callback?.Invoke(error, image);
 			});
 			API.Apply("getFileIcon", path, item);
@@ -323,8 +342,8 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				Error error = API.CreateObject<Error>((int)args[0]);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[1]);
+				Error error = API.CreateObject<Error>(args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[1]);
 				callback?.Invoke(error, image);
 			});
 			API.Apply("getFileIcon", path, options, item);
@@ -410,7 +429,22 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// Returns Boolean - Whether the call succeeded.
+		/// This method sets the current executable
+		/// as the default handler for a protocol (aka URI scheme).
+		/// </summary>
+		/// <param name="protocol">
+		/// The name of your protocol, without ://.
+		/// If you want your app to handle electron:// links,
+		/// call this method with electron as the parameter.
+		/// </param>
+		/// <returns>Whether the call succeeded.</returns>
+		public bool setAsDefaultProtocolClient(string protocol) {
+			return API.Apply<bool>("setAsDefaultProtocolClient", protocol);
+		}
+
+		/// <summary>
+		/// This method sets the current executable
+		/// as the default handler for a protocol (aka URI scheme).
 		/// </summary>
 		/// <param name="protocol">
 		/// The name of your protocol, without ://.
@@ -419,31 +453,9 @@ namespace Socketron.Electron {
 		/// </param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <param name="args">*Windows* Defaults to an empty array</param>
-		public void setAsDefaultProtocolClient(string protocol, string path = null, string[] args = null) {
-			string option = string.Empty;
-			if (path == null) {
-				option = protocol.Escape();
-			} else {
-				if (args == null) {
-					option = ScriptBuilder.Params(
-						protocol.Escape(),
-						path.Escape()
-					);
-				} else {
-					option = ScriptBuilder.Params(
-						protocol.Escape(),
-						path.Escape(),
-						JSON.Stringify(args)
-					);
-				}
-			}
-
-			string script = ScriptBuilder.Build(
-				"{0}.setAsDefaultProtocolClient({1});",
-				Script.GetObject(API.id),
-				option
-			);
-			API.ExecuteJavaScript(script);
+		/// <returns>Whether the call succeeded.</returns>
+		public bool setAsDefaultProtocolClient(string protocol, string path, string[] args) {
+			return API.Apply<bool>("setAsDefaultProtocolClient", protocol, path, args);
 		}
 
 		/// <summary>
@@ -454,7 +466,7 @@ namespace Socketron.Electron {
 		/// If so, it will remove the app as the default handler.
 		/// </para>
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol) {
 			return API.Apply<bool>("removeAsDefaultProtocolClient", protocol);
@@ -463,7 +475,7 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// Returns Boolean - Whether the call succeeded.
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol, string path) {
@@ -473,19 +485,12 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// Returns Boolean - Whether the call succeeded.
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <param name="args">*Windows* Defaults to an empty array</param>
 		/// <returns></returns>
 		public bool removeAsDefaultProtocolClient(string protocol, string path, string[] args) {
-			string script = ScriptBuilder.Build(
-				"return {0}.removeAsDefaultProtocolClient({1},{2},{3});",
-				Script.GetObject(API.id),
-				protocol.Escape(),
-				path.Escape(),
-				args.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("removeAsDefaultProtocolClient", protocol, path, args);
 		}
 
 		/// <summary>
@@ -493,7 +498,7 @@ namespace Socketron.Electron {
 		/// is the default handler for a protocol (aka URI scheme).
 		/// If so, it will return true. Otherwise, it will return false.
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol) {
 			return API.Apply<bool>("isDefaultProtocolClient", protocol);
@@ -504,7 +509,7 @@ namespace Socketron.Electron {
 		/// is the default handler for a protocol (aka URI scheme).
 		/// If so, it will return true. Otherwise, it will return false.
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol, string path) {
@@ -516,19 +521,12 @@ namespace Socketron.Electron {
 		/// is the default handler for a protocol (aka URI scheme).
 		/// If so, it will return true. Otherwise, it will return false.
 		/// </summary>
-		/// <param name="protocol">The name of your protocol, without ://.</param>
+		/// <param name="protocol">The name of your protocol, without ://</param>
 		/// <param name="path">*Windows* Defaults to process.execPath</param>
 		/// <param name="args">*Windows* Defaults to an empty array</param>
 		/// <returns></returns>
 		public bool isDefaultProtocolClient(string protocol, string path, string[] args) {
-			string script = ScriptBuilder.Build(
-				"return {0}.isDefaultProtocolClient({1},{2},{3});",
-				Script.GetObject(API.id),
-				protocol.Escape(),
-				path.Escape(),
-				args.Escape()
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("isDefaultProtocolClient", protocol, path, args);
 		}
 
 		/// <summary>
@@ -542,13 +540,7 @@ namespace Socketron.Electron {
 		/// <param name="tasks">Array of Task objects.</param>
 		/// <returns>Whether the call succeeded.</returns>
 		public bool setUserTasks(TaskObject[] tasks) {
-			// TODO: check array arg
-			string script = ScriptBuilder.Build(
-				"return {0}.setUserTasks({1});",
-				Script.GetObject(API.id),
-				JSON.Stringify(tasks)
-			);
-			return API._ExecuteBlocking<bool>(script);
+			return API.Apply<bool>("setUserTasks", tasks as object);
 		}
 
 		/// <summary>
@@ -568,12 +560,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="categories"></param>
 		public void setJumpList(JumpListCategory[] categories) {
-			string script = ScriptBuilder.Build(
-				"{0}.setJumpList({1});",
-				Script.GetObject(API.id),
-				JSON.Stringify(categories)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setJumpList", categories as object);
 		}
 
 		/// <summary>
@@ -594,10 +581,11 @@ namespace Socketron.Electron {
 				// TODO: check commandLine
 				API.RemoveCallbackItem(eventName, item);
 				string[] commandLine = null;
-				string workingDirectory = args[1] as string;
+				string workingDirectory = Convert.ToString(args[1]);
 				if (args[0] != null) {
+					JSObject _commandLine = API.CreateObject<JSObject>(args[0]);
 					commandLine = Array.ConvertAll(
-						args[0] as object[],
+						_commandLine.API.GetValue() as object[],
 						value => Convert.ToString(value)
 					);
 				}
@@ -619,29 +607,22 @@ namespace Socketron.Electron {
 		/// Creates an NSUserActivity and sets it as the current activity.
 		/// The activity is eligible for Handoff to another device afterward.
 		/// </summary>
-		/// <param name="type"></param>
-		/// <param name="userInfo"></param>
-		/// <param name="webpageURL"></param>
+		/// <param name="type">
+		/// Uniquely identifies the activity. Maps to NSUserActivity.activityType.
+		/// </param>
+		/// <param name="userInfo">
+		/// App-specific state to store for use by another device.
+		/// </param>
+		/// <param name="webpageURL">
+		/// (optional) - The webpage to load in a browser if no suitable app
+		/// is installed on the resuming device. The scheme must be http or https.
+		/// </param>
 		public void setUserActivity(string type, JsonObject userInfo, string webpageURL = null) {
-			string option = string.Empty;
 			if (webpageURL == null) {
-				option = ScriptBuilder.Params(
-					type.Escape(),
-					userInfo.Stringify()
-				);
+				API.Apply("setUserActivity", type, userInfo);
 			} else {
-				option = ScriptBuilder.Params(
-					type.Escape(),
-					userInfo.Stringify(),
-					webpageURL.Escape()
-				);
+				API.Apply("setUserActivity", type, userInfo, webpageURL);
 			}
-			string script = ScriptBuilder.Build(
-				"{0}.setUserActivity({1});",
-				Script.GetObject(API.id),
-				option
-			);
-			API.ExecuteJavaScript(script);
 		}
 
 		/// <summary>
@@ -749,11 +730,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <returns></returns>
 		public GPUFeatureStatus getGPUFeatureStatus() {
-			string script = ScriptBuilder.Build(
-				"return {0}.getGPUFeatureStatus();",
-				Script.GetObject(API.id)
-			);
-			object result = API._ExecuteBlocking<object>(script);
+			object result = API.Apply("getGPUFeatureStatus");
 			return GPUFeatureStatus.FromObject(result);
 		}
 

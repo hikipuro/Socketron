@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NotificationModule : JSModule {
+	public class NotificationModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

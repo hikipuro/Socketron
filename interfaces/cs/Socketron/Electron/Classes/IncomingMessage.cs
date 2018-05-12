@@ -3,7 +3,7 @@
 	/// Handle responses to HTTP/HTTPS requests.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class IncomingMessage {
+	public class IncomingMessage : JSObject {
 		/// <summary>
 		/// IncomingMessage instance events.
 		/// </summary>
@@ -27,11 +27,51 @@
 			public const string Error = "error";
 		}
 
-		public int statusCode;
-		public string statusMessage;
-		public object headers;
-		public string httpVersion;
-		public int httpVersionMajor;
-		public int httpVersionMinor;
+		public int statusCode {
+			get { return API.GetProperty<int>("statusCode"); }
+		}
+
+		public string statusMessage {
+			get { return API.GetProperty<string>("statusMessage"); }
+		}
+
+		public JsonObject headers {
+			get {
+				object result = API.GetProperty<object>("headers");
+				return new JsonObject(result);
+			}
+		}
+
+		public string httpVersion {
+			get { return API.GetProperty<string>("httpVersion"); }
+		}
+
+		public int httpVersionMajor {
+			get { return API.GetProperty<int>("httpVersionMajor"); }
+		}
+
+		public int httpVersionMinor {
+			get { return API.GetProperty<int>("httpVersionMinor"); }
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
+		}
 	}
 }

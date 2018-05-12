@@ -11,7 +11,7 @@ namespace Socketron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Buffer : JSModule, IDisposable {
+	public class Buffer : JSObject, IDisposable {
 		public class Encodings {
 			public const string ascii = "ascii";
 			public const string utf8 = "utf8";
@@ -233,7 +233,7 @@ namespace Socketron {
 			return new Buffer(client, result);
 		}
 
-		public static bool isBuffer(JSModule obj) {
+		public static bool isBuffer(JSObject obj) {
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"return Buffer.isBuffer({0});"

@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContentsModule : JSModule {
+	public class WebContentsModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

@@ -12,7 +12,7 @@ namespace Socketron {
 		/// </para>
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class Process : JSModule {
+		public class Process : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>

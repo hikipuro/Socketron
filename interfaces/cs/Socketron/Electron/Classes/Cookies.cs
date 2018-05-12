@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Cookies : JSModule {
+	public class Cookies : JSObject {
 		/// <summary>
 		/// Cookies instance events.
 		/// </summary>
@@ -25,6 +25,26 @@ namespace Socketron.Electron {
 		public Cookies() {
 		}
 
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
+		}
+
 		/// <summary>
 		/// Sends a request to get all cookies matching filter,
 		/// callback will be called with callback(error, cookies) on complete.
@@ -39,10 +59,11 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: check cookie[]
-				Error error = API.CreateObject<Error>((int)args[0]);
+				Error error = API.CreateObject<Error>(args[0]);
+				JSObject _cookies = API.CreateObject<JSObject>(args[1]);
 				Cookie[] cookies = Array.ConvertAll(
-					args[1] as object[],
-					value => Cookie.Parse(value as string)
+					_cookies.API.GetValue() as object[],
+					value => Cookie.FromObject(value)
 				);
 				callback?.Invoke(error, cookies);
 			});
@@ -62,7 +83,7 @@ namespace Socketron.Electron {
 			string eventName = "_set";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				Error error = API.CreateObject<Error>((int)args[0]);
+				Error error = API.CreateObject<Error>(args[0]);
 				callback?.Invoke(error);
 			});
 			API.Apply("set", details, item);

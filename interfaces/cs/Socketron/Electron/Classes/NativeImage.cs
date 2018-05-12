@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NativeImage : JSModule, IDisposable {
+	public class NativeImage : JSObject, IDisposable {
 		/// <summary>
 		/// NativeImage converter options.
 		/// </summary>

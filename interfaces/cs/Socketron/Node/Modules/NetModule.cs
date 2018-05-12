@@ -6,7 +6,7 @@ namespace Socketron {
 		/// Net module of the Node API.
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class Net : JSModule {
+		public class Net : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>

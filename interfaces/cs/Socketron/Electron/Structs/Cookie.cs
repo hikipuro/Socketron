@@ -38,6 +38,24 @@
 		/// </summary>
 		public double? expirationDate;
 
+		public static Cookie FromObject(object obj) {
+			if (obj == null) {
+				return null;
+			}
+			JsonObject json = new JsonObject(obj);
+			return new Cookie() {
+				name = json.String("name"),
+				value = json.String("value"),
+				domain = json.String("domain"),
+				hostOnly = json.Bool("hostOnly"),
+				path = json.String("path"),
+				secure = json.Bool("secure"),
+				httpOnly = json.Bool("httpOnly"),
+				session = json.Bool("session"),
+				expirationDate = json.Double("expirationDate")
+			};
+		}
+
 		/// <summary>
 		/// Parse JSON text.
 		/// </summary>

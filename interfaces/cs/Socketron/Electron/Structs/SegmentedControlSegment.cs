@@ -1,25 +1,25 @@
-﻿namespace Socketron.Electron {
-	public class SegmentedControlSegment {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class SegmentedControlSegment : JSObject {
 		/// <summary>
 		/// (optional) The text to appear in this segment.
 		/// </summary>
-		public string label;
+		public string label {
+			get { return API.GetProperty<string>("label"); }
+		}
 		/// <summary>
 		/// (optional) The image to appear in this segment.
 		/// </summary>
-		public NativeImage icon;
+		public NativeImage icon {
+			get { return API.GetObject<NativeImage>("icon"); }
+		}
 		/// <summary>
 		/// (optional) Whether this segment is selectable. Default: true.
 		/// </summary>
-		public bool? enabled;
-
-		/// <summary>
-		/// Parse JSON text.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static SegmentedControlSegment Parse(string text) {
-			return JSON.Parse<SegmentedControlSegment>(text);
+		public bool enabled {
+			get { return API.GetProperty<bool>("enabled"); }
 		}
 
 		/// <summary>

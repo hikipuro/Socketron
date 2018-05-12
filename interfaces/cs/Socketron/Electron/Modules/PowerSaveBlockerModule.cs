@@ -17,7 +17,7 @@ namespace Socketron.Electron {
 	/// </code>
 	/// </example>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class PowerSaveBlockerModule : JSModule {
+	public class PowerSaveBlockerModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

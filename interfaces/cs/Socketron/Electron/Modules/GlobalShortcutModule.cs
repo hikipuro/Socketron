@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class GlobalShortcutModule : JSModule {
+	public class GlobalShortcutModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

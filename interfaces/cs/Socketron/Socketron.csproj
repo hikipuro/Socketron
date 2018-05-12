@@ -102,6 +102,7 @@
     <Compile Include="DOM\Window.cs" />
     <Compile Include="Electron\Classes\Dialog.cs" />
     <Compile Include="Electron\Classes\InAppPurchase.cs" />
+    <Compile Include="Electron\Classes\TouchBarItem.cs" />
     <Compile Include="Electron\Classes\Tray.cs" />
     <Compile Include="Electron\Classes\Win32.cs" />
     <Compile Include="Electron\Modules\AutoUpdaterModule.cs" />
@@ -146,12 +147,12 @@
     <Compile Include="Electron\Classes\Debugger.cs" />
     <Compile Include="Electron\Classes\DesktopCapturer.cs" />
     <Compile Include="Electron\Classes\DownloadItem.cs" />
-    <Compile Include="Node\JSModule.cs" />
+    <Compile Include="Node\JSObject.cs" />
     <Compile Include="Electron\Modules\GlobalShortcutModule.cs" />
     <Compile Include="Electron\Modules\InAppPurchaseModule.cs" />
     <Compile Include="Electron\Classes\IncomingMessage.cs" />
     <Compile Include="Electron\Modules\IPCMainModule.cs" />
-    <Compile Include="Electron\Classes\IPCRenderer.cs" />
+    <Compile Include="Electron\Modules\IPCRendererModule.cs" />
     <Compile Include="Electron\Classes\Locales.cs" />
     <Compile Include="Electron\Classes\Menu.cs" />
     <Compile Include="Electron\Classes\MenuItem.cs" />
@@ -161,7 +162,7 @@
     <Compile Include="Electron\Classes\PowerMonitor.cs" />
     <Compile Include="Electron\Classes\PowerSaveBlocker.cs" />
     <Compile Include="Electron\Classes\Process.cs" />
-    <Compile Include="Electron\Classes\Remote.cs" />
+    <Compile Include="Electron\Modules\RemoteModule.cs" />
     <Compile Include="Electron\Classes\Screen.cs" />
     <Compile Include="Electron\Classes\Session.cs" />
     <Compile Include="Electron\Modules\ShellModule.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Electron\Classes\App.cs" />
     <Compile Include="Electron\Classes\BrowserWindow.cs" />
     <Compile Include="Electron\Classes\WebContents.cs" />
+    <Compile Include="Node\Modules\Readable.cs" />
     <Compile Include="Node\NodeJS.cs" />
     <Compile Include="Node\Modules\OSModule.cs" />
     <Compile Include="Node\Modules\PathModule.cs" />

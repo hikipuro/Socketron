@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Session : JSModule {
+	public class Session : JSObject {
 		/// <summary>
 		/// Session instance events.
 		/// </summary>
@@ -43,6 +43,26 @@ namespace Socketron.Electron {
 		/// </summary>
 		public ProtocolModule protocol {
 			get { return API.GetObject<ProtocolModule>("protocol"); }
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
 		}
 
 		/// <summary>
@@ -123,7 +143,7 @@ namespace Socketron.Electron {
 			string eventName = "_resolveProxy";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				string proxy = args[0] as string;
+				string proxy = Convert.ToString(args[0]);
 				callback?.Invoke(proxy);
 			});
 			API.Apply("resolveProxy", url, item);
@@ -165,9 +185,9 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				JsonObject request = new JsonObject(args[0]);
-				JSModule _callback = API.CreateObject<JSModule>((int)args[1]);
+				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<int> callback = (verificationResult) => {
-					_callback.API.Invoke(verificationResult);
+					_callback?.API.Invoke(verificationResult);
 				};
 				proc?.Invoke(request, callback);
 			});
@@ -183,12 +203,12 @@ namespace Socketron.Electron {
 			string eventName = "_setPermissionRequestHandler";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				WebContents webContents = API.CreateObject<WebContents>((int)args[0]);
-				string permission = args[1] as string;
-				JSModule _callback = API.CreateObject<JSModule>((int)args[2]);
+				WebContents webContents = API.CreateObject<WebContents>(args[0]);
+				string permission = Convert.ToString(args[1]);
+				JSObject _callback = API.CreateObject<JSObject>(args[2]);
 				JsonObject details = new JsonObject(args[3]);
 				Action<bool> callback = (permissionGranted) => {
-					_callback.API.Invoke(permissionGranted);
+					_callback?.API.Invoke(permissionGranted);
 				};
 				handler?.Invoke(webContents, permission, callback, details);
 			});
@@ -257,7 +277,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				Buffer result = API.CreateObject<Buffer>((int)args[0]);
+				Buffer result = API.CreateObject<Buffer>(args[0]);
 				callback?.Invoke(result);
 			});
 			API.Apply("getBlobData", identifier, item);

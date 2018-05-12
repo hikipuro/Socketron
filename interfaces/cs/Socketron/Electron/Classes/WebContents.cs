@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
@@ -8,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContents : JSModule {
+	public class WebContents : JSObject {
 		/// <summary>
 		/// WebContents instance events.
 		/// </summary>
@@ -267,6 +266,16 @@ namespace Socketron.Electron {
 			get { return API.GetObject<Debugger>("debugger"); }
 		}
 
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
 		/// <summary>
 		/// Loads the url in the window. The url must contain the protocol prefix,
 		/// e.g. the http:// or file://.
@@ -501,12 +510,13 @@ namespace Socketron.Electron {
 			);
 		}
 
-		public Promise executeJavaScript(string code, bool userGesture, Action<object> callback) {
+		public Promise executeJavaScript(string code, bool userGesture, Action<JSObject> callback) {
 			string eventName = "_executeJavaScript";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (args) => {
 				API.RemoveCallbackItem(eventName, item);
-				callback?.Invoke(args[0]);
+				JSObject result = API.CreateObject<JSObject>(args[0]);
+				callback?.Invoke(result);
 			});
 			return API.ApplyAndGetObject<Promise>(
 				"executeJavaScript", code, userGesture, item
@@ -752,7 +762,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[0]);
 				callback?.Invoke(image);
 			});
 			API.Apply("capturePage", rect, item);
@@ -770,7 +780,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[0]);
 				callback?.Invoke(image);
 			});
 			API.Apply("capturePage", item);
@@ -862,11 +872,8 @@ namespace Socketron.Electron {
 			string eventName = "_printToPDF";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				Error error = null;
-				if (args[0] != null) {
-					error = API.CreateObject<Error>((int)args[0]);
-				}
-				Buffer data = API.CreateObject<Buffer>((int)args[1]);
+				Error error = API.CreateObject<Error>(args[0]);
+				Buffer data = API.CreateObject<Buffer>(args[1]);
 				callback?.Invoke(error, data);
 			});
 			API.Apply("printToPDF", options, item);
@@ -1031,8 +1038,9 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: fix rectangle param
 				API.RemoveCallbackItem(eventName, item);
-				Buffer frameBuffer = API.CreateObject<Buffer>((int)args[0]);
-				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
+				Buffer frameBuffer = API.CreateObject<Buffer>(args[0]);
+				JSObject _dirtyRect = API.CreateObject<JSObject>(args[1]);
+				Rectangle dirtyRect = Rectangle.FromObject(_dirtyRect.API.GetValue());
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
 			API.Apply("beginFrameSubscription", item);
@@ -1047,8 +1055,9 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: fix rectangle param
 				API.RemoveCallbackItem(eventName, item);
-				Buffer frameBuffer = API.CreateObject<Buffer>((int)args[0]);
-				Rectangle dirtyRect = Rectangle.FromObject(args[1]);
+				Buffer frameBuffer = API.CreateObject<Buffer>(args[0]);
+				JSObject _dirtyRect = API.CreateObject<JSObject>(args[1]);
+				Rectangle dirtyRect = Rectangle.FromObject(_dirtyRect.API.GetValue());
 				callback?.Invoke(frameBuffer, dirtyRect);
 			});
 			API.Apply("beginFrameSubscription", onlyDirty, item);
@@ -1086,11 +1095,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				if (args[0] == null) {
-					callback?.Invoke(null);
-					return;
-				}
-				Error error = API.CreateObject<Error>((int)args[0]);
+				Error error = API.CreateObject<Error>(args[0]);
 				callback?.Invoke(error);
 			});
 			return API.Apply<bool>("savePage", fullPath, saveType, item);

@@ -1,21 +1,19 @@
-﻿namespace Socketron.Electron {
-	public class MimeTypedBuffer {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class MimeTypedBuffer : JSObject {
 		/// <summary>
 		/// The mimeType of the Buffer that you are sending.
 		/// </summary>
-		public string mimeType;
+		public string mimeType {
+			get { return API.GetProperty<string>("mimeType"); }
+		}
 		/// <summary>
 		/// The actual Buffer content.
 		/// </summary>
-		public LocalBuffer data;
-
-		/// <summary>
-		/// Parse JSON text.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static MimeTypedBuffer Parse(string text) {
-			return JSON.Parse<MimeTypedBuffer>(text);
+		public Buffer data {
+			get { return API.GetObject<Buffer>("data"); }
 		}
 
 		/// <summary>

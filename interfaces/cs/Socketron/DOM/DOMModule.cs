@@ -1,5 +1,5 @@
 ﻿namespace Socketron.DOM {
-	public class DOMModule : JSModule {
+	public class DOMModule : JSObject {
 		public class SocketronDOMAPI: SocketronAPI {
 			public int webContentsId;
 

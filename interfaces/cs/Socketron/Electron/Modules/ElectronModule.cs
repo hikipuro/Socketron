@@ -1,5 +1,5 @@
 ﻿namespace Socketron.Electron {
-	public class ElectronModule : JSModule {
+	public class ElectronModule : JSObject {
 		/// <summary>
 		/// Control your application's event lifecycle.
 		/// <para>Process: Main</para>
@@ -57,6 +57,11 @@
 		/// </summary>
 		public IPCMainModule ipcMain;
 		/// <summary>
+		/// Communicate asynchronously from a renderer process to the main process.
+		/// <para>Process: Renderer</para>
+		/// </summary>
+		public IPCRendererModule ipcRenderer;
+		/// <summary>
 		/// Create native application menus and context menus.
 		/// <para>Process: Main</para>
 		/// </summary>
@@ -96,6 +101,11 @@
 		/// <para>Process: Main</para>
 		/// </summary>
 		public ProtocolModule protocol;
+		/// <summary>
+		/// Use main process modules from the renderer process.
+		/// <para>Process: Renderer</para>
+		/// </summary>
+		public RemoteModule remote;
 		/// <summary>
 		/// Retrieve information about screen size, displays, cursor position, etc.
 		/// <para>Process: Main, Renderer</para>
@@ -150,6 +160,7 @@
 			powerMonitor = API.GetObject<PowerMonitorModule>("powerMonitor");
 			powerSaveBlocker = API.GetObject<PowerSaveBlockerModule>("powerSaveBlocker");
 			protocol = API.GetObject<ProtocolModule>("protocol");
+			remote = API.GetObject<RemoteModule>("remote");
 			screen = API.GetObject<ScreenModule>("screen");
 			session = API.GetObject<SessionModule>("session");
 			shell = API.GetObject<ShellModule>("shell");

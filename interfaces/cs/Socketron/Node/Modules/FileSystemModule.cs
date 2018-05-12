@@ -6,7 +6,7 @@ namespace Socketron {
 		/// File system module of the Node API.
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class FS : JSModule {
+		public class FS : JSObject {
 			// TODO: implement all methods
 
 			/// <summary>

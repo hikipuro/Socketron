@@ -6,7 +6,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Tray : JSModule {
+	public class Tray : JSObject {
 		/// <summary>
 		/// Tray instance events.
 		/// </summary>
@@ -96,6 +96,16 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		public Tray() {
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
 		}
 
 		/// <summary>

@@ -1,4 +1,6 @@
-﻿namespace Socketron.Electron {
+﻿using System;
+
+namespace Socketron.Electron {
 	public class Product {
 		/// <summary>
 		/// The string that identifies the product to the Apple App Store.
@@ -32,6 +34,26 @@
 		/// A Boolean value that indicates whether the App Store has downloadable content for this product.
 		/// </summary>
 		public bool? downloadable;
+
+		public static Product FromObject(object obj) {
+			if (obj == null) {
+				return null;
+			}
+			JsonObject json = new JsonObject(obj);
+			return new Product() {
+				productIdentifier = json.String("productIdentifier"),
+				localizedDescription = json.String("localizedDescription"),
+				localizedTitle = json.String("localizedTitle"),
+				contentVersion = json.String("contentVersion"),
+				contentLengths = Array.ConvertAll(
+					json["contentLengths"] as object[],
+					value => Convert.ToInt32(value)
+				),
+				price = json.Int32("price"),
+				formattedPrice = json.String("formattedPrice"),
+				downloadable = json.Bool("downloadable")
+			};
+		}
 
 		/// <summary>
 		/// Parse JSON text.

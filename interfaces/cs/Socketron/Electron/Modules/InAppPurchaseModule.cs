@@ -8,11 +8,21 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class InAppPurchaseModule : JSModule {
+	public class InAppPurchaseModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public InAppPurchaseModule() {
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
 		}
 
 		/// <summary>
@@ -46,9 +56,10 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: check Product[]
 				API.RemoveCallbackItem(eventName, item);
+				JSObject _products = API.CreateObject<JSObject>(args[0]);
 				Product[] products = Array.ConvertAll(
-					args[0] as object[],
-					value => Product.Parse(value as string)
+					_products.API.GetValue() as object[],
+					value => Product.FromObject(value)
 				);
 				callback?.Invoke(products);
 			});

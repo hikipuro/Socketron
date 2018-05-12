@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public partial class BrowserWindow : JSModule {
+	public partial class BrowserWindow : JSObject {
 		/// <summary>
 		/// BrowserWindow instance events.
 		/// </summary>
@@ -182,6 +182,26 @@ namespace Socketron.Electron {
 		/// </summary>
 		public WebContents webContents {
 			get { return API.GetObject<WebContents>("webContents"); }
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
 		}
 
 		/// <summary>
@@ -970,7 +990,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[0]);
 				callback?.Invoke(image);
 			});
 			API.Apply("capturePage", rect, item);
@@ -989,7 +1009,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				NativeImage image = API.CreateObject<NativeImage>((int)args[0]);
+				NativeImage image = API.CreateObject<NativeImage>(args[0]);
 				callback?.Invoke(image);
 			});
 			API.Apply("capturePage", item);
@@ -1042,20 +1062,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="menu"></param>
 		public void setMenu(Menu menu) {
-			string script = string.Empty;
-			if (menu == null) {
-				script = ScriptBuilder.Build(
-					"{0}.setMenu(null);",
-					Script.GetObject(API.id)
-				);
-			} else {
-				script = ScriptBuilder.Build(
-					"{0}.setMenu({1});",
-					Script.GetObject(API.id),
-					Script.GetObject(menu.API.id)
-				);
-			}
-			API.ExecuteJavaScript(script);
+			API.Apply("setMenu", menu);
 		}
 
 		/// <summary>
@@ -1088,13 +1095,7 @@ namespace Socketron.Electron {
 		/// a description that will be provided to Accessibility screen readers
 		/// </param>
 		public void setOverlayIcon(NativeImage overlay, string description) {
-			string script = ScriptBuilder.Build(
-				"{0}.setOverlayIcon({1},{2});",
-				Script.GetObject(API.id),
-				Script.GetObject(overlay.API.id),
-				description.Escape()
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setOverlayIcon", overlay, description);
 		}
 
 		/// <summary>
@@ -1143,19 +1144,9 @@ namespace Socketron.Electron {
 		/// Returns a Boolean object indicates whether the thumbnail has been added successfully.
 		/// </summary>
 		/// <param name="buttons"></param>
-		public void setThumbarButtons(ThumbarButton[] buttons) {
-			// TODO: implement this
-			throw new NotImplementedException();
-			/*
-			string script = ScriptBuilder.Build(
-				ScriptBuilder.Script(
-					"var window = ({0});",
-					"return {0}.setThumbarButtons();"
-				),
-				ID
-			);
-			ExecuteJavaScript(script);
-			//*/
+		/// <returns></returns>
+		public bool setThumbarButtons(ThumbarButton[] buttons) {
+			return API.Apply<bool>("setThumbarButtons", buttons as object);
 		}
 
 		/// <summary>
@@ -1203,12 +1194,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="icon"></param>
 		public void setIcon(NativeImage icon) {
-			string script = ScriptBuilder.Build(
-				"{0}.setIcon({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(icon.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("setIcon", icon);
 		}
 
 		/// <summary>
@@ -1393,12 +1379,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="browserWindow"></param>
 		public void addTabbedWindow(BrowserWindow browserWindow) {
-			string script = ScriptBuilder.Build(
-				"{0}.addTabbedWindow({1});",
-				Script.GetObject(API.id),
-				Script.GetObject(browserWindow.API.id)
-			);
-			API.ExecuteJavaScript(script);
+			API.Apply("addTabbedWindow", browserWindow);
 		}
 
 		/// <summary>

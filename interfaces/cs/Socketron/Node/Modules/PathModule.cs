@@ -6,7 +6,7 @@ namespace Socketron {
 		/// Path module of the Node API.
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class Path : JSModule {
+		public class Path : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>

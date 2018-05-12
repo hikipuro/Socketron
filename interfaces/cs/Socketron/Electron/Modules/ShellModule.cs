@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ShellModule : JSModule {
+	public class ShellModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -52,7 +52,7 @@ namespace Socketron.Electron {
 			string eventName = "_openExternal";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				Error error = API.CreateObject<Error>((int)args[0]);
+				Error error = API.CreateObject<Error>(args[0]);
 				callback?.Invoke(error);
 			});
 			return API.Apply<bool>("openExternal", url, options, item);

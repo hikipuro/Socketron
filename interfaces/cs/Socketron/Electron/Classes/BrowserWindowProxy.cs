@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -7,7 +6,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class BrowserWindowProxy : JSModule {
+	public class BrowserWindowProxy : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

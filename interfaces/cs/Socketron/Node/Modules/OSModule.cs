@@ -8,7 +8,7 @@ namespace Socketron {
 		/// OS module of the Node API.
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class OS : JSModule {
+		public class OS : JSObject {
 			/// <summary>
 			/// This constructor is used for internally by the library.
 			/// </summary>

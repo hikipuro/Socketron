@@ -33,7 +33,7 @@ namespace SocketronTest {
 			Console.WriteLine("body: " + e1.nextSibling.nodeType);
 
 			document.write("aaa bbb");
-			document.onclick = () => {
+			document.onclick = (a) => {
 				Console.WriteLine("onclick");
 			};
 			//window.alert("test test");

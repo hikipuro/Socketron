@@ -1,21 +1,21 @@
-﻿namespace Socketron.Electron {
-	public class ScrubberItem {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class ScrubberItem : JSObject {
 		/// <summary>
 		/// (optional) The text to appear in this item.
 		/// </summary>
-		public string label;
+		public string label {
+			get { return API.GetProperty<string>("label"); }
+			set { API.SetProperty("label", value); }
+		}
 		/// <summary>
 		/// (optional) The image to appear in this item.
 		/// </summary>
-		public NativeImage icon;
-
-		/// <summary>
-		/// Parse JSON text.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static ScrubberItem Parse(string text) {
-			return JSON.Parse<ScrubberItem>(text);
+		public NativeImage icon {
+			get { return API.GetObject<NativeImage>("icon"); }
+			set { API.SetObject("icon", value); }
 		}
 
 		/// <summary>

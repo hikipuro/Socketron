@@ -23,11 +23,21 @@ namespace Socketron.Electron {
 	/// </code>
 	/// </example>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class PowerMonitorModule : JSModule {
+	public class PowerMonitorModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public PowerMonitorModule() {
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
 		}
 
 		/// <summary>
@@ -44,7 +54,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				string idleState = args[0] as string;
+				string idleState = Convert.ToString(args[0]);
 				callback?.Invoke(idleState);
 			});
 			API.Apply("querySystemIdleState", idleThreshold, item);

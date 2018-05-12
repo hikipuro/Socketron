@@ -6,7 +6,7 @@ namespace Socketron {
 		/// Console module of the Node API.
 		/// </summary>
 		[type: SuppressMessage("Style", "IDE1006")]
-		public class Console : JSModule {
+		public class Console : JSObject {
 			/// <summary>
 			/// Whether the console messages write to the local console too.
 			/// </summary>

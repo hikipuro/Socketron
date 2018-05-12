@@ -183,18 +183,23 @@ namespace Socketron.DOM {
 			get { return API.GetProperty<string>("bgColor"); }
 		}
 
-		public Action onclick {
+		public JSCallback onclick {
 			set {
+				string eventName = "_onclick";
 				if (value == null) {
+					if (_onclick != null) {
+						API.RemoveCallbackItem(eventName, _onclick);
+					}
 					API.SetPropertyNull("onclick");
 					return;
 				}
-				CallbackItem item = API.CreateCallbackItem("_onclick", (object[] args) => {
-					value?.Invoke();
-				});
+				_onclick = value;
+				CallbackItem item = API.CreateCallbackItem(eventName, _onclick);
 				API.SetProperty("onclick", item);
 			}
 		}
+
+		protected JSCallback _onclick;
 
 		public Element createElement(string tagName) {
 			string script = ScriptBuilder.Build(

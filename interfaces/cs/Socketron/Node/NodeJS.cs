@@ -7,7 +7,7 @@ namespace Socketron {
 	/// This object provides the Node APIs at global scope.
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NodeJS : JSModule {
+	public class NodeJS : JSObject {
 		public NodeModules.Console console;
 		public NodeModules.Process process;
 
@@ -16,7 +16,7 @@ namespace Socketron {
 			process = require<NodeModules.Process>("process");
 		}
 
-		public T require<T>(string moduleName) where T: JSModule, new() {
+		public T require<T>(string moduleName) where T: JSObject, new() {
 			if (moduleName == null) {
 				return null;
 			}

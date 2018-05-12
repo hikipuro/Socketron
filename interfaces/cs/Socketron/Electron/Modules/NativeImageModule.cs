@@ -6,7 +6,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NativeImageModule : JSModule {
+	public class NativeImageModule : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -58,8 +58,15 @@ namespace Socketron.Electron {
 		/// <param name="imageName"></param>
 		/// <returns></returns>
 		public NativeImage createFromNamedImage(string imageName) {
-			// TODO: add hslShift option
-			return API.ApplyAndGetObject<NativeImage>("createFromNamedImage", imageName);
+			return API.ApplyAndGetObject<NativeImage>(
+				"createFromNamedImage", imageName
+			);
+		}
+
+		public NativeImage createFromNamedImage(string imageName, int[] hslShift) {
+			return API.ApplyAndGetObject<NativeImage>(
+				"createFromNamedImage", imageName, hslShift
+			);
 		}
 	}
 }

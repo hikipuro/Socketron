@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DesktopCapturer : JSModule {
+	public class DesktopCapturer : JSObject {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
@@ -35,11 +35,9 @@ namespace Socketron.Electron {
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				// TODO: check DesktopCapturerSource[]
 				API.RemoveCallbackItem(eventName, item);
-				Error error = API.CreateObject<Error>((int)args[0]);
-				DesktopCapturerSource[] sources = Array.ConvertAll(
-					args[1] as object[],
-					value => DesktopCapturerSource.Parse(value as string)
-				);
+				Error error = API.CreateObject<Error>(args[0]);
+				JSObject _sources = API.CreateObject<JSObject>(args[1]);
+				DesktopCapturerSource[] sources = _sources.API.ToArray<DesktopCapturerSource>();
 				callback?.Invoke(error, sources);
 			});
 			API.Apply("getSources", options, item);

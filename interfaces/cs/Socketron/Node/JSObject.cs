@@ -7,22 +7,22 @@ using System.Text;
 
 namespace Socketron {
 	/// <summary>
-	/// Base JavaScript module.
-	/// JavaScript modules are extended from this class.
+	/// A JavaScript object.
+	/// JavaScript objects are extended from this class.
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class JSModule : IDisposable {
+	public class JSObject : IDisposable {
 		/// <summary>
-		/// Modules extended from this class.
+		/// Instances extended from this class.
 		/// </summary>
-		protected static List<JSModule> _modules;
+		protected static List<JSObject> _instances;
 
 		/// <summary>
 		/// Static constructor.
 		/// This method is used for internally by the library.
 		/// </summary>
-		static JSModule() {
-			_modules = new List<JSModule>();
+		static JSObject() {
+			_instances = new List<JSObject>();
 		}
 
 		/// <summary>
@@ -30,13 +30,13 @@ namespace Socketron {
 		/// Dispose all JavaScript objects in the Node side.
 		/// </summary>
 		public static void DisposeAll() {
-			foreach (JSModule module in _modules) {
-				if (module.API.id <= 0) {
+			foreach (JSObject instance in _instances) {
+				if (instance.API.id <= 0) {
 					continue;
 				}
-				module.Dispose();
+				instance.Dispose();
 			}
-			_modules.Clear();
+			_instances.Clear();
 		}
 
 		/// <summary>
@@ -69,13 +69,19 @@ namespace Socketron {
 			/// It have to implement a no arguments constructor.
 			/// </typeparam>
 			/// <returns>Instance of T.</returns>
-			public T ConvertType<T>() where T : JSModule, new() {
+			public T ConvertType<T>() where T : JSObject, new() {
 				// TODO: fix memory leak
 				T converted = new T();
 				converted.API.client = client;
 				converted.API.id = id;
 				converted.API.disposeManually = true;
 				disposeManually = true;
+				return converted;
+			}
+
+			public T ConvertTypeTemporary<T>() where T : JSObject, new() {
+				T converted = CreateObject<T>(id);
+				converted.API.disposeManually = true;
 				return converted;
 			}
 
@@ -173,7 +179,7 @@ namespace Socketron {
 				return _ExecuteBlocking<T>(script);
 			}
 
-			public T ApplyConstructor<T>(params object[] args) where T : JSModule, new() {
+			public T ApplyConstructor<T>(params object[] args) where T : JSObject, new() {
 				string options = CreateParams(args);
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
@@ -189,7 +195,7 @@ namespace Socketron {
 				return CreateObject<T>(result);
 			}
 
-			public T ApplyAndGetObject<T>(string methodName, params object[] args) where T : JSModule, new() {
+			public T ApplyAndGetObject<T>(string methodName, params object[] args) where T : JSObject, new() {
 				string options = CreateParams(args);
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
@@ -205,7 +211,7 @@ namespace Socketron {
 				return CreateObject<T>(result);
 			}
 
-			public T[] ApplyAndGetObjectList<T>(string methodName, params object[] args) where T : JSModule, new() {
+			public T[] ApplyAndGetObjectList<T>(string methodName, params object[] args) where T : JSObject, new() {
 				string options = CreateParams(args);
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
@@ -220,6 +226,45 @@ namespace Socketron {
 					methodName,
 					options,
 					Script.AddObject("obj")
+				);
+				object[] result = _ExecuteBlocking<object[]>(script);
+				return CreateObjectList<T>(result);
+			}
+
+			public object GetValue() {
+				string script = ScriptBuilder.Build(
+					"return {0};",
+					Script.GetObject(id)
+				);
+				return _ExecuteBlocking<object>(script);
+			}
+
+			public object[] ToArray() {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var result = [];",
+						"for (var item of {0}) {{",
+							"result.push({1});",
+						"}}",
+						"return result;"
+					),
+					Script.GetObject(id),
+					Script.AddObject("item")
+				);
+				return _ExecuteBlocking<object[]>(script);
+			}
+
+			public T[] ToArray<T>() where T: JSObject, new() {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"var result = [];",
+						"for (var item of {0}) {{",
+							"result.push({1});",
+						"}}",
+						"return result;"
+					),
+					Script.GetObject(id),
+					Script.AddObject("item")
 				);
 				object[] result = _ExecuteBlocking<object[]>(script);
 				return CreateObjectList<T>(result);
@@ -335,8 +380,8 @@ namespace Socketron {
 						strings[i] = (arg as JsonObject).Stringify();
 						continue;
 					}
-					if (arg is JSModule) {
-						JSModule obj = arg as JSModule;
+					if (arg is JSObject) {
+						JSObject obj = arg as JSObject;
 						strings[i] = string.Format("this.getObject({0})", obj.API.id);
 						continue;
 					}
@@ -350,6 +395,9 @@ namespace Socketron {
 			}
 
 			public CallbackItem CreateCallbackItem(string eventName, JSCallback callback) {
+				if (callback == null) {
+					return null;
+				}
 				CallbackItem item = client.Callbacks.Add(id, eventName, callback);
 				string script = ScriptBuilder.Build(
 					ScriptBuilder.Script(
@@ -389,7 +437,25 @@ namespace Socketron {
 			}
 
 			public void RemoveCallbackItem(string eventName, CallbackItem item) {
+				if (item == null) {
+					return;
+				}
 				client.Callbacks.RemoveItem(id, eventName, item.CallbackId);
+			}
+
+			public void RemoveCallbackItem(string eventName, JSCallback callback) {
+				if (callback == null) {
+					return;
+				}
+				CallbackItem item = GetCallbackItem(eventName, callback);
+				RemoveCallbackItem(eventName, item);
+			}
+
+			public CallbackItem GetCallbackItem(string eventName, JSCallback callback) {
+				if (callback == null) {
+					return null;
+				}
+				return client.Callbacks.GetItem(id, eventName, callback);
 			}
 
 			public virtual void ExecuteJavaScript(string script) {
@@ -422,7 +488,7 @@ namespace Socketron {
 				throw new NotImplementedException();
 			}
 
-			public virtual T CreateObject<T>(int id) where T : JSModule, new() {
+			public virtual T CreateObject<T>(int id) where T : JSObject, new() {
 				if (id <= 0) {
 					return null;
 				}
@@ -432,7 +498,21 @@ namespace Socketron {
 				return obj;
 			}
 
-			public virtual T[] CreateObjectList<T>(object[] idList) where T : JSModule, new() {
+			public virtual T CreateObject<T>(object id) where T : JSObject, new() {
+				if (id == null || !(id is int)) {
+					return null;
+				}
+				int intId = (int)id;
+				if (intId <= 0) {
+					return null;
+				}
+				T obj = new T();
+				obj.API.client = client;
+				obj.API.id = intId;
+				return obj;
+			}
+
+			public virtual T[] CreateObjectList<T>(object[] idList) where T : JSObject, new() {
 				if (idList == null) {
 					return null;
 				}
@@ -449,8 +529,13 @@ namespace Socketron {
 				StringBuilder builder = new StringBuilder();
 				StackTrace stackTrace = new StackTrace(true);
 
+				int startIndex = 2;
+				int count = 3;
+				int endIndex = startIndex + count;
+				int frameCount = stackTrace.FrameCount;
+
 				builder.AppendFormat("Client stack: ");
-				for (int i = 2; i < stackTrace.FrameCount && i <= 4; i++) {
+				for (int i = startIndex; i < frameCount && i <= endIndex; i++) {
 					StackFrame frame = stackTrace.GetFrame(i);
 					MethodBase method = frame.GetMethod();
 					builder.AppendFormat(
@@ -465,7 +550,7 @@ namespace Socketron {
 				return builder.ToString();
 			}
 
-			public T GetObject<T>(string moduleName) where T : JSModule, new() {
+			public T GetObject<T>(string moduleName) where T : JSObject, new() {
 				if (moduleName == null) {
 					return null;
 				}
@@ -492,7 +577,7 @@ namespace Socketron {
 				return CreateObject<T>(result);
 			}
 
-			public T[] GetObjectList<T>(string moduleName) where T : JSModule, new() {
+			public T[] GetObjectList<T>(string moduleName) where T : JSObject, new() {
 				if (moduleName == null) {
 					return null;
 				}
@@ -512,6 +597,18 @@ namespace Socketron {
 				object[] result = _ExecuteBlocking<object[]>(script);
 				return CreateObjectList<T>(result);
 			}
+
+			public void SetObject(string propertyName, JSObject value) {
+				string script = ScriptBuilder.Build(
+					ScriptBuilder.Script(
+						"{0}.{1} = {2};"
+					),
+					Script.GetObject(id),
+					propertyName,
+					Script.GetObject(value.API.id)
+				);
+				ExecuteJavaScript(script);
+			}
 		}
 
 		public SocketronAPI API;
@@ -520,16 +617,16 @@ namespace Socketron {
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public JSModule() {
+		public JSObject() {
 			//Console.WriteLine("NodeModule ###: " + GetType().Name);
 			API = new SocketronAPI();
-			_modules.Add(this);
+			_instances.Add(this);
 		}
 
 		/// <summary>
 		/// Destructor.
 		/// </summary>
-		~JSModule() {
+		~JSObject() {
 			if (API.id <= 0) {
 				return;
 			}
@@ -555,80 +652,17 @@ namespace Socketron {
 			API.id = 0;
 		}
 
-		/// <summary>
-		/// Listens to channel, when a new message arrives listener
-		/// would be called with listener(event, args...).
-		/// </summary>
-		/// <param name="eventName"></param>
-		/// <param name="listener"></param>
-		/// <returns></returns>
-		public EventEmitter on(string eventName, JSCallback listener) {
-			CallbackItem item = API.CreateCallbackItem(eventName, listener);
-			return API.ApplyAndGetObject<EventEmitter>(
-				"on", eventName, item
-			);
-		}
-
-		/// <summary>
-		/// Adds a one time listener function for the event.
-		/// <para>
-		/// This listener is invoked only the next time a message is sent to channel,
-		/// after which it is removed.
-		/// </summary>
-		/// <param name="eventName"></param>
-		/// <param name="listener"></param>
-		public EventEmitter once(string eventName, JSCallback listener) {
-			CallbackItem item = API.CreateCallbackItem(eventName, listener);
-			return API.ApplyAndGetObject<EventEmitter>(
-				"once", eventName, item
-			);
-		}
-
-		/// <summary>
-		/// Removes the specified listener from the listener array for the specified channel.
-		/// </summary>
-		/// <param name="eventName"></param>
-		/// <param name="callback"></param>
-		public EventEmitter removeListener(string eventName, JSCallback callback) {
-			CallbackItem item = API.client.Callbacks.GetItem(API.id, eventName, callback);
-			API.RemoveCallbackItem(eventName, item);
-			return API.ApplyAndGetObject<EventEmitter>(
-				"removeListener", eventName, item
-			);
-		}
-
-		/// <summary>
-		/// Removes all listeners, or those of the specified channel.
-		/// </summary>
-		/// <param name="eventName"></param>
-		public EventEmitter removeAllListeners(string eventName) {
-			API.client.Callbacks.RemoveEvents(API.id, eventName);
-			return API.ApplyAndGetObject<EventEmitter>(
-				"removeAllListeners", eventName
-			);
-		}
-
-		/// <summary>
-		/// Removes all listeners.
-		/// </summary>
-		public EventEmitter removeAllListeners() {
-			API.client.Callbacks.RemoveInstanceEvents(API.id);
-			return API.ApplyAndGetObject<EventEmitter>(
-				"removeAllListeners"
-			);
-		}
-
 		protected static ScriptHelper Script = new ScriptHelper();
 		protected class ScriptHelper {
 			public string GetObject(long id) {
 				return string.Format("this.getObject({0})", id);
 			}
-			public string GetObjectList(JSModule[] list) {
+			public string GetObjectList(JSObject[] list) {
 				if (list == null) {
 					return "null";
 				}
 				List<string> result = new List<string>();
-				foreach (JSModule obj in list) {
+				foreach (JSObject obj in list) {
 					result.Add(GetObject(obj.API.id));
 				}
 				return string.Join(",", result.ToArray());

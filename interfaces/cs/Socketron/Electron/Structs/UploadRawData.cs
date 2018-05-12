@@ -1,21 +1,19 @@
-﻿namespace Socketron.Electron {
-	public class UploadRawData {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class UploadRawData : JSObject {
 		/// <summary>
 		/// rawData.
 		/// </summary>
-		public string type;
+		public string type {
+			get { return API.GetProperty<string>("type"); }
+		}
 		/// <summary>
 		/// Data to be uploaded.
 		/// </summary>
-		public Buffer bytes;
-
-		/// <summary>
-		/// Parse JSON text.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static UploadRawData Parse(string text) {
-			return JSON.Parse<UploadRawData>(text);
+		public Buffer bytes {
+			get { return API.GetObject<Buffer>("bytes"); }
 		}
 
 		/// <summary>

@@ -11,7 +11,7 @@ namespace Socketron.Electron {
 	/// </para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Debugger : JSModule {
+	public class Debugger : JSObject {
 		/// <summary>
 		/// Debugger instance events.
 		/// </summary>
@@ -32,6 +32,26 @@ namespace Socketron.Electron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public Debugger() {
+		}
+
+		public EventEmitter on(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.on(eventName, listener);
+		}
+
+		public EventEmitter once(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.once(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
 		}
 
 		/// <summary>
@@ -83,7 +103,7 @@ namespace Socketron.Electron {
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
 				API.RemoveCallbackItem(eventName, item);
-				Error error = API.CreateObject<Error>((int)args[0]);
+				Error error = API.CreateObject<Error>(args[0]);
 				JsonObject json = new JsonObject(args[1]);
 				callback?.Invoke(error, json);
 			});

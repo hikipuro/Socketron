@@ -122,15 +122,16 @@ namespace SocketronTest {
 			//string script = "console.log('Test: ' + process.type);";
 			//socketron.Main.ExecuteJavaScript(script);
 
-			/*
+			//*
 			var paths = electron.dialog.showOpenDialog(new Dialog.OpenDialogOptions {
 				properties = new[] {
-					Dialog.Properties.openFile
+					Dialog.Properties.multiSelections
 				}
 			}, (a, b) => {
 				Console.WriteLine("showOpenDialog: {0}, {1}", JSON.Stringify(a), JSON.Stringify(b));
 			});
 			//*/
+			return;
 
 			//foreach (var path in paths) {
 			//	Console.WriteLine("OpenDialog: {0}", path);
@@ -500,7 +501,7 @@ namespace SocketronTest {
 			});
 			//*/
 
-			//Test();
+			Test();
 			//for (var i = 0; i < 10000; i++) {
 			//	Test2();
 			//}
@@ -514,8 +515,7 @@ namespace SocketronTest {
 			electron.session.defaultSession.clearAuthCache(new RemoveClientCertificate() { origin = "aa" }, () => {
 				Console.WriteLine("clearAuthCache");
 			});
-
-			//return;
+			return;
 
 			BrowserWindow.Options options = new BrowserWindow.Options();
 			//options.webPreferences.nodeIntegration = false;

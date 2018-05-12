@@ -6,7 +6,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class MenuItem : JSModule {
+	public class MenuItem : JSObject {
 		/// <summary>
 		/// MenuItem constructor options.
 		/// </summary>
@@ -230,16 +230,20 @@ namespace Socketron.Electron {
 		/// </summary>
 		public JSCallback click {
 			set {
+				string eventName = "_click";
 				if (value == null) {
+					if (_click != null) {
+						API.RemoveCallbackItem(eventName, _click);
+					}
 					API.SetPropertyNull("click");
 					return;
 				}
-				string eventName = "_click";
-				CallbackItem item = API.CreateCallbackItem(eventName, (object[] args) => {
-					value?.Invoke(args);
-				});
+				_click = value;
+				CallbackItem item = API.CreateCallbackItem(eventName, _click);
 				API.SetProperty("click", item);
 			}
 		}
+
+		protected JSCallback _click;
 	}
 }
