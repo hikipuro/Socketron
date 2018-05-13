@@ -56,7 +56,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void startRecording(JsonObject options, Action callback) {
+		public void startRecording(StartRecordingOptions options, Action callback) {
 			if (callback == null) {
 				return;
 			}
@@ -99,7 +99,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void startMonitoring(JsonObject options, Action callback) {
+		public void startMonitoring(StartMonitoringOptions options, Action callback) {
 			if (callback == null) {
 				return;
 			}

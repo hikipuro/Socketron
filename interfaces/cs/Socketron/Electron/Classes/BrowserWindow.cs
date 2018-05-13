@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public partial class BrowserWindow : EventEmitter {
+	public class BrowserWindow : EventEmitter {
 		/// <summary>
 		/// BrowserWindow instance events.
 		/// </summary>
@@ -1012,7 +1012,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="url"></param>
 		/// <param name="options"></param>
-		public void loadURL(string url, JsonObject options) {
+		public void loadURL(string url, LoadURLOptions options) {
 			API.Apply("loadURL", url, options);
 		}
 
@@ -1058,7 +1058,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="progress"></param>
 		/// <param name="options"></param>
-		public void setProgressBar(double progress, JsonObject options) {
+		public void setProgressBar(double progress, ProgressBarOptions options) {
 			API.Apply("setProgressBar", progress, options);
 		}
 
@@ -1156,7 +1156,7 @@ namespace Socketron.Electron {
 		/// Sets the properties for the window's taskbar button.
 		/// </summary>
 		/// <param name="options"></param>
-		public void setAppDetails(JsonObject options) {
+		public void setAppDetails(AppDetailsOptions options) {
 			API.Apply("setAppDetails", options);
 		}
 
@@ -1243,11 +1243,11 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// 
+		/// Makes the window ignore all mouse events.
 		/// </summary>
 		/// <param name="ignore"></param>
 		/// <param name="options"></param>
-		public void setIgnoreMouseEvents(bool ignore, JsonObject options) {
+		public void setIgnoreMouseEvents(bool ignore, IgnoreMouseEventsOptions options) {
 			API.Apply("setIgnoreMouseEvents", ignore, options);
 		}
 

@@ -212,7 +212,7 @@ namespace SocketronTest {
 			//electron.Dialog.ShowErrorBox("title", "content");
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
-			BrowserWindow.Options options = new BrowserWindow.Options();
+			BrowserWindowConstructorOptions options = new BrowserWindowConstructorOptions();
 			options.show = false;
 			//options.width = 400;
 			//options.height = 300;
@@ -300,7 +300,7 @@ namespace SocketronTest {
 					"}",
 				"]"
 			};
-			var menuItemOptions = MenuItem.Options.ParseArray(string.Join("", template));
+			var menuItemOptions = MenuItemConstructorOptions.ParseArray(string.Join("", template));
 			menuItemOptions[0].submenu[0].@checked = true;
 			//Console.WriteLine(JSON.Stringify(menuItemOptions, true));
 			Menu menu = electron.Menu.buildFromTemplate(menuItemOptions);
@@ -365,7 +365,7 @@ namespace SocketronTest {
 			return;
 
 			Console.WriteLine("Notification.IsSupported: " + electron.Notification.isSupported());
-			var notification = electron.Notification.Create(new Notification.Options {
+			var notification = electron.Notification.Create(new NotificationConstructorOptions {
 				title = "Title",
 				body = "Body"
 			});
@@ -517,7 +517,7 @@ namespace SocketronTest {
 			});
 			//return;
 
-			BrowserWindow.Options options = new BrowserWindow.Options();
+			BrowserWindowConstructorOptions options = new BrowserWindowConstructorOptions();
 			//options.webPreferences.nodeIntegration = false;
 			//options.show = false;
 			//options.width = 400;
@@ -531,11 +531,11 @@ namespace SocketronTest {
 
 			return;
 
-			MenuItem.Options[] options2 = new[] {
-				new MenuItem.Options() {
+			MenuItemConstructorOptions[] options2 = new[] {
+				new MenuItemConstructorOptions() {
 					label = "File",
 					submenu = new [] {
-						new MenuItem.Options() {
+						new MenuItemConstructorOptions() {
 							label = "item1",
 							//type = MenuItem.Type.Radio,
 							click = (menuItem, browserWindow, @event) => {
@@ -543,9 +543,9 @@ namespace SocketronTest {
 								console.log(@event);
 							}
 						},
-						new MenuItem.Options() {
+						new MenuItemConstructorOptions() {
 							label = "item2",
-							type = MenuItem.Type.Checkbox,
+							type = MenuItemConstructorOptions.Type.Checkbox,
 							@checked = true,
 							click = (menuItem, browserWindow, @event) => {
 								//menuItem.@checked = !menuItem.@checked;

@@ -22,7 +22,7 @@ namespace Socketron.Electron {
 		/// Custom schemes to be registered as standard schemes.
 		/// </param>
 		/// <param name="options"></param>
-		public void registerStandardSchemes(string[] schemes, JsonObject options = null) {
+		public void registerStandardSchemes(string[] schemes, RegisterStandardSchemesOptions options = null) {
 			if (options == null) {
 				API.Apply("registerStandardSchemes", schemes as object);
 			} else {
@@ -46,11 +46,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerFileProtocol(string scheme, Action<JsonObject, Action<string>> handler, Action<Error> completion = null) {
+		public void registerFileProtocol(string scheme, Action<RegisterFileProtocolRequest, Action<string>> handler, Action<Error> completion = null) {
 			string eventName = "_registerFileProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterFileProtocolRequest request = API.CreateObject<RegisterFileProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<string> callback = (filePath) => {
 					_callback?.API.Invoke(filePath);
@@ -76,11 +76,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerBufferProtocol(string scheme, Action<JsonObject, Action<Buffer>> handler, Action<Error> completion = null) {
+		public void registerBufferProtocol(string scheme, Action<RegisterBufferProtocolRequest, Action<Buffer>> handler, Action<Error> completion = null) {
 			string eventName = "_registerBufferProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterBufferProtocolRequest request = API.CreateObject<RegisterBufferProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<Buffer> callback = (buffer) => {
 					_callback?.API.Invoke(buffer);
@@ -106,11 +106,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerBufferProtocol(string scheme, Action<JsonObject, Action<MimeTypedBuffer>> handler, Action<Error> completion = null) {
+		public void registerBufferProtocol(string scheme, Action<RegisterBufferProtocolRequest, Action<MimeTypedBuffer>> handler, Action<Error> completion = null) {
 			string eventName = "_registerBufferProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterBufferProtocolRequest request = API.CreateObject<RegisterBufferProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<MimeTypedBuffer> callback = (buffer) => {
 					_callback?.API.Invoke(buffer);
@@ -136,11 +136,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerStringProtocol(string scheme, Action<JsonObject, Action<string>> handler, Action<Error> completion = null) {
+		public void registerStringProtocol(string scheme, Action<RegisterStringProtocolRequest, Action<string>> handler, Action<Error> completion = null) {
 			string eventName = "_registerStringProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterStringProtocolRequest request = API.CreateObject<RegisterStringProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<string> callback = (data) => {
 					_callback?.API.Invoke(data);
@@ -166,13 +166,13 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerHttpProtocol(string scheme, Action<JsonObject, Action<JsonObject>> handler, Action<Error> completion = null) {
+		public void registerHttpProtocol(string scheme, Action<RegisterHttpProtocolRequest, Action<RedirectRequest>> handler, Action<Error> completion = null) {
 			string eventName = "_registerHttpProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterHttpProtocolRequest request = API.CreateObject<RegisterHttpProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
-				Action<JsonObject> callback = (redirectRequest) => {
+				Action<RedirectRequest> callback = (redirectRequest) => {
 					_callback?.API.Invoke(redirectRequest);
 				};
 				handler?.Invoke(request, callback);
@@ -196,11 +196,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerStreamProtocol(string scheme, Action<JsonObject, Action<Readable>> handler, Action<Error> completion = null) {
+		public void registerStreamProtocol(string scheme, Action<RegisterStreamProtocolRequest, Action<Readable>> handler, Action<Error> completion = null) {
 			string eventName = "_registerStreamProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterStreamProtocolRequest request = API.CreateObject<RegisterStreamProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<Readable> callback = (stream) => {
 					_callback?.API.Invoke(stream);
@@ -226,11 +226,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void registerStreamProtocol(string scheme, Action<JsonObject, Action<StreamProtocolResponse>> handler, Action<Error> completion = null) {
+		public void registerStreamProtocol(string scheme, Action<RegisterStreamProtocolRequest, Action<StreamProtocolResponse>> handler, Action<Error> completion = null) {
 			string eventName = "_registerStreamProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				RegisterStreamProtocolRequest request = API.CreateObject<RegisterStreamProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<StreamProtocolResponse> callback = (stream) => {
 					_callback?.API.Invoke(stream);
@@ -296,11 +296,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptFileProtocol(string scheme, Action<JsonObject, Action<string>> handler, Action<Error> completion = null) {
+		public void interceptFileProtocol(string scheme, Action<InterceptFileProtocolRequest, Action<string>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptFileProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptFileProtocolRequest request = API.CreateObject<InterceptFileProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<string> callback = (filePath) => {
 					_callback?.API.Invoke(filePath);
@@ -327,11 +327,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptStringProtocol(string scheme, Action<JsonObject, Action<string>> handler, Action<Error> completion = null) {
+		public void interceptStringProtocol(string scheme, Action<InterceptStringProtocolRequest, Action<string>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptStringProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptStringProtocolRequest request = API.CreateObject<InterceptStringProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<string> callback = (data) => {
 					_callback?.API.Invoke(data);
@@ -358,11 +358,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptBufferProtocol(string scheme, Action<JsonObject, Action<Buffer>> handler, Action<Error> completion = null) {
+		public void interceptBufferProtocol(string scheme, Action<InterceptBufferProtocolRequest, Action<Buffer>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptBufferProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptBufferProtocolRequest request = API.CreateObject<InterceptBufferProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<Buffer> callback = (buffer) => {
 					_callback?.API.Invoke(buffer);
@@ -389,13 +389,13 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptHttpProtocol(string scheme, Action<JsonObject, Action<JsonObject>> handler, Action<Error> completion = null) {
+		public void interceptHttpProtocol(string scheme, Action<InterceptHttpProtocolRequest, Action<RedirectRequest>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptHttpProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptHttpProtocolRequest request = API.CreateObject<InterceptHttpProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
-				Action<JsonObject> callback = (redirectRequest) => {
+				Action<RedirectRequest> callback = (redirectRequest) => {
 					_callback?.API.Invoke(redirectRequest);
 				};
 				handler?.Invoke(request, callback);
@@ -420,11 +420,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptStreamProtocol(string scheme, Action<JsonObject, Action<Readable>> handler, Action<Error> completion = null) {
+		public void interceptStreamProtocol(string scheme, Action<InterceptStreamProtocolRequest, Action<Readable>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptStreamProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptStreamProtocolRequest request = API.CreateObject<InterceptStreamProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<Readable> callback = (stream) => {
 					_callback?.API.Invoke(stream);
@@ -451,11 +451,11 @@ namespace Socketron.Electron {
 		/// <param name="scheme"></param>
 		/// <param name="handler"></param>
 		/// <param name="completion"></param>
-		public void interceptStreamProtocol(string scheme, Action<JsonObject, Action<StreamProtocolResponse>> handler, Action<Error> completion = null) {
+		public void interceptStreamProtocol(string scheme, Action<InterceptStreamProtocolRequest, Action<StreamProtocolResponse>> handler, Action<Error> completion = null) {
 			string eventName = "_interceptStreamProtocol";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				InterceptStreamProtocolRequest request = API.CreateObject<InterceptStreamProtocolRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<StreamProtocolResponse> callback = (stream) => {
 					_callback?.API.Invoke(stream);

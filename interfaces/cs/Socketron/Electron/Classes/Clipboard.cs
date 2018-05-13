@@ -125,9 +125,9 @@ namespace Socketron.Electron {
 		/// The title and url values will be empty strings when the bookmark is unavailable.
 		/// </summary>
 		/// <returns></returns>
-		public JsonObject readBookmark() {
+		public ReadBookmark readBookmark() {
 			object result = API.Apply("readBookmark");
-			return new JsonObject(result);
+			return ReadBookmark.FromObject(result);
 		}
 
 		/// <summary>
@@ -277,7 +277,7 @@ namespace Socketron.Electron {
 		/// clipboard.write({text: 'test', html: '&lt;b&gt;test&lt;/b&gt;'})
 		/// </code>
 		/// </example>
-		public void write(JsonObject data, string type = null) {
+		public void write(Data data, string type = null) {
 			if (type == null) {
 				API.Apply("write", data);
 			} else {

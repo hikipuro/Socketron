@@ -36,9 +36,14 @@ namespace Socketron.Electron {
 		/// Creates a new NativeImage instance from buffer.
 		/// </summary>
 		/// <param name="buffer"></param>
+		/// <param name="options"></param>
 		/// <returns></returns>
-		public NativeImage createFromBuffer(Buffer buffer) {
-			return API.ApplyAndGetObject<NativeImage>("createFromBuffer", buffer);
+		public NativeImage createFromBuffer(Buffer buffer, CreateFromBufferOptions options = null) {
+			if (options == null) {
+				return API.ApplyAndGetObject<NativeImage>("createFromBuffer", buffer);
+			} else {
+				return API.ApplyAndGetObject<NativeImage>("createFromBuffer", buffer, options);
+			}
 		}
 
 		/// <summary>

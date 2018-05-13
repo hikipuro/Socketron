@@ -158,10 +158,10 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static MemoryInfo getProcessMemoryInfo(this NodeModules.Process process) {
+		public static ProcessMemoryInfo getProcessMemoryInfo(this NodeModules.Process process) {
 			string script = "return self.getProcessMemoryInfo();";
 			object result = process.API.ExecuteBlocking<object>(script);
-			return MemoryInfo.FromObject(result);
+			return ProcessMemoryInfo.FromObject(result);
 		}
 
 		/// <summary>
@@ -170,10 +170,10 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="process"></param>
 		/// <returns></returns>
-		public static JsonObject getSystemMemoryInfo(this NodeModules.Process process) {
+		public static SystemMemoryInfo getSystemMemoryInfo(this NodeModules.Process process) {
 			string script = "return self.getSystemMemoryInfo();";
 			object result = process.API.ExecuteBlocking<object>(script);
-			return new JsonObject(result);
+			return SystemMemoryInfo.FromObject(result);
 		}
 
 		/// <summary>

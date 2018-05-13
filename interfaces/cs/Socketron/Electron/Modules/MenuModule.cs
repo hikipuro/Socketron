@@ -67,7 +67,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="template"></param>
 		/// <returns></returns>
-		public Menu buildFromTemplate(MenuItem.Options[] template) {
+		public Menu buildFromTemplate(MenuItemConstructorOptions[] template) {
 			string param = _CreateTemplateString(template);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
@@ -92,7 +92,7 @@ namespace Socketron.Electron {
 		/// <param name="template"></param>
 		/// <returns></returns>
 		public Menu buildFromTemplate(string template) {
-			MenuItem.Options[] options = JSON.Parse<MenuItem.Options[]>(template);
+			MenuItemConstructorOptions[] options = MenuItemConstructorOptions.ParseArray(template);
 			return buildFromTemplate(options);
 		}
 
@@ -110,12 +110,12 @@ namespace Socketron.Electron {
 			list.Add(string.Format("{0}:{1}", name, value.Escape()));
 		}
 
-		protected string _CreateTemplateString(MenuItem.Options[] template) {
+		protected string _CreateTemplateString(MenuItemConstructorOptions[] template) {
 			if (template == null) {
 				return string.Empty;
 			}
 			List<string> list = new List<string>();
-			foreach (MenuItem.Options item in template) {
+			foreach (MenuItemConstructorOptions item in template) {
 				List<string> itemValues = new List<string>();
 				_AddTemplateProperty(itemValues, "role", item.role);
 				_AddTemplateProperty(itemValues, "type", item.type);

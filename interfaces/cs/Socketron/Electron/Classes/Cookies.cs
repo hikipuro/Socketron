@@ -31,7 +31,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="filter"></param>
 		/// <param name="callback"></param>
-		public void get(JsonObject filter, Action<Error, Cookie[]> callback) {
+		public void get(Filter filter, Action<Error, Cookie[]> callback) {
 			if (callback == null) {
 				return;
 			}
@@ -56,7 +56,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="details"></param>
 		/// <param name="callback"></param>
-		public void set(JsonObject details, Action<Error> callback) {
+		public void set(Details details, Action<Error> callback) {
 			if (callback == null) {
 				return;
 			}

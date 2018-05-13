@@ -198,34 +198,6 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
-		/// printToPDF() options.
-		/// </summary>
-		public class PrintToPDFOptions {
-			public int? marginsType;
-			public string pageSize;
-			public bool? printBackground;
-			public bool? printSelectionOnly;
-			public bool? landscape;
-
-			/// <summary>
-			/// Parse JSON text.
-			/// </summary>
-			/// <param name="text"></param>
-			/// <returns></returns>
-			public static PrintToPDFOptions Parse(string text) {
-				return JSON.Parse<PrintToPDFOptions>(text);
-			}
-
-			/// <summary>
-			/// Create JSON text.
-			/// </summary>
-			/// <returns></returns>
-			public string Stringify() {
-				return JSON.Stringify(this);
-			}
-		}
-
-		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public WebContents() {
@@ -273,7 +245,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="url"></param>
 		/// <param name="options"></param>
-		public void loadURL(string url, JsonObject options = null) {
+		public void loadURL(string url, LoadURLOptions options = null) {
 			if (options == null) {
 				API.Apply("loadURL", url);
 			} else {
@@ -721,7 +693,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="options"></param>
-		public void findInPage(string text, JsonObject options = null) {
+		public void findInPage(string text, FindInPageOptions options = null) {
 			if (options == null) {
 				API.Apply("findInPage", text);
 			} else {
@@ -832,11 +804,11 @@ namespace Socketron.Electron {
 			API.Apply("print");
 		}
 
-		public void print(JsonObject options) {
+		public void print(PrintOptions options) {
 			API.Apply("print", options);
 		}
 
-		public void print(JsonObject options, Action<bool> callback) {
+		public void print(PrintOptions options, Action<bool> callback) {
 			if (callback == null) {
 				return;
 			}
@@ -916,7 +888,7 @@ namespace Socketron.Electron {
 		/// </para>
 		/// </summary>
 		/// <param name="options"></param>
-		public void openDevTools(JsonObject options = null) {
+		public void openDevTools(OpenDevToolsOptions options = null) {
 			if (options == null) {
 				API.Apply("openDevTools");
 			} else {
@@ -992,7 +964,7 @@ namespace Socketron.Electron {
 		/// Enable device emulation with the given parameters.
 		/// </summary>
 		/// <param name="parameters"></param>
-		public void enableDeviceEmulation(JsonObject parameters) {
+		public void enableDeviceEmulation(Parameters parameters) {
 			API.Apply("enableDeviceEmulation", parameters);
 		}
 
@@ -1065,7 +1037,7 @@ namespace Socketron.Electron {
 		/// Sets the item as dragging item for current drag-drop operation.
 		/// </summary>
 		/// <param name="item"></param>
-		public void startDrag(JsonObject item) {
+		public void startDrag(Item item) {
 			// TODO: fix item.icon param
 			API.Apply("startDrag", item);
 		}
@@ -1104,7 +1076,7 @@ namespace Socketron.Electron {
 		/// This is only supported for &lt;webview&gt; guest contents.
 		/// </summary>
 		/// <param name="options"></param>
-		public void setSize(JsonObject options) {
+		public void setSize(SizeOptions options) {
 			API.Apply("setSize", options);
 		}
 

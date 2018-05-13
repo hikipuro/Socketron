@@ -26,7 +26,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void getSources(JsonObject options, Action<Error, DesktopCapturerSource[]> callback) {
+		public void getSources(SourcesOptions options, Action<Error, DesktopCapturerSource[]> callback) {
 			if (callback == null) {
 				return;
 			}

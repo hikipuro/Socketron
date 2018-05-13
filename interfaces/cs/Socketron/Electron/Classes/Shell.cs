@@ -45,9 +45,9 @@ namespace Socketron.Electron {
 			return API.Apply<bool>("openExternal", url);
 		}
 
-		public bool openExternal(string url, JsonObject options, Action<Error> callback) {
+		public bool openExternal(string url, OpenExternalOptions options, Action<Error> callback) {
 			if (options == null) {
-				options = new JsonObject();
+				options = new OpenExternalOptions();
 			}
 			string eventName = "_openExternal";
 			CallbackItem item = null;

@@ -20,7 +20,7 @@ namespace Socketron.Electron {
 			get { return API.GetObject<Session>("defaultSession"); }
 		}
 
-		public Session fromPartition(string partition, JsonObject options = null) {
+		public Session fromPartition(string partition, FromPartitionOptions options = null) {
 			if (options == null) {
 				return API.ApplyAndGetObject<Session>("fromPartition", partition);
 			} else {

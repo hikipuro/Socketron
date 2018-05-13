@@ -1,5 +1,5 @@
 ﻿namespace Socketron.Electron {
-	public class TaskObject {
+	public class Task {
 		/// <summary>
 		/// Path of the program to execute,
 		/// usually you should specify process.execPath which opens the current program.
@@ -36,8 +36,8 @@
 		/// </summary>
 		/// <param name="text"></param>
 		/// <returns></returns>
-		public static TaskObject Parse(string text) {
-			return JSON.Parse<TaskObject>(text);
+		public static Task Parse(string text) {
+			return JSON.Parse<Task>(text);
 		}
 
 		/// <summary>

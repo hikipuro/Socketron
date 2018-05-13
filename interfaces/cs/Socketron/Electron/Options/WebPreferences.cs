@@ -128,7 +128,7 @@
 		/// <summary>
 		/// (optional) Sets the default font for the font-family.
 		/// </summary>
-		public JsonObject defaultFontFamily;
+		public DefaultFontFamily defaultFontFamily;
 		/// <summary>
 		/// (optional) Defaults to 16.
 		/// </summary>
@@ -228,5 +228,32 @@
 		public string Stringify() {
 			return JSON.Stringify(this);
 		}
+	}
+
+	public class DefaultFontFamily {
+		/// <summary>
+		/// Defaults to Times New Roman.
+		/// </summary>
+		public string standard;
+		/// <summary>
+		/// Defaults to Times New Roman.
+		/// </summary>
+		public string serif;
+		/// <summary>
+		/// Defaults to Arial.
+		/// </summary>
+		public string sansSerif;
+		/// <summary>
+		/// Defaults to Courier New.
+		/// </summary>
+		public string monospace;
+		/// <summary>
+		/// Defaults to Script.
+		/// </summary>
+		public string cursive;
+		/// <summary>
+		/// Defaults to Impact.
+		/// </summary>
+		public string fantasy;
 	}
 }

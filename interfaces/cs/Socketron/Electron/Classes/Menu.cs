@@ -64,19 +64,21 @@ namespace Socketron.Electron {
 		}
 
 		/// <summary>
+		/// Pops up this menu as a context menu in the browserWindow.
+		/// </summary>
+		/// <param name="BrowserWindow"></param>
+		/// <param name="options"></param>
+		public void popup() {
+			API.Apply("popup");
+		}
+
+		/// <summary>
 		/// Pops up this menu as a context menu in the BrowserWindow.
 		/// </summary>
-		/// <param name="options">
-		/// <list type="bullet">
-		/// <item><description>"window" BrowserWindow (optional) - Default is the focused window.</description></item>
-		/// <item><description>"x" Number (optional) - Default is the current mouse cursor position. Must be declared if y is declared.</description></item>
-		/// <item><description>"y" Number (optional) - Default is the current mouse cursor position. Must be declared if x is declared.</description></item>
-		/// <item><description>"positioningItem" Number (optional) *macOS* - The index of the menu item to be positioned under the mouse cursor at the specified coordinates. Default is -1.)</description></item>
-		/// <item><description>"callback" Function (optional) - Called when menu is closed.</description></item>
-		/// </list>
-		/// </param>
-		public void popup(JsonObject options) {
-			API.Apply("popup", options);
+		/// <param name="browserWindow"></param>
+		/// <param name="options"></param>
+		public void popup(BrowserWindow browserWindow, PopupOptions options) {
+			API.Apply("popup", browserWindow, options);
 		}
 
 		/// <summary>

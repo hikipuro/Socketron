@@ -18,7 +18,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarButton Create(TouchBarButton.Options options) {
+		public TouchBarButton Create(TouchBarButtonConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarButton>(options);
 		}
 	}
@@ -40,7 +40,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarColorPicker Create(TouchBarColorPicker.Options options) {
+		public TouchBarColorPicker Create(TouchBarColorPickerConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarColorPicker>(options);
 		}
 	}
@@ -62,7 +62,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarGroup Create(TouchBarGroup.Options options) {
+		public TouchBarGroup Create(TouchBarGroupConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarGroup>(options);
 		}
 	}
@@ -84,7 +84,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarLabel Create(TouchBarLabel.Options options) {
+		public TouchBarLabel Create(TouchBarLabelConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarLabel>(options);
 		}
 	}
@@ -106,7 +106,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarPopover Create(TouchBarPopover.Options options) {
+		public TouchBarPopover Create(TouchBarPopoverConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarPopover>(options);
 		}
 	}
@@ -128,7 +128,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarScrubber Create(TouchBarScrubber.Options options) {
+		public TouchBarScrubber Create(TouchBarScrubberConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarScrubber>(options);
 		}
 	}
@@ -150,7 +150,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarSegmentedControl Create(TouchBarSegmentedControl.Options options) {
+		public TouchBarSegmentedControl Create(TouchBarSegmentedControlConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarSegmentedControl>(options);
 		}
 	}
@@ -172,7 +172,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarSlider Create(TouchBarSlider.Options options) {
+		public TouchBarSlider Create(TouchBarSliderConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarSlider>(options);
 		}
 	}
@@ -194,7 +194,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public TouchBarSpacer Create(TouchBarSpacer.Options options) {
+		public TouchBarSpacer Create(TouchBarSpacerConstructorOptions options) {
 			return API.ApplyConstructor<TouchBarSpacer>(options);
 		}
 	}

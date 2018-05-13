@@ -7,31 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class NativeImage : JSObject, IDisposable {
-		/// <summary>
-		/// NativeImage converter options.
-		/// </summary>
-		public class Options {
-			public double scaleFactor;
-
-			/// <summary>
-			/// Parse JSON text.
-			/// </summary>
-			/// <param name="text"></param>
-			/// <returns></returns>
-			public static Options Parse(string text) {
-				return JSON.Parse<Options>(text);
-			}
-
-			/// <summary>
-			/// Create JSON text.
-			/// </summary>
-			/// <returns></returns>
-			public string Stringify() {
-				return JSON.Stringify(this);
-			}
-		}
-
+	public class NativeImage : JSObject {
 		public class DPISuffixes {
 			public const string @x1 = "@1x";
 			public const string @x1_25 = "@1.25x";
@@ -61,7 +37,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer toPNG(Options options = null) {
+		public Buffer toPNG(ToPNGOptions options = null) {
 			if (options == null) {
 				return API.ApplyAndGetObject<Buffer>("toPNG");
 			} else {
@@ -83,7 +59,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer toBitmap(Options options = null) {
+		public Buffer toBitmap(ToBitmapOptions options = null) {
 			if (options == null) {
 				return API.ApplyAndGetObject<Buffer>("toBitmap");
 			} else {
@@ -94,9 +70,14 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// Returns String - The data URL of the image.
 		/// </summary>
+		/// <param name="options"></param>
 		/// <returns></returns>
-		public string toDataURL() {
-			return API.Apply<string>("toDataURL");
+		public string toDataURL(ToDataURLOptions options = null) {
+			if (options == null) {
+				return API.Apply<string>("toDataURL");
+			} else {
+				return API.Apply<string>("toDataURL", options);
+			}
 		}
 
 		/// <summary>
@@ -104,7 +85,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Buffer getBitmap(Options options) {
+		public Buffer getBitmap(BitmapOptions options) {
 			return API.ApplyAndGetObject<Buffer>("getBitmap", options);
 		}
 
@@ -169,7 +150,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public NativeImage resize(JsonObject options) {
+		public NativeImage resize(ResizeOptions options) {
 			return API.ApplyAndGetObject<NativeImage>("resize", options);
 		}
 
@@ -187,7 +168,7 @@ namespace Socketron.Electron {
 		/// This can be called on empty images.
 		/// </summary>
 		/// <param name="options"></param>
-		public void addRepresentation(JsonObject options) {
+		public void addRepresentation(AddRepresentationOptions options) {
 			API.Apply("addRepresentation", options);
 		}
 	}

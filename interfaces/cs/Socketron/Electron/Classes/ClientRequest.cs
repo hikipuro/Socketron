@@ -172,9 +172,9 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="name">Specify an extra header name.</param>
 		/// <returns></returns>
-		public JsonObject getHeader(string name) {
+		public Header getHeader(string name) {
 			object result = API.Apply("getHeader", name);
-			return new JsonObject(result);
+			return Header.FromObject(result);
 		}
 
 		/// <summary>

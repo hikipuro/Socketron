@@ -22,7 +22,7 @@ namespace Socketron.Electron {
 		/// when calling from different processes.
 		/// </summary>
 		/// <param name="options"></param>
-		public void start(JsonObject options) {
+		public void start(CrashReporterStartOptions options) {
 			API.Apply("start", options);
 		}
 

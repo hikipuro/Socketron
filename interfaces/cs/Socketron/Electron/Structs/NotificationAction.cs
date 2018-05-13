@@ -10,6 +10,13 @@
 		public string text;
 
 		/// <summary>
+		/// type values.
+		/// </summary>
+		public class Type {
+			public const string Button = "button";
+		}
+
+		/// <summary>
 		/// Parse JSON text.
 		/// </summary>
 		/// <param name="text"></param>

@@ -400,7 +400,7 @@ namespace Socketron.Electron {
 		/// Relaunches the app when current instance exits.
 		/// </summary>
 		/// <param name="options">(optional)</param>
-		public void relaunch(JsonObject options = null) {
+		public void relaunch(RelaunchOptions options = null) {
 			if (options == null) {
 				API.Apply("relaunch");
 			} else {
@@ -497,7 +497,7 @@ namespace Socketron.Electron {
 		/// <param name="path"></param>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void getFileIcon(string path, JsonObject options, Action<Error, NativeImage> callback) {
+		public void getFileIcon(string path, FileIconOptions options, Action<Error, NativeImage> callback) {
 			if (callback == null) {
 				return;
 			}
@@ -702,7 +702,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="tasks">Array of Task objects.</param>
 		/// <returns>Whether the call succeeded.</returns>
-		public bool setUserTasks(TaskObject[] tasks) {
+		public bool setUserTasks(Task[] tasks) {
 			return API.Apply<bool>("setUserTasks", tasks as object);
 		}
 
@@ -711,9 +711,9 @@ namespace Socketron.Electron {
 		/// Returns Object:
 		/// </summary>
 		/// <returns></returns>
-		public JsonObject getJumpListSettings() {
+		public JumpListSettings getJumpListSettings() {
 			object result = API.Apply("getJumpListSettings");
-			return new JsonObject(result);
+			return JumpListSettings.FromObject(result);
 
 		}
 
@@ -839,7 +839,7 @@ namespace Socketron.Electron {
 		/// <param name="callback">
 		/// "result" Integer - Result of import.
 		/// </param>
-		public void importCertificate(JsonObject options, Action<int> callback) {
+		public void importCertificate(ImportCertificateOptions options, Action<int> callback) {
 			if (callback == null) {
 				return;
 			}
@@ -932,13 +932,13 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public JsonObject getLoginItemSettings(JsonObject options = null) {
+		public LoginItemSettings getLoginItemSettings(LoginItemSettingsOptions options = null) {
 			if (options == null) {
 				object result = API.Apply("getLoginItemSettings");
-				return new JsonObject(result);
+				return LoginItemSettings.FromObject(result);
 			} else {
 				object result = API.Apply("getLoginItemSettings", options);
-				return new JsonObject(result);
+				return LoginItemSettings.FromObject(result);
 			}
 		}
 
@@ -947,7 +947,7 @@ namespace Socketron.Electron {
 		/// Set the app's login item settings.
 		/// </summary>
 		/// <param name="settings"></param>
-		public void setLoginItemSettings(JsonObject settings) {
+		public void setLoginItemSettings(Settings settings) {
 			API.Apply("setLoginItemSettings", settings);
 		}
 
@@ -981,7 +981,7 @@ namespace Socketron.Electron {
 		/// defined in the app's .plist file. See the Apple docs for more details.
 		/// </summary>
 		/// <param name="options"></param>
-		public void setAboutPanelOptions(JsonObject options) {
+		public void setAboutPanelOptions(AboutPanelOptionsOptions options) {
 			API.Apply("setAboutPanelOptions", options);
 		}
 

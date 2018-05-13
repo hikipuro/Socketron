@@ -161,7 +161,11 @@ namespace Socketron.Electron {
 		/// Displays a tray balloon.
 		/// </summary>
 		/// <param name="mode"></param>
-		public void displayBalloon(JsonObject options) {
+		public void displayBalloon(DisplayBalloonOptions options) {
+			API.Apply("displayBalloon", options);
+		}
+
+		public void displayBalloon(DisplayBalloonStringOptions options) {
 			API.Apply("displayBalloon", options);
 		}
 

@@ -19,9 +19,9 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public BrowserWindow Create(BrowserWindow.Options options) {
+		public BrowserWindow Create(BrowserWindowConstructorOptions options) {
 			if (options == null) {
-				options = new BrowserWindow.Options();
+				options = new BrowserWindowConstructorOptions();
 			}
 			return API.ApplyConstructor<BrowserWindow>(options);
 		}
@@ -32,7 +32,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public BrowserWindow Create(string options) {
-			return Create(BrowserWindow.Options.Parse(options));
+			return Create(BrowserWindowConstructorOptions.Parse(options));
 		}
 
 		/// <summary>

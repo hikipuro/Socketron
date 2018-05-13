@@ -18,9 +18,9 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public MenuItem Create(MenuItem.Options options) {
+		public MenuItem Create(MenuItemConstructorOptions options) {
 			if (options == null) {
-				options = new MenuItem.Options();
+				options = new MenuItemConstructorOptions();
 			}
 			return API.ApplyConstructor<MenuItem>(options);
 		}
@@ -31,7 +31,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public MenuItem Create(string options) {
-			return Create(MenuItem.Options.Parse(options));
+			return Create(MenuItemConstructorOptions.Parse(options));
 		}
 	}
 }

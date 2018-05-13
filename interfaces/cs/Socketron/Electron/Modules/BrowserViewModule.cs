@@ -17,9 +17,11 @@ namespace Socketron.Electron {
 		/// *Experimental*
 		/// Create a new BrowserView instance.
 		/// </summary>
-		public BrowserView Create(WebPreferences options = null) {
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public BrowserView Create(BrowserViewConstructorOptions options = null) {
 			if (options == null) {
-				options = new WebPreferences();
+				options = new BrowserViewConstructorOptions();
 			}
 			return API.ApplyConstructor<BrowserView>(options);
 		}

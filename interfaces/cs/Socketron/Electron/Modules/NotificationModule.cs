@@ -22,9 +22,9 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public Notification Create(Notification.Options options) {
+		public Notification Create(NotificationConstructorOptions options) {
 			if (options == null) {
-				options = new Notification.Options();
+				options = new NotificationConstructorOptions();
 			}
 			return API.ApplyConstructor<Notification>(options);
 		}
@@ -36,7 +36,7 @@ namespace Socketron.Electron {
 		/// <param name="options"></param>
 		/// <returns></returns>
 		public Notification Create(string options) {
-			return Create(Notification.Options.Parse(options));
+			return Create(NotificationConstructorOptions.Parse(options));
 		}
 
 		/// <summary>

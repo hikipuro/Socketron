@@ -8,14 +8,6 @@ namespace Socketron.Electron {
 	[type: SuppressMessage("Style", "IDE1006")]
 	public class TouchBar : EventEmitter {
 		/// <summary>
-		/// TouchBar constructor options.
-		/// </summary>
-		public class Options {
-			public TouchBarItem[] items;
-			public TouchBarItem escapeItem;
-		}
-
-		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public TouchBar() {

@@ -84,7 +84,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="callback"></param>
-		public void clearStorageData(JsonObject options, Action callback) {
+		public void clearStorageData(ClearStorageDataOptions options, Action callback) {
 			string eventName = "_clearStorageData";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
@@ -105,7 +105,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="config"></param>
 		/// <param name="callback"></param>
-		public void setProxy(JsonObject config, Action callback) {
+		public void setProxy(Config config, Action callback) {
 			string eventName = "_setProxy";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
@@ -142,7 +142,7 @@ namespace Socketron.Electron {
 		/// Emulates network with the given configuration for the session.
 		/// </summary>
 		/// <param name="options"></param>
-		public void enableNetworkEmulation(JsonObject options) {
+		public void enableNetworkEmulation(EnableNetworkEmulationOptions options) {
 			API.Apply("enableNetworkEmulation", options);
 		}
 
@@ -160,11 +160,11 @@ namespace Socketron.Electron {
 		/// whenever a server certificate verification is requested.
 		/// Calling callback(0) accepts the certificate, calling callback(-2) rejects it.
 		/// </summary>
-		public void setCertificateVerifyProc(Action<JsonObject, Action<int>> proc) {
+		public void setCertificateVerifyProc(Action<CertificateVerifyProcRequest, Action<int>> proc) {
 			string eventName = "_setCertificateVerifyProc";
 			CallbackItem item = null;
 			item = API.CreateCallbackItem(eventName, (object[] args) => {
-				JsonObject request = new JsonObject(args[0]);
+				CertificateVerifyProcRequest request = API.CreateObject<CertificateVerifyProcRequest>(args[0]);
 				JSObject _callback = API.CreateObject<JSObject>(args[1]);
 				Action<int> callback = (verificationResult) => {
 					_callback?.API.Invoke(verificationResult);
@@ -267,7 +267,7 @@ namespace Socketron.Electron {
 		/// Allows resuming cancelled or interrupted downloads from previous Session.
 		/// </summary>
 		/// <param name="options"></param>
-		public void createInterruptedDownload(JsonObject options) {
+		public void createInterruptedDownload(CreateInterruptedDownloadOptions options) {
 			API.Apply("createInterruptedDownload", options);
 		}
 

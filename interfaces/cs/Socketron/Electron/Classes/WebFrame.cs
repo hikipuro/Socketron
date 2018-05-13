@@ -128,7 +128,7 @@ namespace Socketron.Electron {
 		/// <param name="language"></param>
 		/// <param name="autoCorrectWord"></param>
 		/// <param name="provider"></param>
-		public void setSpellCheckProvider(string language, bool autoCorrectWord, JsonObject provider) {
+		public void setSpellCheckProvider(string language, bool autoCorrectWord, Provider provider) {
 			API.Apply("setSpellCheckProvider", language, autoCorrectWord, provider);
 		}
 
@@ -155,7 +155,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="scheme"></param>
 		/// <param name="options"></param>
-		public void registerURLSchemeAsPrivileged(string scheme, JsonObject options = null) {
+		public void registerURLSchemeAsPrivileged(string scheme, RegisterURLSchemeAsPrivilegedOptions options = null) {
 			if (options == null) {
 				API.Apply("registerURLSchemeAsPrivileged", scheme);
 			} else {
@@ -265,9 +265,9 @@ namespace Socketron.Electron {
 		/// Returns an object describing usage information of Blink's internal memory caches.
 		/// </summary>
 		/// <returns></returns>
-		public JsonObject getResourceUsage() {
+		public ResourceUsage getResourceUsage() {
 			object result = API.Apply("getResourceUsage");
-			return new JsonObject(result);
+			return ResourceUsage.FromObject(result);
 		}
 
 		/// <summary>
