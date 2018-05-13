@@ -36,9 +36,5 @@ namespace Socketron {
 		public string stack {
 			get { return API.GetProperty<string>("stack"); }
 		}
-
-		public string toString() {
-			return API.Apply<string>("toString");
-		}
 	}
 }

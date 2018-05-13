@@ -33,17 +33,17 @@ namespace Socketron.Electron {
 		}
 
 		public class DPISuffixes {
-			public const string x1 = "@1x";
-			public const string x1_25 = "@1.25x";
-			public const string x1_33 = "@1.33x";
-			public const string x1_4 = "@1.4x";
-			public const string x1_5 = "@1.5x";
-			public const string x1_8 = "@1.8x";
-			public const string x2 = "@2x";
-			public const string x2_5 = "@2.5x";
-			public const string x3 = "@3x";
-			public const string x4 = "@4x";
-			public const string x5 = "@5x";
+			public const string @x1 = "@1x";
+			public const string @x1_25 = "@1.25x";
+			public const string @x1_33 = "@1.33x";
+			public const string @x1_4 = "@1.4x";
+			public const string @x1_5 = "@1.5x";
+			public const string @x1_8 = "@1.8x";
+			public const string @x2 = "@2x";
+			public const string @x2_5 = "@2.5x";
+			public const string @x3 = "@3x";
+			public const string @x4 = "@4x";
+			public const string @x5 = "@5x";
 		}
 
 		/// <summary>

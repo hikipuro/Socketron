@@ -550,8 +550,8 @@ namespace Socketron {
 				return builder.ToString();
 			}
 
-			public T GetObject<T>(string moduleName) where T : JSObject, new() {
-				if (moduleName == null) {
+			public T GetObject<T>(string propertyName) where T : JSObject, new() {
+				if (propertyName == null) {
 					return null;
 				}
 				string script = string.Empty;
@@ -560,7 +560,7 @@ namespace Socketron {
 						ScriptBuilder.Script(
 							"return {0};"
 						),
-						Script.AddObject(moduleName)
+						Script.AddObject(propertyName)
 					);
 				} else {
 					script = ScriptBuilder.Build(
@@ -569,7 +569,7 @@ namespace Socketron {
 							"return {2};"
 						),
 						Script.GetObject(id),
-						moduleName,
+						propertyName,
 						Script.AddObject("m")
 					);
 				}
@@ -577,8 +577,8 @@ namespace Socketron {
 				return CreateObject<T>(result);
 			}
 
-			public T[] GetObjectList<T>(string moduleName) where T : JSObject, new() {
-				if (moduleName == null) {
+			public T[] GetObjectList<T>(string propertyName) where T : JSObject, new() {
+				if (propertyName == null) {
 					return null;
 				}
 				string script = ScriptBuilder.Build(
@@ -591,7 +591,7 @@ namespace Socketron {
 						"return result;"
 					),
 					Script.GetObject(id),
-					moduleName,
+					propertyName,
 					Script.AddObject("obj")
 				);
 				object[] result = _ExecuteBlocking<object[]>(script);
@@ -600,14 +600,30 @@ namespace Socketron {
 
 			public void SetObject(string propertyName, JSObject value) {
 				string script = ScriptBuilder.Build(
-					ScriptBuilder.Script(
-						"{0}.{1} = {2};"
-					),
+					"{0}.{1} = {2};",
 					Script.GetObject(id),
 					propertyName,
 					Script.GetObject(value.API.id)
 				);
 				ExecuteJavaScript(script);
+			}
+
+			public void SetObjectList(string propertyName, JSObject[] values) {
+				StringBuilder builder = new StringBuilder();
+				builder.Append("var values = [];");
+				for (int i = 0; i < values.Length; i++) {
+					builder.AppendFormat(
+						"values.push({0});",
+						Script.GetObject(values[i].API.id)
+					);
+				}
+				builder.AppendFormat(
+					"{0}.{1} = {2};",
+					Script.GetObject(id),
+					propertyName,
+					Script.AddObject("values")
+				);
+				ExecuteJavaScript(builder.ToString());
 			}
 		}
 
@@ -650,6 +666,10 @@ namespace Socketron {
 			//Debug.WriteLine("NodeModule.Dispose ###: " + GetType().Name + ", " + _id);
 			API.client.RemoveObject(this);
 			API.id = 0;
+		}
+
+		public string toString() {
+			return API.Apply<string>("toString");
 		}
 
 		protected static ScriptHelper Script = new ScriptHelper();

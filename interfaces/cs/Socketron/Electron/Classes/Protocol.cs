@@ -7,11 +7,11 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ProtocolModule : JSObject {
+	public class Protocol : EventEmitter {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		public ProtocolModule() {
+		public Protocol() {
 		}
 
 		/// <summary>

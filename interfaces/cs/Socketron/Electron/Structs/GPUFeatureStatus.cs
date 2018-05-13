@@ -4,47 +4,47 @@
 			/// <summary>
 			/// Software only. Hardware acceleration disabled (yellow).
 			/// </summary>
-			public const string disabled_software = "disabled_software";
+			public const string DisabledSoftware = "disabled_software";
 			/// <summary>
 			/// Disabled(red).
 			/// </summary>
-			public const string disabled_off = "disabled_off";
+			public const string DisabledOff = "disabled_off";
 			/// <summary>
 			/// Disabled(yellow).
 			/// </summary>
-			public const string disabled_off_ok = "disabled_off_ok";
+			public const string DisabledOffOk = "disabled_off_ok";
 			/// <summary>
 			/// Software only, hardware acceleration unavailable(yellow).
 			/// </summary>
-			public const string unavailable_software = "unavailable_software";
+			public const string UnavailableSoftware = "unavailable_software";
 			/// <summary>
 			/// Unavailable(red).
 			/// </summary>
-			public const string unavailable_off = "unavailable_off";
+			public const string UnavailableOff = "unavailable_off";
 			/// <summary>
 			/// Unavailable(yellow).
 			/// </summary>
-			public const string unavailable_off_ok = "unavailable_off_ok";
+			public const string UnavailableOffOk = "unavailable_off_ok";
 			/// <summary>
 			/// Hardware accelerated but at reduced performance(yellow).
 			/// </summary>
-			public const string enabled_readback = "enabled_readback";
+			public const string EnabledReadback = "enabled_readback";
 			/// <summary>
 			/// Hardware accelerated on all pages(green).
 			/// </summary>
-			public const string enabled_force = "enabled_force";
+			public const string EnabledForce = "enabled_force";
 			/// <summary>
 			/// Hardware accelerated(green).
 			/// </summary>
-			public const string enabled = "enabled";
+			public const string Enabled = "enabled";
 			/// <summary>
 			/// Enabled(green).
 			/// </summary>
-			public const string enabled_on = "enabled_on";
+			public const string EnabledOn = "enabled_on";
 			/// <summary>
 			/// Force enabled(green).
 			/// </summary>
-			public const string enabled_force_on = "enabled_force_on";
+			public const string EnabledForceOn = "enabled_force_on";
 		}
 
 		/// <summary>

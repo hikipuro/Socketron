@@ -31,6 +31,15 @@ namespace Socketron {
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
+		public static string Escape(this bool? value) {
+			return value.ToString().ToLower();
+		}
+
+		/// <summary>
+		/// Escape JSON value.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public static string Escape(this string[] value) {
 			if (value == null) {
 				return "null";

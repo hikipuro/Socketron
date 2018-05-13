@@ -122,7 +122,7 @@ namespace SocketronTest {
 			//string script = "console.log('Test: ' + process.type);";
 			//socketron.Main.ExecuteJavaScript(script);
 
-			//*
+			/*
 			var paths = electron.dialog.showOpenDialog(new Dialog.OpenDialogOptions {
 				properties = new[] {
 					Dialog.Properties.multiSelections
@@ -501,7 +501,7 @@ namespace SocketronTest {
 			});
 			//*/
 
-			Test();
+			//Test();
 			//for (var i = 0; i < 10000; i++) {
 			//	Test2();
 			//}
@@ -515,7 +515,7 @@ namespace SocketronTest {
 			electron.session.defaultSession.clearAuthCache(new RemoveClientCertificate() { origin = "aa" }, () => {
 				Console.WriteLine("clearAuthCache");
 			});
-			return;
+			//return;
 
 			BrowserWindow.Options options = new BrowserWindow.Options();
 			//options.webPreferences.nodeIntegration = false;
@@ -528,6 +528,39 @@ namespace SocketronTest {
 			BrowserWindow window = electron.BrowserWindow.Create(options);
 			window.loadURL("file:///src/html/index.html");
 			window.webContents.openDevTools();
+
+			return;
+
+			MenuItem.Options[] options2 = new[] {
+				new MenuItem.Options() {
+					label = "File",
+					submenu = new [] {
+						new MenuItem.Options() {
+							label = "item1",
+							//type = MenuItem.Type.Radio,
+							click = (menuItem, browserWindow, @event) => {
+								Console.WriteLine("click item1 " + menuItem.label + " " + browserWindow.id);
+								console.log(@event);
+							}
+						},
+						new MenuItem.Options() {
+							label = "item2",
+							type = MenuItem.Type.Checkbox,
+							@checked = true,
+							click = (menuItem, browserWindow, @event) => {
+								//menuItem.@checked = !menuItem.@checked;
+								//Console.WriteLine("click item2 " + menuItem.label + " " + browserWindow.id);
+							}
+						}
+					}
+				}
+			};
+			Menu menu = electron.Menu.buildFromTemplate(options2);
+			window.setMenu(menu);
+
+			//menu.items[0].submenu.items[0].click = (menuItem, browserWindow) => {
+			//	Console.WriteLine("override click item1 " + menuItem.label + " " + browserWindow.id);
+			//};
 
 			var windows = electron.BrowserWindow.getAllWindows();
 			foreach (var w in windows) {
@@ -545,7 +578,6 @@ namespace SocketronTest {
 
 			window.webContents.on(WebContents.Events.DomReady, (args) => {
 				Console.WriteLine(JSON.Stringify(args));
-				return;
 				string[] css = {
 					"* {",
 					"	font-family: sans-serif;",

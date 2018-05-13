@@ -9,7 +9,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class DesktopCapturer : JSObject {
+	public class DesktopCapturer : EventEmitter {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>

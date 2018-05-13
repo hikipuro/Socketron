@@ -1,4 +1,7 @@
-﻿namespace Socketron.Electron {
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
 	/// <summary>
 	/// Monitor power state changes.
 	/// <para>Process: Main</para>
@@ -19,7 +22,8 @@
 	/// })
 	/// </code>
 	/// </example>
-	public class PowerMonitor {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class PowerMonitor : EventEmitter {
 		/// <summary>
 		/// PowerMonitor module events.
 		/// </summary>
@@ -61,6 +65,50 @@
 			/// Emitted as soon as the systems screen is unlocked.
 			/// </summary>
 			public const string UnlockScreen = "unlock-screen";
+		}
+
+		/// <summary>
+		/// This constructor is used for internally by the library.
+		/// </summary>
+		public PowerMonitor() {
+		}
+
+		/// <summary>
+		/// Calculate the system idle state.
+		/// idleThreshold is the amount of time (in seconds) before considered idle. 
+		/// </summary>
+		/// <param name="idleThreshold"></param>
+		/// <param name="callback"></param>
+		public void querySystemIdleState(int idleThreshold, Action<string> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "_querySystemIdleState";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				string idleState = Convert.ToString(args[0]);
+				callback?.Invoke(idleState);
+			});
+			API.Apply("querySystemIdleState", idleThreshold, item);
+		}
+
+		/// <summary>
+		/// Calculate system idle time in seconds.
+		/// </summary>
+		/// <param name="callback"></param>
+		public void querySystemIdleTime(Action<int> callback) {
+			if (callback == null) {
+				return;
+			}
+			string eventName = "_querySystemIdleTime";
+			CallbackItem item = null;
+			item = API.CreateCallbackItem(eventName, (object[] args) => {
+				API.RemoveCallbackItem(eventName, item);
+				int idleTime = Convert.ToInt32(args[0]);
+				callback?.Invoke(idleTime);
+			});
+			API.Apply("querySystemIdleTime", item);
 		}
 	}
 }

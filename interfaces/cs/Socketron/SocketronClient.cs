@@ -17,7 +17,7 @@ namespace Socketron {
 			SocketronData data = new SocketronData() {
 				Type = Type,
 				Func = "executeJavaScript",
-				Params = new object[] { script }
+				Args = new object[] { script }
 			};
 			Emit("text", data, success, error);
 		}
@@ -51,7 +51,7 @@ namespace Socketron {
 		public void ExecuteJavaScript(int webContentsId, string script, Callback success = null, Callback error = null) {
 			SocketronData data = new SocketronData() {
 				Func = "executeJavaScript",
-				Params = new object[] { script },
+				Args = new object[] { script },
 				WebContentsId = webContentsId
 			};
 			Emit("text", data, success, error);
@@ -97,7 +97,7 @@ namespace Socketron {
 
 			SocketronData data = new SocketronData() {
 				Func = "cacheScript",
-				Params = new object[] { script },
+				Args = new object[] { script },
 				WebContentsId = webContentsId
 			};
 			Emit("text", data, (Callback)((result) => {
@@ -121,7 +121,7 @@ namespace Socketron {
 
 			SocketronData data = new SocketronData() {
 				Func = "executeCachedScript",
-				Params = new object[] { script },
+				Args = new object[] { script },
 				WebContentsId = webContentsId
 			};
 			Emit("text", data, (Callback)((result) => {
@@ -149,7 +149,7 @@ namespace Socketron {
 		public void InsertJavaScript(string url, Callback success = null) {
 			SocketronData data = new SocketronData() {
 				Func = "insertJavaScript",
-				Params = new object[] { url }
+				Args = new object[] { url }
 			};
 			Emit("text", data, success, null);
 		}
@@ -157,7 +157,7 @@ namespace Socketron {
 		public void InsertCSS(string css, Callback success = null) {
 			SocketronData data = new SocketronData() {
 				Func = "insertCSS",
-				Params = new object[] { css }
+				Args = new object[] { css }
 			};
 			Emit("text", data, success, null);
 		}
@@ -233,6 +233,7 @@ namespace Socketron {
 		int _sequenceId = 1;
 		static Dictionary<Thread, SocketronClient> _Clients;
 		Stack<int> _freeIds = new Stack<int>();
+		SocketronData _dataCache = new SocketronData();
 
 		static SocketronClient() {
 			_Clients = new Dictionary<Thread, SocketronClient>();
@@ -314,23 +315,22 @@ namespace Socketron {
 		}
 
 		public void WriteTextData(string type, string function, object[] args = null, Callback callback = null) {
-			SocketronData data = new SocketronData() {
-				Type = type,
-				Func = function,
-				Params = args
-			};
+			_dataCache.SequenceId = null;
+			_dataCache.Type = type;
+			_dataCache.Func = function;
+			_dataCache.Args = args;
 			if (callback != null) {
 				if (_freeIds.Count > 0) {
 					int id = _freeIds.Pop();
-					data.SequenceId = id;
+					_dataCache.SequenceId = id;
 					_successList[id] = callback;
 				} else {
-					data.SequenceId = _sequenceId;
+					_dataCache.SequenceId = _sequenceId;
 					_successList[_sequenceId++] = callback;
 				}
 			}
 			//Console.WriteLine("data: " + data.Stringify());
-			Write(data.ToBuffer(DataType.Text16, LocalConfig.Encoding));
+			Write(_dataCache.ToBuffer(DataType.Text16, LocalConfig.Encoding));
 		}
 
 		public void RemoveObject(JSObject module) {
@@ -429,11 +429,11 @@ namespace Socketron {
 
 			switch (data.Func) {
 				case "id":
-					ID = data.Params as string;
+					ID = data.Args as string;
 					//DebugLog("ID: {0}", ID);
 					break;
 				case "config":
-					RemoteConfig = new JsonObject(data.Params);
+					RemoteConfig = new JsonObject(data.Args);
 					_DebugLog(RemoteConfig.Stringify());
 					//DebugLog("ID: {0}", ID);
 					break;
@@ -449,7 +449,7 @@ namespace Socketron {
 		protected void _OnCallback(SocketronData data) {
 			if (data.SequenceId == null) {
 				if (data.Status == "error") {
-					throw new InvalidOperationException(data.Params as string);
+					throw new InvalidOperationException(data.Args as string);
 				}
 				return;
 			}
@@ -458,18 +458,18 @@ namespace Socketron {
 			if (data.Status == "error") {
 				if (_errorList.ContainsKey(sequenceId)) {
 					Callback error = _errorList[sequenceId];
-					error?.Invoke(data.Params);
+					error?.Invoke(data.Args);
 					_successList.Remove(sequenceId);
 					_errorList.Remove(sequenceId);
 				} else {
-					throw new InvalidOperationException(data.Params as string);
+					throw new InvalidOperationException(data.Args as string);
 				}
 				_freeIds.Push(sequenceId);
 				return;
 			}
 			if (_successList.ContainsKey(sequenceId)) {
 				Callback success = _successList[sequenceId];
-				success?.Invoke(data.Params);
+				success?.Invoke(data.Args);
 				_successList.Remove(sequenceId);
 				_errorList.Remove(sequenceId);
 			}
@@ -477,7 +477,7 @@ namespace Socketron {
 		}
 
 		protected void _OnEvent(SocketronData data) {
-			JsonObject json = new JsonObject(data.Params);
+			JsonObject json = new JsonObject(data.Args);
 			//DebugLog("Return: {0}", data.Arguments[0].GetType());
 
 			string eventName = json["name"] as string;

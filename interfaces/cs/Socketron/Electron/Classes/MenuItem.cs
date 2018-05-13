@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -15,7 +16,7 @@ namespace Socketron.Electron {
 			/// (optional) Will be called with click(menuItem, browserWindow, event)
 			/// when the menu item is clicked.
 			/// </summary>
-			public Callback click;
+			public Action<MenuItem, BrowserWindow, Event> click;
 			/// <summary>
 			/// (optional) Define the action of the menu item,
 			/// when specified the click property will be ignored. See roles.
@@ -100,88 +101,88 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// MenuItem.Options.type values.
 		/// </summary>
-		public class Types {
-			public const string normal = "normal";
-			public const string separator = "separator";
-			public const string submenu = "submenu";
-			public const string checkbox = "checkbox";
-			public const string radio = "radio";
+		public class Type {
+			public const string Normal = "normal";
+			public const string Separator = "separator";
+			public const string Submenu = "submenu";
+			public const string Checkbox = "checkbox";
+			public const string Radio = "radio";
 		}
 
 		/// <summary>
 		/// MenuItem.Options.role values.
 		/// </summary>
-		public class Roles {
-			public const string undo = "undo";
-			public const string redo = "redo";
-			public const string cut = "cut";
-			public const string copy = "copy";
-			public const string paste = "paste";
-			public const string pasteAndMatchStyle = "pasteAndMatchStyle";
-			public const string selectAll = "selectAll";
-			public const string delete = "delete";
+		public class Role {
+			public const string Undo = "undo";
+			public const string Redo = "redo";
+			public const string Cut = "cut";
+			public const string Copy = "copy";
+			public const string Paste = "paste";
+			public const string PasteAndMatchStyle = "pasteAndMatchStyle";
+			public const string SelectAll = "selectAll";
+			public const string Delete = "delete";
 
 			/// <summary>Minimize current window.</summary>
-			public const string minimize = "minimize";
+			public const string Minimize = "minimize";
 			/// <summary>Close current window.</summary>
-			public const string close = "close";
+			public const string Close = "close";
 			/// <summary> Quit the application.</summary>
-			public const string quit = "quit";
+			public const string Quit = "quit";
 			/// <summary>Reload the current window.</summary>
-			public const string reload = "reload";
+			public const string Reload = "reload";
 			/// <summary>Reload the current window ignoring the cache.</summary>
-			public const string forceReload = "forceReload";
+			public const string ForceReload = "forceReload";
 			/// <summary>Toggle developer tools in the current window.</summary>
-			public const string toggleDevTools = "toggleDevTools";
+			public const string ToggleDevTools = "toggleDevTools";
 			/// <summary>Toggle full screen mode on the current window.</summary>
-			public const string toggleFullScreen = "toggleFullScreen";
+			public const string ToggleFullScreen = "toggleFullScreen";
 			/// <summary>Reset the focused page's zoom level to the original size.</summary>
-			public const string resetZoom = "resetZoom";
+			public const string ResetZoom = "resetZoom";
 			/// <summary>Zoom in the focused page by 10%.</summary>
-			public const string zoomIn = "zoomIn";
+			public const string ZoomIn = "zoomIn";
 			/// <summary>Zoom out the focused page by 10%.</summary>
-			public const string zoomOut = "zoomOut";
+			public const string ZoomOut = "zoomOut";
 			/// <summary>Whole default "Edit" menu (Undo, Copy, etc.).</summary>
-			public const string editMenu = "editMenu";
+			public const string EditMenu = "editMenu";
 			/// <summary>Whole default "Window" menu (Minimize, Close, etc.).</summary>
-			public const string windowMenu = "windowMenu";
+			public const string WindowMenu = "windowMenu";
 
 			/// <summary>*macOS* Map to the orderFrontStandardAboutPanel action.</summary>
-			public const string about = "about";
+			public const string About = "about";
 			/// <summary>*macOS* Map to the hide action.</summary>
-			public const string hide = "hide";
+			public const string Hide = "hide";
 			/// <summary>*macOS* Map to the hideOtherApplications action.</summary>
-			public const string hideOthers = "hideOthers";
+			public const string HideOthers = "hideOthers";
 			/// <summary>*macOS* Map to the unhideAllApplications action.</summary>
-			public const string unhide = "unhide";
+			public const string Unhide = "unhide";
 			/// <summary>*macOS* Map to the startSpeaking action.</summary>
-			public const string startSpeaking = "startSpeaking";
+			public const string StartSpeaking = "startSpeaking";
 			/// <summary>*macOS* Map to the stopSpeaking action.</summary>
-			public const string stopSpeaking = "stopSpeaking";
+			public const string StopSpeaking = "stopSpeaking";
 			/// <summary>*macOS* Map to the arrangeInFront action.</summary>
-			public const string front = "front";
+			public const string Front = "front";
 			/// <summary>*macOS* Map to the performZoom action.</summary>
-			public const string zoom = "zoom";
+			public const string Zoom = "zoom";
 			/// <summary>*macOS* Map to the toggleTabBar action.</summary>
-			public const string toggleTabBar = "toggleTabBar";
+			public const string ToggleTabBar = "toggleTabBar";
 			/// <summary>*macOS* Map to the selectNextTab action.</summary>
-			public const string selectNextTab = "selectNextTab";
+			public const string SelectNextTab = "selectNextTab";
 			/// <summary>*macOS* Map to the selectPreviousTab action.</summary>
-			public const string selectPreviousTab = "selectPreviousTab";
+			public const string SelectPreviousTab = "selectPreviousTab";
 			/// <summary>*macOS* Map to the mergeAllWindows action.</summary>
-			public const string mergeAllWindows = "mergeAllWindows";
+			public const string MergeAllWindows = "mergeAllWindows";
 			/// <summary>*macOS* Map to the moveTabToNewWindow action.</summary>
-			public const string moveTabToNewWindow = "moveTabToNewWindow";
+			public const string MoveTabToNewWindow = "moveTabToNewWindow";
 			/// <summary>*macOS* The submenu is a "Window" menu.</summary>
-			public const string window = "window";
+			public const string Window = "window";
 			/// <summary>*macOS* The submenu is a "Help" menu.</summary>
-			public const string help = "help";
+			public const string Help = "help";
 			/// <summary>*macOS* The submenu is a "Services" menu.</summary>
-			public const string services = "services";
+			public const string Services = "services";
 			/// <summary>*macOS* The submenu is an "Open Recent" menu.</summary>
-			public const string recentDocuments = "recentDocuments";
+			public const string RecentDocuments = "recentDocuments";
 			/// <summary>*macOS* Map to the clearRecentDocuments action.</summary>
-			public const string clearRecentDocuments = "clearRecentDocuments";
+			public const string ClearRecentDocuments = "clearRecentDocuments";
 		}
 
 		/// <summary>
@@ -228,9 +229,9 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// A Function that is fired when the MenuItem receives a click event.
 		/// </summary>
-		public JSCallback click {
+		public Action<MenuItem, BrowserWindow, Event> click {
 			set {
-				string eventName = "_click";
+				string eventName = "_MenuItem_click";
 				if (value == null) {
 					if (_click != null) {
 						API.RemoveCallbackItem(eventName, _click);
@@ -238,10 +239,19 @@ namespace Socketron.Electron {
 					API.SetPropertyNull("click");
 					return;
 				}
-				_click = value;
+				_click = (args) => {
+					MenuItem menuItem = API.CreateObject<MenuItem>(args[0]);
+					BrowserWindow browserWindow = API.CreateObject<BrowserWindow>(args[1]);
+					Event @event = API.CreateObject<Event>(args[2]);
+					value?.Invoke(menuItem, browserWindow, @event);
+				};
 				CallbackItem item = API.CreateCallbackItem(eventName, _click);
 				API.SetProperty("click", item);
 			}
+		}
+
+		public Menu submenu {
+			get { return API.GetObject<Menu>("submenu"); }
 		}
 
 		protected JSCallback _click;

@@ -7,11 +7,11 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class CrashReporterModule : JSObject {
+	public class CrashReporter : EventEmitter {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		public CrashReporterModule() {
+		public CrashReporter() {
 		}
 
 		/// <summary>

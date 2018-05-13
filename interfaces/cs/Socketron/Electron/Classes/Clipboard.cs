@@ -7,11 +7,11 @@ namespace Socketron.Electron {
 	/// <para>Process: Main, Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class ClipboardModule : JSObject {
+	public class Clipboard : EventEmitter {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		public ClipboardModule() {
+		public Clipboard() {
 		}
 
 		/// <summary>

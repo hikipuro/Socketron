@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Socketron.Electron {
 	/// <summary>
@@ -66,25 +68,18 @@ namespace Socketron.Electron {
 		/// <param name="template"></param>
 		/// <returns></returns>
 		public Menu buildFromTemplate(MenuItem.Options[] template) {
-			string templateText = JSON.Stringify(template);
-			return API.ApplyAndGetObject<Menu>("buildFromTemplate", templateText);
-
-			/*
+			string param = _CreateTemplateString(template);
 			string script = ScriptBuilder.Build(
 				ScriptBuilder.Script(
 					"var menu = {0}.buildFromTemplate({1});",
 					"return {2};"
 				),
 				Script.GetObject(API.id),
-				templateText,
+				param,
 				Script.AddObject("menu")
 			);
 			int result = API._ExecuteBlocking<int>(script);
-			if (result <= 0) {
-				return null;
-			}
 			return API.CreateObject<Menu>(result);
-			//*/
 		}
 
 		/// <summary>
@@ -99,6 +94,66 @@ namespace Socketron.Electron {
 		public Menu buildFromTemplate(string template) {
 			MenuItem.Options[] options = JSON.Parse<MenuItem.Options[]>(template);
 			return buildFromTemplate(options);
+		}
+
+		protected void _AddTemplateProperty(List<string> list, string name, string value) {
+			if (value == null) {
+				return;
+			}
+			list.Add(string.Format("{0}:{1}", name, value.Escape()));
+		}
+
+		protected void _AddTemplateProperty(List<string> list, string name, bool? value) {
+			if (value == null) {
+				return;
+			}
+			list.Add(string.Format("{0}:{1}", name, value.Escape()));
+		}
+
+		protected string _CreateTemplateString(MenuItem.Options[] template) {
+			if (template == null) {
+				return string.Empty;
+			}
+			List<string> list = new List<string>();
+			foreach (MenuItem.Options item in template) {
+				List<string> itemValues = new List<string>();
+				_AddTemplateProperty(itemValues, "role", item.role);
+				_AddTemplateProperty(itemValues, "type", item.type);
+				_AddTemplateProperty(itemValues, "label", item.label);
+				_AddTemplateProperty(itemValues, "sublabel", item.sublabel);
+				_AddTemplateProperty(itemValues, "accelerator", item.accelerator);
+				if (item.icon != null) {
+					itemValues.Add(string.Format(
+						"icon:{0}", Script.GetObject(item.icon.API.id)
+					));
+				}
+				_AddTemplateProperty(itemValues, "enabled", item.enabled);
+				_AddTemplateProperty(itemValues, "visible", item.visible);
+				_AddTemplateProperty(itemValues, "checked", item.@checked);
+				_AddTemplateProperty(itemValues, "id", item.id);
+				_AddTemplateProperty(itemValues, "position", item.position);
+				if (item.click != null) {
+					string eventName = "_MenuItem_click";
+					CallbackItem callbackItem = API.CreateCallbackItem(eventName, (args) => {
+						MenuItem menuItem = API.CreateObject<MenuItem>(args[0]);
+						BrowserWindow browserWindow = API.CreateObject<BrowserWindow>(args[1]);
+						Event @event = API.CreateObject<Event>(args[2]);
+						item.click?.Invoke(menuItem, browserWindow, @event);
+					});
+					itemValues.Add(string.Format(
+						"click:{0}", Script.GetObject(callbackItem.ObjectId)
+					));
+				}
+				if (item.submenu != null) {
+					itemValues.Add(string.Format(
+						"submenu:{0}", _CreateTemplateString(item.submenu)
+					));
+				}
+				list.Add(string.Format(
+					"{{{0}}}", string.Join(",", itemValues.ToArray())
+				));
+			}
+			return "[" + string.Join(",", list.ToArray()) + "]";
 		}
 	}
 }

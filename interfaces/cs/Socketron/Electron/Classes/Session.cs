@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class Session : JSObject {
+	public class Session : EventEmitter {
 		/// <summary>
 		/// Session instance events.
 		/// </summary>
@@ -41,28 +41,8 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// A Protocol object for this session.
 		/// </summary>
-		public ProtocolModule protocol {
-			get { return API.GetObject<ProtocolModule>("protocol"); }
-		}
-
-		public EventEmitter on(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.on(eventName, listener);
-		}
-
-		public EventEmitter once(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.once(eventName, listener);
-		}
-
-		public EventEmitter removeListener(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.removeListener(eventName, listener);
-		}
-
-		public EventEmitter removeAllListeners(string eventName) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.removeAllListeners(eventName);
+		public Protocol protocol {
+			get { return API.GetObject<Protocol>("protocol"); }
 		}
 
 		/// <summary>

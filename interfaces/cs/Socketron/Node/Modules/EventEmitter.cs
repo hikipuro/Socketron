@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Socketron {
 	[type: SuppressMessage("Style", "IDE1006")]
@@ -7,6 +8,16 @@ namespace Socketron {
 		/// This constructor is used for internally by the library.
 		/// </summary>
 		public EventEmitter() {
+		}
+
+		public EventEmitter addListener(string eventName, JSCallback listener) {
+			if (listener == null) {
+				return this;
+			}
+			CallbackItem item = API.CreateCallbackItem(eventName, listener);
+			return API.ApplyAndGetObject<EventEmitter>(
+				"addListener", eventName, item
+			);
 		}
 
 		/// <summary>
@@ -77,6 +88,54 @@ namespace Socketron {
 			return API.ApplyAndGetObject<EventEmitter>(
 				"removeAllListeners"
 			);
+		}
+
+		public EventEmitter setMaxListeners(int value) {
+			return API.ApplyAndGetObject<EventEmitter>(
+				"setMaxListeners", value
+			);
+		}
+
+		public int getMaxListeners() {
+			return API.Apply<int>("getMaxListeners");
+		}
+
+		public JSCallback[] listeners(string eventName) {
+			// TODO: implement this
+			throw new NotImplementedException();
+		}
+
+		public bool emit(params object[] args) {
+			return API.Apply<bool>("emit", args);
+		}
+
+		public int listenerCount(string type) {
+			return API.Apply<int>("listenerCount", type);
+		}
+
+		public EventEmitter prependListener(string eventName, JSCallback listener) {
+			if (listener == null) {
+				return this;
+			}
+			CallbackItem item = API.CreateCallbackItem(eventName, listener);
+			return API.ApplyAndGetObject<EventEmitter>(
+				"prependListener", eventName, item
+			);
+		}
+
+		public EventEmitter prependOnceListener(string eventName, JSCallback listener) {
+			if (listener == null) {
+				return this;
+			}
+			CallbackItem item = API.CreateCallbackItem(eventName, listener);
+			return API.ApplyAndGetObject<EventEmitter>(
+				"prependOnceListener", eventName, item
+			);
+		}
+
+		public string[] eventNames() {
+			object[] result = API.Apply<object[]>("eventNames");
+			return Array.ConvertAll(result, value => Convert.ToString(value));
 		}
 	}
 }

@@ -6,11 +6,11 @@ namespace Socketron.Electron {
 	/// <para>Process: Renderer</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class RemoteModule : JSObject {
+	public class Remote : EventEmitter {
 		/// <summary>
 		/// This constructor is used for internally by the library.
 		/// </summary>
-		public RemoteModule() {
+		public Remote() {
 		}
 
 		/// <summary>

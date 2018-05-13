@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebRequest : JSObject {
+	public class WebRequest : EventEmitter {
 		public class Details : JSObject {
 			public int id {
 				get { return API.GetProperty<int>("id"); }

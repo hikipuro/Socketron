@@ -244,7 +244,7 @@
 		/// <summary>
 		/// BrowserWindow.Options.type values.
 		/// </summary>
-		public class Types {
+		public class Type {
 			/// <summary>
 			/// *macOS Linux*
 			/// </summary>
@@ -274,7 +274,7 @@
 		/// <summary>
 		/// BrowserWindow.Options.titleBarStyle values.
 		/// </summary>
-		public class TitleBarStyles {
+		public class TitleBarStyle {
 			/// <summary>
 			/// Results in the standard gray opaque Mac title bar.
 			/// </summary>
@@ -303,7 +303,7 @@
 		/// <summary>
 		/// BrowserWindow.Options.defaultFontFamily keys.
 		/// </summary>
-		public class FontFamilyKeys {
+		public class FontFamily {
 			/// <summary>
 			/// Defaults to Times New Roman.
 			/// </summary>

@@ -1,9 +1,12 @@
-﻿namespace Socketron.Electron {
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Socketron.Electron {
 	/// <summary>
 	/// Handle responses to HTTP/HTTPS requests.
 	/// <para>Process: Main</para>
 	/// </summary>
-	public class IncomingMessage : JSObject {
+	[type: SuppressMessage("Style", "IDE1006")]
+	public class IncomingMessage : EventEmitter {
 		/// <summary>
 		/// IncomingMessage instance events.
 		/// </summary>
@@ -52,26 +55,6 @@
 
 		public int httpVersionMinor {
 			get { return API.GetProperty<int>("httpVersionMinor"); }
-		}
-
-		public EventEmitter on(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.on(eventName, listener);
-		}
-
-		public EventEmitter once(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.once(eventName, listener);
-		}
-
-		public EventEmitter removeListener(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.removeListener(eventName, listener);
-		}
-
-		public EventEmitter removeAllListeners(string eventName) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.removeAllListeners(eventName);
 		}
 	}
 }

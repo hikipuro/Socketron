@@ -25,6 +25,21 @@ namespace Socketron.Electron {
 			return emitter.once(eventName, listener);
 		}
 
+		public EventEmitter addListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.addListener(eventName, listener);
+		}
+
+		public EventEmitter removeListener(string eventName, JSCallback listener) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeListener(eventName, listener);
+		}
+
+		public EventEmitter removeAllListeners(string eventName) {
+			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
+			return emitter.removeAllListeners(eventName);
+		}
+
 		/// <summary>
 		/// You should listen for the transactions-updated event
 		/// as soon as possible and certainly before you call purchaseProduct.

@@ -7,7 +7,7 @@ namespace Socketron.Electron {
 	/// <para>Process: Main</para>
 	/// </summary>
 	[type: SuppressMessage("Style", "IDE1006")]
-	public class WebContents : JSObject {
+	public class WebContents : EventEmitter {
 		/// <summary>
 		/// WebContents instance events.
 		/// </summary>
@@ -191,7 +191,7 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// savePage() save types.
 		/// </summary>
-		public class SaveTypes {
+		public class SaveType {
 			public const string HTMLOnly = "HTMLOnly";
 			public const string HTMLComplete = "HTMLComplete";
 			public const string MHTML = "MHTML";
@@ -264,16 +264,6 @@ namespace Socketron.Electron {
 		/// </summary>
 		public Debugger debugger {
 			get { return API.GetObject<Debugger>("debugger"); }
-		}
-
-		public EventEmitter on(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.on(eventName, listener);
-		}
-
-		public EventEmitter once(string eventName, JSCallback listener) {
-			EventEmitter emitter = API.ConvertTypeTemporary<EventEmitter>();
-			return emitter.once(eventName, listener);
 		}
 
 		/// <summary>

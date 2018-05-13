@@ -60,7 +60,7 @@ class SocketronServer extends EventEmitter {
 	_onData(client, data) {
 		const payload = client.payload;
 		if (data != null) {
-			console.log(typeof data);
+			//console.log(typeof data);
 			payload.data = Buffer.concat([payload.data, data]);
 		}
 		const offset = payload.dataOffset;

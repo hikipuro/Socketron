@@ -8,7 +8,6 @@ namespace Socketron {
 			base.Init(client);
 			API.client = client;
 			electron = require<ElectronModule>("electron");
-			electron.Init();
 		}
 	}
 }
