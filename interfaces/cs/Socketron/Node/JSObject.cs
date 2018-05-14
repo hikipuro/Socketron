@@ -131,8 +131,10 @@ namespace Socketron {
 			public object Invoke(params object[] args) {
 				string options = CreateParams(args);
 				string script = ScriptBuilder.Build(
-					"var func = {0};",
-					"return func({1});",
+					ScriptBuilder.Script(
+						"var func = {0};",
+						"return func({1});"
+					),
 					Script.GetObject(id),
 					options
 				);
@@ -142,8 +144,10 @@ namespace Socketron {
 			public T Invoke<T>(params object[] args) {
 				string options = CreateParams(args);
 				string script = ScriptBuilder.Build(
-					"var func = {0};",
-					"return func({1});",
+					ScriptBuilder.Script(
+						"var func = {0};",
+						"return func({1});"
+					),
 					Script.GetObject(id),
 					options
 				);

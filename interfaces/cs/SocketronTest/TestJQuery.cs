@@ -529,7 +529,7 @@ namespace SocketronTest {
 			window.loadURL("file:///src/html/index.html");
 			window.webContents.openDevTools();
 
-			return;
+			//return;
 
 			MenuItemConstructorOptions[] options2 = new[] {
 				new MenuItemConstructorOptions() {
@@ -539,7 +539,8 @@ namespace SocketronTest {
 							label = "item1",
 							//type = MenuItem.Type.Radio,
 							click = (menuItem, browserWindow, @event) => {
-								Console.WriteLine("click item1 " + menuItem.label + " " + browserWindow.id);
+								Console.WriteLine("click item1 ");
+								//Console.WriteLine("click item1 " + menuItem.label + " " + browserWindow.id);
 								console.log(@event);
 							}
 						},
@@ -557,6 +558,7 @@ namespace SocketronTest {
 			};
 			Menu menu = electron.Menu.buildFromTemplate(options2);
 			window.setMenu(menu);
+			menu.items[0].submenu.items[0].click(null, null, null);
 
 			//menu.items[0].submenu.items[0].click = (menuItem, browserWindow) => {
 			//	Console.WriteLine("override click item1 " + menuItem.label + " " + browserWindow.id);

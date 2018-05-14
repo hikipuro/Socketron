@@ -1,5 +1,25 @@
 ﻿namespace Socketron.Electron {
 	/// <summary>
+	/// WebContents "found-in-page" event parameter.
+	/// </summary>
+	public class Result {
+		public int requestId;
+		/// <summary>
+		/// Position of the active match.
+		/// </summary>
+		public int activeMatchOrdinal;
+		/// <summary>
+		/// Number of Matches.
+		/// </summary>
+		public int matches;
+		/// <summary>
+		/// Coordinates of first match region.
+		/// </summary>
+		public JsonObject selectionArea;
+		public bool finalUpdate;
+	}
+
+	/// <summary>
 	/// WebContents "context-menu" event parameter.
 	/// </summary>
 	public class ContextMenuParams {
@@ -337,7 +357,7 @@
 	}
 
 	/// <summary>
-	/// WebContents before-input-event parameter.
+	/// WebContents "before-input-event" event parameter.
 	/// </summary>
 	public class Input {
 		/// <summary>

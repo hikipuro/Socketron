@@ -53,6 +53,12 @@ namespace Socketron.Electron {
 		/// A Function that is fired when the MenuItem receives a click event.
 		/// </summary>
 		public Action<MenuItem, BrowserWindow, Event> click {
+			get {
+				JSObject func = API.GetObject<JSObject>("click");
+				return (menuItem, browserWindow, @event) => {
+					func.API.Invoke(menuItem, browserWindow, @event);
+				};
+			}
 			set {
 				string eventName = "_MenuItem_click";
 				if (value == null) {

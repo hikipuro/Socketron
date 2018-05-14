@@ -1,5 +1,26 @@
 ﻿namespace Socketron.Electron {
 	/// <summary>
+	/// App "login", ClientRequest "login",
+	/// WebContents "login" event parameter.
+	/// </summary>
+	public class AuthInfo {
+		public bool isProxy;
+		public string scheme;
+		public string host;
+		public int port;
+		public string realm;
+	}
+
+	/// <summary>
+	/// App "login", WebContents "login" event parameter.
+	/// </summary>
+	public class Request {
+		public string method;
+		public string url;
+		public string referrer;
+	}
+
+	/// <summary>
 	/// App.relaunch() options.
 	/// </summary>
 	public class RelaunchOptions {

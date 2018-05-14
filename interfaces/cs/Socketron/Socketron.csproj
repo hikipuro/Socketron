@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Debug\Socketron.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -129,7 +130,6 @@
     <Compile Include="Electron\Options\DesktopCapturerOptions.cs" />
     <Compile Include="Electron\Options\MenuItemOptions.cs" />
     <Compile Include="Electron\Options\MenuOptions.cs" />
-    <Compile Include="Electron\Options\MiscOptions.cs" />
     <Compile Include="Electron\Options\NativeImageOptions.cs" />
     <Compile Include="Electron\Options\NotificationOptions.cs" />
     <Compile Include="Electron\Options\ProcessOptions.cs" />
