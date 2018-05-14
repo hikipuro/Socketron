@@ -36,6 +36,7 @@ namespace SocketronTest {
 			});
 			try {
 				API.client.Connect("127.0.0.1");
+				//API.client.ConnectPipe(".", "socketron");
 			} catch (Exception) {
 				Console.WriteLine("Connect errror");
 				return;

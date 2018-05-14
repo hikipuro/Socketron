@@ -187,7 +187,7 @@ namespace Socketron.Electron {
 		/// </summary>
 		/// <param name="options"></param>
 		/// <returns></returns>
-		public int showCertificateTrustDialog(CertificateTrustDialogOptions options, BrowserWindow browserWindow = null) {
+		public int showCertificateTrustDialog(CertificateTrustDialogOptions options) {
 			return showCertificateTrustDialog(null, options);
 		}
 

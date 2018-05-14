@@ -227,7 +227,7 @@ namespace Socketron {
 		public MainProcess Main;
 		public RendererProcess Renderer;
 		public CallbackManager Callbacks;
-		SocketClient _socketClient;
+		Client _client;
 		Dictionary<int, Callback> _successList;
 		Dictionary<int, Callback> _errorList;
 		int _sequenceId = 1;
@@ -269,13 +269,6 @@ namespace Socketron {
 		}
 
 		public SocketronClient() {
-			_socketClient = new SocketClient(LocalConfig);
-			_socketClient.On("debug", (args) => {
-				_DebugLog(args[0] as string, null);
-			});
-			_socketClient.On("connect", _OnConnect);
-			_socketClient.On("data", _OnData);
-
 			_successList = new Dictionary<int, Callback>();
 			_errorList = new Dictionary<int, Callback>();
 			Callbacks = new CallbackManager();
@@ -288,25 +281,48 @@ namespace Socketron {
 		}
 
 		public bool IsConnected {
-			get { return _socketClient.IsConnected; }
+			get {
+				if (_client == null) {
+					return false;
+				}
+				return _client.IsConnected;
+			}
 		}
 
 		public void Connect(string hostname, int port = 3000) {
-			_socketClient.Connect(hostname, port);
+			_client = new SocketClient(LocalConfig);
+			_client.On("debug", (args) => {
+				_DebugLog(args[0] as string, null);
+			});
+			_client.On("connect", _OnConnect);
+			_client.On("data", _OnData);
+			_client.Connect(hostname, port);
+		}
+
+		public void ConnectPipe(string hostname, string pipename) {
+			_client = new PipeClient(LocalConfig);
+			_client.On("debug", (args) => {
+				_DebugLog(args[0] as string, null);
+			});
+			_client.On("connect", _OnConnect);
+			_client.On("data", _OnData);
+			_client.Connect(hostname, pipename);
 		}
 
 		public void Close() {
 			ID = string.Empty;
 			//JSModule.DisposeAll();
 			Renderer.Close();
-			_socketClient.Close();
+			if (_client != null) {
+				_client.Close();
+			}
 		}
 
 		public void Write(byte[] bytes) {
-			if (!_socketClient.IsConnected) {
+			if (!_client.IsConnected) {
 				return;
 			}
-			_socketClient.Write(bytes);
+			_client.Write(bytes);
 		}
 
 		public void Write(LocalBuffer buffer) {

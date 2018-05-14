@@ -66,8 +66,6 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// Pops up this menu as a context menu in the browserWindow.
 		/// </summary>
-		/// <param name="BrowserWindow"></param>
-		/// <param name="options"></param>
 		public void popup() {
 			API.Apply("popup");
 		}

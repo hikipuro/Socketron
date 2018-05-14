@@ -1,3 +1,4 @@
+const stream = require('stream');
 const Payload = require("./Payload");
 const SocketronData = require("./SocketronData");
 
@@ -82,6 +83,9 @@ class Client {
 	}
 
 	get id() {
+		if (this.socket instanceof stream.Duplex) {
+			return "pipe";
+		}
 		return this.socket.remoteAddress +
 			":" + this.socket.remotePort;
 	}

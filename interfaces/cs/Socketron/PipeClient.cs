@@ -1,65 +1,39 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
+using System.IO.Pipes;
 using System.Threading;
 
 namespace Socketron {
-	internal class SocketClient : Client {
+	public class PipeClient : Client {
 		public LocalConfig Config = new LocalConfig();
-		protected TcpClient _tcpClient;
-		protected NetworkStream _stream;
-		protected Payload _payload = new Payload();
-		protected byte[] _buffer;
 		protected Thread _readThread;
-		//protected ManualResetEvent _readDone = new ManualResetEvent(false);
+		protected NamedPipeClientStream _stream;
+		protected Payload _payload = new Payload();
 		protected AsyncCallback _writeCallback;
 
-		public SocketClient(LocalConfig config = null) {
+		public PipeClient(LocalConfig config = null) {
 			if (config != null) {
 				Config = config;
 			}
-			_buffer = new byte[LocalConfig.ReadBufferSize];
 			_writeCallback = new AsyncCallback(_OnWrite);
 		}
 
 		public override bool IsConnected {
 			get {
-				if (_tcpClient != null && _tcpClient.Connected) {
+				if (_stream != null && _stream.IsConnected) {
 					return true;
 				}
 				return false;
 			}
 		}
 
-		public override void Connect(string hostname, int port) {
-			Close();
-			_tcpClient = new TcpClient() {
-				NoDelay = true
-			};
-			IAsyncResult result = _tcpClient.BeginConnect(
-				hostname, port, null, null
+		public override void Connect(string hostname, string pipename) {
+			_stream = new NamedPipeClientStream(
+				hostname, pipename,
+				PipeDirection.InOut,
+				PipeOptions.WriteThrough | PipeOptions.Asynchronous
 			);
-			bool success = result.AsyncWaitHandle.WaitOne(
-				Config.Timeout, true
-			);
-			if (success) {
-				_tcpClient.EndConnect(result);
-			} else {
-				_tcpClient.Close();
-				throw new TimeoutException();
-			}
-
-			_DebugLog("Connected (Remote: {0}:{1} Local: {2}:{3})",
-				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Address,
-				((IPEndPoint)_tcpClient.Client.RemoteEndPoint).Port,
-				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address,
-				((IPEndPoint)_tcpClient.Client.LocalEndPoint).Port
-			);
-
-			_stream = _tcpClient.GetStream();
-			//_stream.ReadTimeout = Config.Timeout;
-			//_stream.WriteTimeout = Config.Timeout;
+			_stream.Connect(Config.Timeout);
 
 			_readThread = new Thread(_Read) {
 				Name = typeof(SocketronClient).Name + " read thread"
@@ -69,22 +43,11 @@ namespace Socketron {
 		}
 
 		public override void Close() {
-			_DebugLog("SocketClient close");
+			_DebugLog("PipeClient close");
 			if (_stream != null) {
 				_stream.Close();
 				_stream = null;
 			}
-			if (_tcpClient != null) {
-				_tcpClient.Close();
-				_tcpClient = null;
-			}
-			/*
-			if (_readThread != null) {
-				//_readDone.Set();
-				_readThread.Abort();
-				_readThread = null;
-			}
-			//*/
 		}
 
 		public override void Write(byte[] bytes) {
@@ -96,14 +59,12 @@ namespace Socketron {
 				);
 				//*/
 				//_stream.Write(bytes, 0, bytes.Length);
+				//_stream.Flush();
 			} catch (IOException) {
 				_DebugLog("Write IOException");
 				Close();
 			} catch (InvalidOperationException) {
 				_DebugLog("Write InvalidOperationException");
-				Close();
-			} catch (SocketException) {
-				_DebugLog("Write SocketException");
 				Close();
 			} catch (NullReferenceException) {
 				_DebugLog("Write NullReferenceException");
@@ -112,30 +73,10 @@ namespace Socketron {
 		}
 
 		protected void _Read() {
-			AsyncCallback callback = new AsyncCallback(_OnRead);
-			TcpClient tcpClient = _tcpClient;
-			NetworkStream stream = _stream;
+			NamedPipeClientStream stream = _stream;
 			byte[] _buffer = new byte[LocalConfig.ReadBufferSize];
-			while (tcpClient.Connected && stream.CanRead) {
+			while (stream.IsConnected && stream.CanRead) {
 				do {
-					/*
-					stream.BeginRead(
-						_buffer, 0, _buffer.Length,
-						callback, stream
-					);
-					_readDone.WaitOne();
-					_readDone.Reset();
-					//*/
-					/*
-					int bytesReaded = _stream.Read(
-						_buffer, 0, _buffer.Length
-					);
-					if (bytesReaded == 0) {
-						Close();
-						return;
-					}
-					_OnData(_buffer, bytesReaded);
-					//*/
 					IAsyncResult result = stream.BeginRead(
 						_buffer, 0, _buffer.Length, null, null
 					);
@@ -158,34 +99,9 @@ namespace Socketron {
 					} else {
 						break;
 					}
-				} while (tcpClient.Connected && stream.DataAvailable);
+				} while (stream.IsConnected);
 				//Thread.Sleep(TimeSpan.FromTicks(1));
 			}
-		}
-
-		protected void _OnRead(IAsyncResult result) {
-			/*
-			NetworkStream stream = (NetworkStream)result.AsyncState;
-			int bytesReaded = 0;
-			try {
-				bytesReaded = stream.EndRead(result);
-			} catch (IOException) {
-				_DebugLog("_OnRead IOException");
-				_readDone.Set();
-				return;
-			} catch (ObjectDisposedException) {
-				_DebugLog("_OnRead ObjectDisposedException");
-				_readDone.Set();
-				return;
-			}
-			if (bytesReaded == 0) {
-				Close();
-				_readDone.Set();
-				return;
-			}
-			_OnData(_buffer, bytesReaded);
-			_readDone.Set();
-			*/
 		}
 
 		protected void _OnWrite(IAsyncResult result) {
@@ -194,6 +110,8 @@ namespace Socketron {
 				_stream.EndWrite(result);
 			} catch (IOException) {
 				_DebugLog("_OnWrite IOException");
+			} catch (NullReferenceException) {
+				_DebugLog("_OnWrite NullReferenceException");
 			}
 		}
 

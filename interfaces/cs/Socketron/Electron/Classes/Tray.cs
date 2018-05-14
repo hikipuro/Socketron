@@ -160,7 +160,7 @@ namespace Socketron.Electron {
 		/// *Windows*
 		/// Displays a tray balloon.
 		/// </summary>
-		/// <param name="mode"></param>
+		/// <param name="options"></param>
 		public void displayBalloon(DisplayBalloonOptions options) {
 			API.Apply("displayBalloon", options);
 		}

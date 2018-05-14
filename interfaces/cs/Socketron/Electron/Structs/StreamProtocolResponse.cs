@@ -21,8 +21,6 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// A Node.js readable stream representing the response body.
 		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
 		public Readable data {
 			get { return API.GetObject<Readable>("data"); }
 		}

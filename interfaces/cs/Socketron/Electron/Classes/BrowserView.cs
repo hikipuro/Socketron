@@ -54,14 +54,6 @@ namespace Socketron.Electron {
 		/// <summary>
 		/// *Experimental*
 		/// </summary>
-		/// <param name="width">
-		/// If true, the view's width will grow and shrink
-		/// together with the window. false by default.
-		/// </param>
-		/// <param name="height">
-		/// If true, the view's height will grow and shrink
-		/// together with the window. false by default.
-		/// </param>
 		public void setAutoResize(AutoResizeOptions options) {
 			API.Apply("setAutoResize", options);
 		}

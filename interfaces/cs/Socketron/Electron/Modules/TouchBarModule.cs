@@ -17,7 +17,8 @@ namespace Socketron.Electron {
 		/// *Experimental*
 		/// Creates a new touch bar with the specified items.
 		/// </summary>
-		/// <param name="image"></param>
+		/// <param name="options"></param>
+		/// <returns></returns>
 		public TouchBar Create(TouchBarConstructorOptions options) {
 			return API.ApplyConstructor<TouchBar>(options);
 		}

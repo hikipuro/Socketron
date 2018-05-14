@@ -40,6 +40,7 @@ namespace Socketron {
 		/// <para>
 		/// This listener is invoked only the next time a message is sent to channel,
 		/// after which it is removed.
+		/// </para>
 		/// </summary>
 		/// <param name="eventName"></param>
 		/// <param name="listener"></param>

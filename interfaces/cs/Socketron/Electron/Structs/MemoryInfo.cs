@@ -3,9 +3,6 @@
 	/// Note that all statistics are reported in Kilobytes.
 	/// </summary>
 	public class MemoryInfo {
-		/// <summary>
-		/// Process id of the process.
-		/// </summary>
 		//public int? pid;
 		/// <summary>
 		/// The amount of memory currently pinned to actual physical RAM.

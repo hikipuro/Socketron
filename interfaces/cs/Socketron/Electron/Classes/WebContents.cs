@@ -771,7 +771,7 @@ namespace Socketron.Electron {
 		/// Unregisters any ServiceWorker if present and returns a boolean as response
 		/// to callback when the JS promise is fulfilled or false when the JS promise is rejected.
 		/// </summary>
-		/// <param name="text"></param>
+		/// <param name="callback"></param>
 		public void unregisterServiceWorker(Action<bool> callback) {
 			if (callback == null) {
 				return;
