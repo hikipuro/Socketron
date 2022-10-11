@@ -7,7 +7,7 @@
   "author": "",
   "license": "",
   "devDependencies": {
-    "electron-packager": "^10.1.2"
+    "electron-packager": "^16.0.0"
   },
   "dependencies": {
     "electron": "^1.8.3"
